@@ -3,7 +3,7 @@ POST http://localhost:8000/pupils
 Content-Type: application/json
 
 {
-  "firstname": "John",
+  "firstname": "Elias",
   "lastname": "Doe",
   "password": "testpassword",
   "email": "johndoe@example.com"
