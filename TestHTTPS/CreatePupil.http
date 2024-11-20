@@ -1,0 +1,10 @@
+### POST request to create a pupil
+POST http://localhost:8000/pupils
+Content-Type: application/json
+
+{
+  "firstname": "John",
+  "lastname": "Doe",
+  "password": "testpassword",
+  "email": "johndoe@example.com"
+}
