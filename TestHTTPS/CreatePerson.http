@@ -1,0 +1,8 @@
+### POST request to create person
+POST http://localhost:8000/person
+Content-Type: application/json
+
+{
+  "CONTACTINFO_ID": "5684bf8b-1ed3-4472-81be-c76b546d0772",
+  "ROLE": "ADMIN"
+}

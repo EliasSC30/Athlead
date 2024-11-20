@@ -1,0 +1,11 @@
+### POST request to create details
+POST http://localhost:8000/location
+Content-Type: application/json
+
+{
+  "CITY": "Ockenheim",
+  "ZIPCODE": "55437",
+  "STREET": "Hauptstrasse",
+  "STREETNUMBER": "25",
+  "NAME": "Krass"
+}

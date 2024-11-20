@@ -1,0 +1,7 @@
+### POST request to create a sportfests
+POST http://localhost:8000/sportfests
+Content-Type: application/json
+
+{
+  "DETAILS_ID": "9ee36a53-7a2d-4665-b972-f75f210d169b"
+}

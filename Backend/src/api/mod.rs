@@ -1,4 +1,7 @@
 mod health;
 pub(crate) mod service;
-pub(crate) mod pupils;
-pub(crate) mod class;
+mod sportfest;
+mod details;
+mod location;
+mod contactinfo;
+mod person;

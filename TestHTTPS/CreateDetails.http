@@ -1,0 +1,10 @@
+### POST request to create details
+POST http://localhost:8000/details
+Content-Type: application/json
+
+{
+  "LOCATION_ID": "14a0be5c-fd25-4400-9dc9-2d3aba3f5353",
+  "CONTACTPERSON_ID": "3300ff3a-a3ed-4a33-9d01-6c1db42dbdc0",
+  "START": "2021-10-10T00:00:00.000Z",
+  "END": "2021-10-10T00:00:00.000Z"
+}

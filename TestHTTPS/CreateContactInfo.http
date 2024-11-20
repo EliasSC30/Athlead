@@ -1,0 +1,10 @@
+### POST request to create contactinfo
+POST http://localhost:8000/contactinfo
+Content-Type: application/json
+
+{
+  "FIRSTNAME": "John",
+  "LASTNAME": "Doe",
+  "EMAIL": "john.doe@web.de",
+  "PHONE": "123456789"
+}
