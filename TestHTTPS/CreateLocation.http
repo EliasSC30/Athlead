@@ -1,5 +1,5 @@
 ### POST request to create details
-POST http://localhost:8000/location
+POST http://localhost:8000/locations
 Content-Type: application/json
 
 {

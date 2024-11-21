@@ -6,45 +6,92 @@ use uuid::{Uuid};
 
 #[get("/details")]
 pub async fn details_list_handler(data: web::Data<AppState>) -> impl Responder {
-
-    let details: Vec<Details> = sqlx::query_as!(
+    let result = sqlx::query_as!(
         Details,
-        r#"SELECT * FROM Details"#)
+        r#"SELECT * FROM DETAILS"#
+    )
         .fetch_all(&data.db)
-        .await
-        .map_err(|e| {
-            return HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": "Failed to fetch Details, with error: ".to_owned() + &e.to_string(),
+        .await;
+
+    match result {
+        Ok(details) => {
+            let details_response = details.into_iter().map(|details| {
+                json!({
+                    "ID": details.ID,
+                    "LOCATION_ID": details.LOCATION_ID,
+                    "CONTACTPERSON_ID": details.CONTACTPERSON_ID,
+                    "NAME": details.NAME,
+                    "START": details.START,
+                    "END": details.END,
+                })
+            }).collect::<Vec<serde_json::Value>>();
+
+            HttpResponse::Ok().json(json!({
+                "status": "success",
+                "results": details_response.len(),
+                "data": details_response,
             }))
-        })
-        .unwrap();
-
-    let details_response = details.into_iter().map(|details| {
-        json!({
-            "ID": details.ID,
-            "LOCATION_ID": details.LOCATION_ID,
-            "CONTACTPERSON_ID": details.CONTACTPERSON_ID,
-            "NAME": details.NAME,
-            "START": details.START,
-            "END": details.END,
-        })
-    }).collect::<Vec<serde_json::Value>>();
-
-    return HttpResponse::Ok().json(json!({
-        "status": "success",
-        "results": details_response.len(),
-        "data": details_response,
-    }));
+        }
+        Err(e) => {
+            HttpResponse::InternalServerError().json(json!({
+                "status": "error",
+                "message": format!("Failed to fetch Details: {}", e),
+            }))
+        }
+    }
 }
 
+#[get("/details/{id}")]
+pub async fn details_get_handler(
+    data: web::Data<AppState>,
+    path: web::Path<String>
+) -> impl Responder {
+    let details_id = path.into_inner();
+
+    let result = sqlx::query_as!(
+        Details,
+        r#"SELECT * FROM DETAILS WHERE ID = ?"#,
+        details_id
+    )
+        .fetch_one(&data.db)
+        .await;
+
+    match result {
+        Ok(detail) => {
+            HttpResponse::Ok().json(json!({
+                "status": "success",
+                "data": {
+                    "ID": detail.ID,
+                    "LOCATION_ID": detail.LOCATION_ID,
+                    "CONTACTPERSON_ID": detail.CONTACTPERSON_ID,
+                    "NAME": detail.NAME,
+                    "START": detail.START,
+                    "END": detail.END,
+                }
+            }))
+        }
+        Err(e) => {
+            if e.to_string().contains("no rows returned by a query that expected to return at least one row") {
+                HttpResponse::NotFound().json(json!({
+                    "status": "error",
+                    "message": "Details not found",
+                }))
+            } else {
+                HttpResponse::InternalServerError().json(json!({
+                    "status": "error",
+                    "message": format!("Failed to fetch Details: {}", e),
+                }))
+            }
+        }
+    }
+}
 
 #[post("/details")]
 pub async fn details_create_handler(body: web::Json<CreateDetails>, data:web::Data<AppState>) -> impl Responder {
     let new_details_id: Uuid = Uuid::new_v4();
 
     let query = sqlx::query(
-        r#"INSERT INTO Details (ID, LOCATION_ID, CONTACTPERSON_ID, NAME, START, END) VALUES (?, ?, ?, ?, ?, ?)"#)
+        r#"INSERT INTO DETAILS (ID, LOCATION_ID, CONTACTPERSON_ID, NAME, START, END) VALUES (?, ?, ?, ?, ?, ?)"#)
         .bind(new_details_id.to_string())
         .bind(body.LOCATION_ID.to_string())
         .bind(body.CONTACTPERSON_ID.to_string())

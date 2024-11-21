@@ -5,38 +5,83 @@ use serde_json::json;
 use uuid::{Uuid};
 
 #[get("/persons")]
-pub async fn person_list_handler(data: web::Data<AppState>) -> impl Responder {
-
-    let persons: Vec<Person> = sqlx::query_as!(
+pub async fn persons_list_handler(data: web::Data<AppState>) -> impl Responder {
+    let result = sqlx::query_as!(
         Person,
-        r#"SELECT * FROM PERSON"#)
+        r#"SELECT * FROM PERSON"#
+    )
         .fetch_all(&data.db)
-        .await
-        .map_err(|e| {
-            return HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": "Failed to fetch Details, with error: ".to_owned() + &e.to_string(),
+        .await;
+
+    match result {
+        Ok(persons) => {
+            let persons_response = persons.into_iter().map(|person| {
+                json!({
+                    "ID": person.ID,
+                    "CONTACTINFO_ID": person.CONTACTINFO_ID,
+                    "ROLE": person.ROLE
+                })
+            }).collect::<Vec<serde_json::Value>>();
+
+            HttpResponse::Ok().json(json!({
+                "status": "success",
+                "results": persons_response.len(),
+                "data": persons_response,
             }))
-        })
-        .unwrap();
-
-    let persons_response = persons.into_iter().map(|details| {
-        json!({
-            "ID": details.ID,
-            "CONTACTINFO_ID": details.CONTACTINFO_ID,
-            "ROLE": details.ROLE
-        })
-    }).collect::<Vec<serde_json::Value>>();
-
-    return HttpResponse::Ok().json(json!({
-        "status": "success",
-        "results": persons_response.len(),
-        "data": persons_response,
-    }));
+        }
+        Err(e) => {
+            HttpResponse::InternalServerError().json(json!({
+                "status": "error",
+                "message": format!("Failed to fetch persons: {}", e),
+            }))
+        }
+    }
 }
 
-#[post("/person")]
-pub async fn person_create_handler(body: web::Json<CreatePerson>, data:web::Data<AppState>) -> impl Responder {
+#[get("/persons/{id}")]
+pub async fn persons_get_handler(
+    data: web::Data<AppState>,
+    path: web::Path<String>
+) -> impl Responder {
+    let person_id = path.into_inner();
+
+    let result = sqlx::query_as!(
+        Person,
+        r#"SELECT * FROM PERSON WHERE ID = ?"#,
+        person_id
+    )
+        .fetch_one(&data.db)
+        .await;
+
+    match result {
+        Ok(person) => {
+            HttpResponse::Ok().json(json!({
+                "status": "success",
+                "data": {
+                    "ID": person.ID,
+                    "CONTACTINFO_ID": person.CONTACTINFO_ID,
+                    "ROLE": person.ROLE
+                }
+            }))
+        }
+        Err(e) => {
+            if e.to_string().contains("no rows returned by a query that expected to return at least one row") {
+                HttpResponse::NotFound().json(json!({
+                    "status": "error",
+                    "message": "Persons not found",
+                }))
+            } else {
+                HttpResponse::InternalServerError().json(json!({
+                    "status": "error",
+                    "message": format!("Failed to fetch Persons: {}", e),
+                }))
+            }
+        }
+    }
+}
+
+#[post("/persons")]
+pub async fn persons_create_handler(body: web::Json<CreatePerson>, data:web::Data<AppState>) -> impl Responder {
     let new_person_id: Uuid = Uuid::new_v4();
 
     let query = sqlx::query(

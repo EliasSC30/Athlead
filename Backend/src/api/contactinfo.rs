@@ -4,48 +4,87 @@ use actix_web::{get, post, web, HttpResponse, Responder};
 use serde_json::json;
 use uuid::{Uuid};
 
-#[get("/contactinfo")]
-pub async fn contactinfo_list_handler(data: web::Data<AppState>) -> impl Responder {
-
-    let details: Vec<ContactInfo> = sqlx::query_as!(
+#[get("/contactinfos")]
+pub async fn contactinfos_list_handler(data: web::Data<AppState>) -> impl Responder {
+    let result = sqlx::query_as!(
         ContactInfo,
-        r#"SELECT * FROM CONTACTINFO"#)
+        r#"SELECT * FROM CONTACTINFO"#
+    )
         .fetch_all(&data.db)
-        .await
-        .map_err(|e| {
-            return HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": "Failed to fetch ContactInfo, with error: ".to_owned() + &e.to_string(),
+        .await;
+
+    match result {
+        Ok(details) => {
+            let contactinfo_response = details.into_iter().map(|contactinfo| {
+                json!({
+                    "ID": contactinfo.ID,
+                    "FIRSTNAME": contactinfo.FIRSTNAME,
+                    "LASTNAME": contactinfo.LASTNAME,
+                    "EMAIL": contactinfo.EMAIL,
+                    "PHONE": contactinfo.PHONE,
+                })
+            }).collect::<Vec<serde_json::Value>>();
+
+            HttpResponse::Ok().json(json!({
+                "status": "success",
+                "results": contactinfo_response.len(),
+                "data": contactinfo_response,
             }))
-        })
-        .unwrap();
-
-    /*
-        pub ID: String,
-    pub FIRSTNAME: String,
-    pub LASTNAME: String,
-    pub EMAIL: String,
-    pub PHONE: String,
-     */
-    let contactinfo_response = details.into_iter().map(|contactinfo| {
-        json!({
-            "ID": contactinfo.ID,
-            "FIRSTNAME": contactinfo.FIRSTNAME,
-            "LASTNAME": contactinfo.LASTNAME,
-            "EMAIL": contactinfo.EMAIL,
-            "PHONE": contactinfo.PHONE,
-        })
-    }).collect::<Vec<serde_json::Value>>();
-
-    return HttpResponse::Ok().json(json!({
-        "status": "success",
-        "results": contactinfo_response.len(),
-        "data": contactinfo_response,
-    }));
+        }
+        Err(e) => {
+            HttpResponse::InternalServerError().json(json!({
+                "status": "error",
+                "message": format!("Failed to fetch ContactInfo: {}", e),
+            }))
+        }
+    }
 }
 
+#[get("/contactinfos/{id}")]
+pub async fn contactinfos_get_handler(
+    data: web::Data<AppState>,
+    path: web::Path<String>
+) -> impl Responder {
+    let contactinfo_id = path.into_inner();
+
+    let result = sqlx::query_as!(
+        ContactInfo,
+        r#"SELECT * FROM CONTACTINFO WHERE ID = ?"#,
+        contactinfo_id
+    )
+        .fetch_one(&data.db)
+        .await;
+
+    match result {
+        Ok(contactinfo) => {
+            HttpResponse::Ok().json(json!({
+                "status": "success",
+                "data": {
+                    "ID": contactinfo.ID,
+                    "FIRSTNAME": contactinfo.FIRSTNAME,
+                    "LASTNAME": contactinfo.LASTNAME,
+                    "EMAIL": contactinfo.EMAIL,
+                    "PHONE": contactinfo.PHONE,
+                }
+            }))
+        }
+        Err(e) => {
+            if e.to_string().contains("no rows returned by a query that expected to return at least one row") {
+                HttpResponse::NotFound().json(json!({
+                    "status": "error",
+                    "message": "ContactInfo not found",
+                }))
+            } else {
+                HttpResponse::InternalServerError().json(json!({
+                    "status": "error",
+                    "message": format!("Failed to fetch ContactInfo: {}", e),
+                }))
+            }
+        }
+    }
+}
 #[post("/contactinfos")]
-pub async fn contactinfo_create_handler(body: web::Json<CreateContactInfo>, data:web::Data<AppState>) -> impl Responder {
+pub async fn contactinfos_create_handler(body: web::Json<CreateContactInfo>, data:web::Data<AppState>) -> impl Responder {
     let new_details_id: Uuid = Uuid::new_v4();
 
     let query = sqlx::query(

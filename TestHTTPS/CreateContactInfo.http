@@ -1,5 +1,5 @@
 ### POST request to create contactinfo
-POST http://localhost:8000/contactinfo
+POST http://localhost:8000/contactinfos
 Content-Type: application/json
 
 {

@@ -1,5 +1,5 @@
 ### POST request to create person
-POST http://localhost:8000/person
+POST http://localhost:8000/persons
 Content-Type: application/json
 
 {
