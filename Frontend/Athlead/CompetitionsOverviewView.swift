@@ -110,8 +110,12 @@ struct CompetitionDetailView: View {
                 .bold()
             Text("Datum: \(competition.date)")
             Text("Ort: \(competition.location)")
-            List(rowContent.indices, id: \.self) { index in
-                Text((index + 1).formatted() + "  " + rowContent[index])
+            List {
+                Section(header: Text("Ergebnisse").font(.headline)) {
+                    ForEach(rowContent.indices, id: \.self) { index in
+                        Text((index + 1).formatted() + "  " + rowContent[index])
+                    }
+                }
             }
             .padding(.top, 5)
             .foregroundColor(.primary)

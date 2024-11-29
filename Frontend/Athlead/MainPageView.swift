@@ -125,7 +125,7 @@ struct AwardCard: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text(awardName)
                     .font(.headline)
-                Text("Jahr: \(year)")
+                Text("Jahr: " + String(year))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
