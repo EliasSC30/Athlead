@@ -8,6 +8,20 @@
 
 import SwiftUI
 
+
+struct Metric {
+    var time: Float32
+    var timeUnit: String
+    
+    var length: Float32
+    var lengthUnit: String
+    
+    var weight: Float32
+    var weightUnit: String
+    
+    var amount: Int32
+}
+
 struct Competition: Identifiable {
     let id = UUID()
     let name: String
@@ -15,10 +29,10 @@ struct Competition: Identifiable {
     let location: String
 }
 
-struct Placing : Identifiable {
+struct CompetitorContestInfo : Identifiable {
     let id = UUID()
     let name: String
-    let place : Int8
+    let metric : Metric
 }
 
 
@@ -34,42 +48,41 @@ struct CompetitionsOverviewView: View {
         Competition(name: "100m Lauf", date: "21.11.2024", location: "Stadion B"),
         Competition(name: "Hochsprung", date: "22.11.2024", location: "Stadion C")
     ]
-    
-    let longJumpPlacings = [
-        Placing(name: "Elias jump", place: 1),
-        Placing(name: "Jan jump", place: 2)
+    //length = 0, lengthUnit = "", w
+    let contestInfos = [
+        // 100m Dummy
+        CompetitorContestInfo(name: "Elias", metric: Metric(time: 9.53, timeUnit: "s", length:0.0, lengthUnit:"", weight:0.0, weightUnit: "", amount:0)),
+        CompetitorContestInfo(name: "Jan", metric: Metric(time: 12.90, timeUnit: "s", length:0.0, lengthUnit:"", weight:0.0, weightUnit: "", amount:0)),
+        // Long Dummy
+        CompetitorContestInfo(name: "Elias", metric: Metric(time:0.0, timeUnit:"",length: 8.99, lengthUnit: "m", weight:0.0, weightUnit: "", amount:0)),
+        CompetitorContestInfo(name: "Jan", metric: Metric(time:0.0, timeUnit:"", length: 4.33, lengthUnit: "m", weight:0.0, weightUnit: "", amount:0)),
+        // High Dummy
+        CompetitorContestInfo(name: "Elias", metric: Metric(time:0.0, timeUnit:"",length: 1.95, lengthUnit: "m", weight:0.0, weightUnit: "", amount:0)),
+        CompetitorContestInfo(name: "Jan", metric: Metric(time:0.0, timeUnit:"", length: 1.40, lengthUnit: "m", weight:0.0, weightUnit: "", amount:0)),
+
     ]
     
-    let hundredMeterRunPlacings = [
-        Placing(name: "Elias Ran", place: 1),
-        Placing(name: "Jan RAn", place: 2)
-    ]
-    
-    let highJumpPlacings = [
-        Placing(name: "Elias high jump", place: 1),
-        Placing(name: "Jan high jump", place: 2)
-    ]
-    
-    func getPlacings(for comp: String) -> [Placing]
+    func getFormattedPlacings(competition : String, compInfos : [CompetitorContestInfo]) -> [String]
     {
-        switch(comp)
+        switch(competition)
         {
         case "Weitsprung":
-            return longJumpPlacings;
+            return compInfos.map { $0.name + " jumped " + $0.metric.length.formatted() + $0.metric.lengthUnit };
         case "100m Lauf":
-            return hundredMeterRunPlacings;
+            return compInfos.map { $0.name + " ran 100m " + $0.metric.time.formatted() + $0.metric.timeUnit };
         case "Hochsprung":
-            return highJumpPlacings;
+            return compInfos.map { $0.name + " jumped " + $0.metric.length.formatted() + $0.metric.lengthUnit + " high" };
         default:
-            return [];
+            return ["Competition is unknown"];
         }
-        
     }
 
     var body: some View {
         NavigationView {
             List(competitions) { competition in
-                NavigationLink(destination: CompetitionDetailView(competition: competition, placings: getPlacings(for: competition.name))) {
+                NavigationLink(destination: CompetitionDetailView(competition: competition,
+                                                                  rowContent: getFormattedPlacings(competition : competition.name, compInfos : contestInfos)))
+                {
                     HStack {
                         VStack(alignment: .leading) {
                             Text(competition.name)
@@ -88,7 +101,7 @@ struct CompetitionsOverviewView: View {
 
 struct CompetitionDetailView: View {
     let competition: Competition
-    let placings: [Placing]
+    let rowContent: [String]
 
     var body: some View {
         VStack(spacing: 20) {
@@ -97,11 +110,12 @@ struct CompetitionDetailView: View {
                 .bold()
             Text("Datum: \(competition.date)")
             Text("Ort: \(competition.location)")
-            List(placings, id: \.name) {
-                placing in Text(placing.name + " " + placing.place.formatted())
+            List(rowContent, id: \.self) { content in
+                Text(content)
             }
             .padding(.top, 5)
             .foregroundColor(.primary)
+            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
         }
         .padding()
         .navigationTitle("Details")
