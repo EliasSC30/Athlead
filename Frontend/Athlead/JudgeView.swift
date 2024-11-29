@@ -24,7 +24,7 @@ struct ResultInfo {
 }
 
 struct JudgeView : View {
-    let COMPETITION = "Weitsprung"
+    let COMPETITION = "100m Lauf"
     @State private var results: [ResultInfo] = [/*ResultInfo(name: "", metric: Metric())*/]
     // Variables for adding
     @State private var newParticipantName: String = ""
@@ -175,7 +175,12 @@ struct MetricEntry: View {
             
             if(COMPETITION == "100m Lauf")
             {
-                HundredMeterFields(onNewResult: onNewResult, name: name, time: metric.time)
+                FloatInput(onNewResult: onNewResult,
+                           name: name,
+                           entryTitle: "Zeit in Sekunden",
+                           txtBeforeValue: "ist 100m in",
+                           txtAfterValue: "s gelaufen.",
+                           value: metric.time)
             } else if(COMPETITION == "Weitsprung")
             {
                 LongJumpFields(onNewResult: onNewResult, name: name, length: metric.length);
@@ -194,27 +199,57 @@ struct MetricEntry: View {
     }
 }
 
-struct HundredMeterFields : View {
+func validateInput(input: String) -> Bool {
+    // Ensure there is exactly one comma
+    let commaCount = input.filter { $0 == "." }.count
+    if commaCount != 1 {
+        return false
+    }
+    
+    // Ensure all characters are either digits or a single comma
+    for char in input {
+        if !(char.isNumber || char == ".") {
+            return false
+        }
+    }
+    
+    return true
+}
+
+struct FloatInput : View {
     var onNewResult: () -> Void
     var name: Binding<String>
-    var time: Binding<Float32>
+    let entryTitle : String
+    let txtBeforeValue: String
+    let txtAfterValue: String
+    
+    var value: Binding<Float32>
+    @State private var valueInput : String = ""
+    @State private var isValid : Bool = false;
+    
     var body: some View {
-        Text("Zeit in Sekunden")
+        Text(entryTitle)
         
-        TextField("0.00", value: time, format: .number)
+        TextField("0,00", text: $valueInput)
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .keyboardType(.decimalPad)
             .padding()
             .multilineTextAlignment(.center)
             .frame(width: 80)
+            .foregroundColor(isValid ? .black : .red)
+            .onChange(of: valueInput){
+                isValid = validateInput(input: valueInput);
+                if(isValid) { value.wrappedValue = Float(valueInput).unsafelyUnwrapped }
+            }
 
-        Text(name.wrappedValue.isEmpty ? " " : ( "\(name.wrappedValue.truncated(to: 12)) ran 100m in \(time.wrappedValue, specifier: "%.2f") seconds" ))
+        Text(name.wrappedValue.isEmpty ? " " :
+                ( "\(name.wrappedValue.truncated(to: 12)) \(txtBeforeValue) \(value.wrappedValue, specifier: "%.2f") \(txtAfterValue)" ))
             .font(.subheadline)
             .padding(.all, 10)
             .bold()
             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
         Button(action: {
-            if(!name.wrappedValue.isEmpty && time.wrappedValue != 0.0) {
+            if(!name.wrappedValue.isEmpty && validateInput(input: valueInput)) {
                 onNewResult();
             }
         }) {
@@ -242,7 +277,42 @@ struct LongJumpFields : View {
 
         Text(name.wrappedValue.isEmpty ?
                     " " :
-                    "\(name.wrappedValue.truncated(to: 12)) jumped \(length.wrappedValue, specifier: "%.2f")m"
+                    "\(name.wrappedValue.truncated(to: 12)) jumped \(length.wrappedValue, specifier: "%.2f")m far"
+            )
+            .font(.subheadline)
+            .padding(.all, 10)
+            .bold()
+            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+        Button(action: {
+            if(!name.wrappedValue.isEmpty && length.wrappedValue != 0.0) {
+                onNewResult();
+            }
+        }) {
+            
+            Text("Bestätigen").foregroundColor(Color.black)
+        }
+        .padding(.vertical, 10)
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+    }
+}
+
+struct HighJumpFields : View {
+    var onNewResult: () -> Void
+    var name: Binding<String>
+    var length: Binding<Float32>
+    var body: some View {
+        Text("Länge in Meter")
+
+        TextField("0.00", value: length, format: .number)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .keyboardType(.decimalPad)
+            .padding()
+            .multilineTextAlignment(.center)
+            .frame(width: 80)
+
+        Text(name.wrappedValue.isEmpty ?
+                    " " :
+                    "\(name.wrappedValue.truncated(to: 12)) jumped \(length.wrappedValue, specifier: "%.2f")m high"
             )
             .font(.subheadline)
             .padding(.all, 10)
