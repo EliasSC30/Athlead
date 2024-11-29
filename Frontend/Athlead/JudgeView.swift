@@ -19,7 +19,7 @@ struct JudgeView : View {
     
     var body: some View {
         VStack {
-            HundredMeterEntry(time: $newMetric.time)
+            HundredMeterEntry(onNewResult: {results.append(newMetric)}, time: $newMetric.time)
                 .padding()
             
             // List of results with edit and delete options
@@ -96,7 +96,7 @@ struct EditResultView: View {
             VStack {
                 Text("Edit Result").font(.title).bold().padding(.top, 10)
 
-                HundredMeterEntry(time : $metricToEdit.time)
+                HundredMeterEntry(onNewResult : onSave, time : $metricToEdit.time)
                 
                 HStack {
                     Button("Cancel") {
@@ -124,6 +124,7 @@ struct EditResultView: View {
 }
 
 struct HundredMeterEntry: View {
+    var onNewResult : () -> Void
     var time: Binding<Float>
     @State var name: String = ""
 
@@ -147,12 +148,22 @@ struct HundredMeterEntry: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .keyboardType(.decimalPad) // Ensure the user can enter decimal numbers
                 .padding()
-                .frame(width: 100) // Limit the width of the text field
+                .multilineTextAlignment(.center)
+                .frame(width: 80) // Limit the width of the text field
 
             Text("\"\(name)\" ran 100m in \(time.wrappedValue, specifier: "%.2f") seconds")
                 .font(.subheadline)
                 .padding(.all, 10)
+                .bold()
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+            Button(action: {
+                if(!name.isEmpty && time.wrappedValue != 0.0) {
+                    onNewResult();
+                }
+            }) {
+                
+                Text("Bestätigen")
+            }
         }
         .padding()
         .background(Color.white)
