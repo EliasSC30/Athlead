@@ -20,6 +20,57 @@ struct Metric {
     var weightUnit: String
     
     var amount: Int32
+    
+    init()
+    {
+        self.time = 0.0
+        self.timeUnit = "s"
+        self.length = 0.0
+        self.lengthUnit = "m"
+        self.weight = 0.0
+        self.weightUnit = "kg"
+        self.amount = 0
+    }
+    init(time: Float32)
+    {
+        self.time = time
+        self.timeUnit = "s"
+        self.length = 0.0
+        self.lengthUnit = "m"
+        self.weight = 0.0
+        self.weightUnit = "kg"
+        self.amount = 0
+    }
+    init(length: Float32)
+    {
+        self.time = 0.0
+        self.timeUnit = "s"
+        self.length = length
+        self.lengthUnit = "m"
+        self.weight = 0.0
+        self.weightUnit = "kg"
+        self.amount = 0
+    }
+    init(weight: Float32)
+    {
+        self.time = 0.0
+        self.timeUnit = "s"
+        self.length = 0.0
+        self.lengthUnit = "m"
+        self.weight = weight
+        self.weightUnit = "kg"
+        self.amount = 0
+    }
+    init(amount: Int32)
+    {
+        self.time = 0.0
+        self.timeUnit = "s"
+        self.length = 0.0
+        self.lengthUnit = "m"
+        self.weight = 0.0
+        self.weightUnit = "kg"
+        self.amount = amount
+    }
 }
 
 struct Competition: Identifiable {
@@ -51,14 +102,14 @@ struct CompetitionsOverviewView: View {
     //length = 0, lengthUnit = "", w
     let contestInfos = [
         // 100m Dummy
-        CompetitorContestInfo(name: "Elias", metric: Metric(time: 9.53, timeUnit: "s", length:0.0, lengthUnit:"", weight:0.0, weightUnit: "", amount:0)),
-        CompetitorContestInfo(name: "Jan", metric: Metric(time: 12.90, timeUnit: "s", length:0.0, lengthUnit:"", weight:0.0, weightUnit: "", amount:0)),
+        CompetitorContestInfo(name: "Elias", metric: Metric(time: 9.53)),
+        CompetitorContestInfo(name: "Jan", metric: Metric(time: 12.90)),
         // Long Dummy
-        CompetitorContestInfo(name: "Elias", metric: Metric(time:0.0, timeUnit:"",length: 8.99, lengthUnit: "m", weight:0.0, weightUnit: "", amount:0)),
-        CompetitorContestInfo(name: "Jan", metric: Metric(time:0.0, timeUnit:"", length: 4.33, lengthUnit: "m", weight:0.0, weightUnit: "", amount:0)),
+        CompetitorContestInfo(name: "Elias", metric: Metric(length: 8.99)),
+        CompetitorContestInfo(name: "Jan", metric: Metric(length: 4.33)),
         // High Dummy
-        CompetitorContestInfo(name: "Elias", metric: Metric(time:0.0, timeUnit:"",length: 1.95, lengthUnit: "m", weight:0.0, weightUnit: "", amount:0)),
-        CompetitorContestInfo(name: "Jan", metric: Metric(time:0.0, timeUnit:"", length: 1.40, lengthUnit: "m", weight:0.0, weightUnit: "", amount:0)),
+        CompetitorContestInfo(name: "Elias", metric: Metric(length: 1.95)),
+        CompetitorContestInfo(name: "Jan", metric: Metric(length: 1.40)),
 
     ]
     

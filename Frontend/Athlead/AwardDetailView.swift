@@ -24,9 +24,7 @@ struct AwardDetailView: View {
                 .font(.title2)
                 .padding()
 
-            Image(systemName: medalType == .gold ? "medal" :
-                                medalType == .silver ? "medal" :
-                                "medal")
+            Image(systemName: "medal")
                 .foregroundColor(medalType == .gold ? .yellow :
                                 medalType == .silver ? .gray :
                                 .brown)

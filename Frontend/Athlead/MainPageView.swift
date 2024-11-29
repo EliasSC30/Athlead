@@ -117,7 +117,7 @@ struct BestSportCard: View {
 
 struct AwardCard: View {
     let awardName: String
-    let year: Int
+    let year: Int32
     let medalType: MedalType
 
     var body: some View {
@@ -130,9 +130,7 @@ struct AwardCard: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
-            Image(systemName: medalType == .gold ? "medal" :
-                                medalType == .silver ? "medal" :
-                                "medal")
+            Image(systemName: "medal")
                 .foregroundColor(medalType == .gold ? .yellow :
                                 medalType == .silver ? .gray :
                                 .brown)
