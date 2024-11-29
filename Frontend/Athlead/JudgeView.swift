@@ -24,6 +24,7 @@ struct ResultInfo {
 }
 
 struct JudgeView : View {
+    let COMPETITION = "Weitsprung"
     @State private var results: [ResultInfo] = [/*ResultInfo(name: "", metric: Metric())*/]
     // Variables for adding
     @State private var newParticipantName: String = ""
@@ -40,12 +41,15 @@ struct JudgeView : View {
     
     var body: some View {
         VStack {
-            HundredMeterEntry(onNewResult: {
-                results.append(ResultInfo(name:newParticipantName, metric:newMetric));
-                newParticipantName = ""
-                newMetric = Metric()
-            },
-                              time: $newMetric.time, name: $newParticipantName)
+            MetricEntry(
+                COMPETITION: COMPETITION,
+                onNewResult: {
+                    results.append(ResultInfo(name:newParticipantName, metric:newMetric));
+                    newParticipantName = ""
+                    newMetric = Metric()
+                },
+                metric: $newMetric,
+                name: $newParticipantName)
             .padding()
             
             if(!results.isEmpty) {
@@ -53,14 +57,26 @@ struct JudgeView : View {
                     Section(header: Text("Eingetragene Ergebnisse").font(.headline)) {
                         ForEach(results.indices, id: \.self) { index in
                             HStack {
-                                Text("'\(results[index].name)' \(results[index].metric.time, specifier: "%.2f")\(results[index].metric.timeUnit)")
-                                    .padding(.leading)
+                                if(COMPETITION == "100m Lauf") {
+                                    Text("'\(results[index].name)' \(results[index].metric.time, specifier: "%.2f")\(results[index].metric.timeUnit)")
+                                                                        .padding(.leading)
+                                } else if(COMPETITION == "Weitsprung")
+                                {
+                                    Text("'\(results[index].name)' \(results[index].metric.length, specifier: "%.2f")\(results[index].metric.lengthUnit)")
+                                                                        .padding(.leading)
+                                } else if(COMPETITION == "Hochsprung")
+                                {
+                                    Text("'\(results[index].name)' \(results[index].metric.length, specifier: "%.2f")\(results[index].metric.lengthUnit)")
+                                                                        .padding(.leading)
+                                } else {
+                                    Text("Competition unknown")
+                                }
+                                
                                 
                                 Spacer()
                                 
                                 // Edit button
                                 Button(action: {
-                                    // Logic to edit the result (for simplicity, just modify the result here)
                                     self.editingIndex = index
                                     self.metricToEdit = self.results[index].metric
                                     self.nameToEdit = self.results[index].name
@@ -95,12 +111,13 @@ struct JudgeView : View {
             }
         }
                 .sheet(isPresented: $showEditSheet) {
-                    EditResultView(nameToEdit: $nameToEdit,
+                    EditResultView(COMPETITION: COMPETITION,
+                                   nameToEdit: $nameToEdit,
                                    metricToEdit: $metricToEdit,
                                    onSave: {
                         // Save the edited result back to the list
                         if let index = editingIndex {
-                            results[index] = ResultInfo(name: newParticipantName, metric: metricToEdit)
+                            results[index] = ResultInfo(name: nameToEdit, metric: metricToEdit)
                         }
                         // Close the sheet
                         showEditSheet = false
@@ -117,6 +134,7 @@ struct JudgeView : View {
 }
 
 struct EditResultView: View {
+    let COMPETITION: String
     @Binding var nameToEdit : String
     @Binding var metricToEdit: Metric
     var onSave: () -> Void
@@ -124,9 +142,9 @@ struct EditResultView: View {
     
     var body: some View {
             VStack {
-                Text("Ändere Eintrag").font(.title).bold().padding(.top, 10)
+                Text("Ändere den Eintrag").font(.title).bold().padding(.top, 10).padding(.bottom, 15)
 
-                HundredMeterEntry(onNewResult : onSave, time : $metricToEdit.time, name: $nameToEdit)
+                MetricEntry(COMPETITION:COMPETITION, onNewResult : onSave, metric : $metricToEdit, name: $nameToEdit)
                 
             }
             .padding(.all, 10)
@@ -134,54 +152,111 @@ struct EditResultView: View {
     }
 }
 
-struct HundredMeterEntry: View {
+struct MetricEntry: View {
+    let COMPETITION : String
     var onNewResult : () -> Void
-    var time: Binding<Float>
-    @Binding var name: String
+    var metric: Binding<Metric>
+    var name: Binding<String>
 
     var body: some View {
         VStack(spacing: 1) {
-            Text("Gebe Daten ein") // Title for the input field
+            Text("Gebe Daten ein")
                 .font(.title)
                 .bold()
                 .padding(.top, 10)
                 .padding(.bottom, 15)
             
             Text("Teilnehmer")
-            TextField("Name des Teilnehmers", text: $name)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-                .frame(width: 300) // Limit the width of the text field
-            
-            Text("Zeit in Sekunden")
-            // TextField for entering the float value
-            TextField("0.00", value: time, format: .number)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .keyboardType(.decimalPad) // Ensure the user can enter decimal numbers
-                .padding()
-                .multilineTextAlignment(.center)
-                .frame(width: 80) // Limit the width of the text field
 
-            Text(name.isEmpty ? " " : ( "\(name.truncated(to: 12)) ran 100m in \(time.wrappedValue, specifier: "%.2f") seconds" ))
-                .font(.subheadline)
-                .padding(.all, 10)
-                .bold()
-                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
-            Button(action: {
-                if(!name.isEmpty && time.wrappedValue != 0.0) {
-                    onNewResult();
-                }
-            }) {
+            TextField("Name des Teilnehmers", text: name)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+                .frame(width: 300)
+            
+            if(COMPETITION == "100m Lauf")
+            {
+                HundredMeterFields(onNewResult: onNewResult, name: name, time: metric.time)
+            } else if(COMPETITION == "Weitsprung")
+            {
+                LongJumpFields(onNewResult: onNewResult, name: name, length: metric.length);
+            } else if(COMPETITION == "Hochsprung")
+            {
                 
-                Text("Bestätigen").foregroundColor(Color.black)
+            } else {
+                Text("Unknown competition")
             }
-            .padding(.vertical, 10)
-            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
 
         }
         .padding()
         .background(Color.white)
         .cornerRadius(8)
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+    }
+}
+
+struct HundredMeterFields : View {
+    var onNewResult: () -> Void
+    var name: Binding<String>
+    var time: Binding<Float32>
+    var body: some View {
+        Text("Zeit in Sekunden")
+        
+        TextField("0.00", value: time, format: .number)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .keyboardType(.decimalPad)
+            .padding()
+            .multilineTextAlignment(.center)
+            .frame(width: 80)
+
+        Text(name.wrappedValue.isEmpty ? " " : ( "\(name.wrappedValue.truncated(to: 12)) ran 100m in \(time.wrappedValue, specifier: "%.2f") seconds" ))
+            .font(.subheadline)
+            .padding(.all, 10)
+            .bold()
+            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+        Button(action: {
+            if(!name.wrappedValue.isEmpty && time.wrappedValue != 0.0) {
+                onNewResult();
+            }
+        }) {
+            
+            Text("Bestätigen").foregroundColor(Color.black)
+        }
+        .padding(.vertical, 10)
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+    }
+}
+
+struct LongJumpFields : View {
+    var onNewResult: () -> Void
+    var name: Binding<String>
+    var length: Binding<Float32>
+    var body: some View {
+        Text("Länge in Meter")
+
+        TextField("0.00", value: length, format: .number)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .keyboardType(.decimalPad)
+            .padding()
+            .multilineTextAlignment(.center)
+            .frame(width: 80)
+
+        Text(name.wrappedValue.isEmpty ?
+                    " " :
+                    "\(name.wrappedValue.truncated(to: 12)) jumped \(length.wrappedValue, specifier: "%.2f")m"
+            )
+            .font(.subheadline)
+            .padding(.all, 10)
+            .bold()
+            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+        Button(action: {
+            if(!name.wrappedValue.isEmpty && length.wrappedValue != 0.0) {
+                onNewResult();
+            }
+        }) {
+            
+            Text("Bestätigen").foregroundColor(Color.black)
+        }
+        .padding(.vertical, 10)
         .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
     }
 }
