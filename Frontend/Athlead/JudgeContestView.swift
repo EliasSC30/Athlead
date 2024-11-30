@@ -25,25 +25,25 @@ struct ResultInfo {
 
 struct JudgeContestView : View {
     let COMPETITION : String
-    @State private var results: [ResultInfo] = [/*ResultInfo(name: "", metric: Metric())*/]
+    @State private var results: [ResultInfo] = []
     // Variables for adding
     @State private var newParticipantName: String = ""
     @State private var newMetric: Metric = Metric()
-    
-    @State private var showConfirmationDialog = false // Show confirmation dialog for removing results
-    @State private var resultToRemoveIndex: Int = 0 // The result to be removed (for confirmation)
     
     // Variables for editing
     @State private var showEditSheet: Bool = false
     @State private var nameToEdit: String = ""
     @State private var metricToEdit: Metric = Metric()
-    @State private var editingIndex: Int? = nil // Index of the result being edited
+    @State private var editingIndex: Int = 0
     
     var body: some View {
+        print("JudgeContestView recomputed")
+        return
         VStack {
-            MetricEntry(
+            ResultEntry(
                 COMPETITION: COMPETITION,
                 onNewResult: {
+                    print("Called on new")
                     results.append(ResultInfo(name:newParticipantName, metric:newMetric));
                     newParticipantName = ""
                     newMetric = Metric()
@@ -72,10 +72,9 @@ struct JudgeContestView : View {
                                 } else {
                                     Text("Competition unknown")
                                 }
-                                
-                                
+
                                 Spacer()
-                                
+
                                 // Edit button
                                 Button(action: {
                                     self.editingIndex = index
@@ -98,16 +97,8 @@ struct JudgeContestView : View {
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
                 .background(Color.white)
                 .scrollContentBackground(.hidden)
-                .confirmationDialog(
-                    "Are you sure you want to remove this result?",
-                    isPresented: $showConfirmationDialog,
-                    titleVisibility: .visible) {
-                        Button("Remove", role: .destructive) {
-                            results.remove(at: $resultToRemoveIndex.wrappedValue)
-                        }
-                } // Dialog
             } else { // List is empty
-                Text("Keine Einträge bisher")
+                Text("Keine Einträge bisher").bold().padding(.vertical, 10)
                 
             }
         }
@@ -115,15 +106,15 @@ struct JudgeContestView : View {
                     EditResultView(COMPETITION: COMPETITION,
                                    nameToEdit: $nameToEdit,
                                    metricToEdit: $metricToEdit,
-                                   onSave: {
-                        // Save the edited result back to the list
-                        if let index = editingIndex {
-                            results[index] = ResultInfo(name: nameToEdit, metric: metricToEdit)
-                        }
-                        // Close the sheet
-                        showEditSheet = false
-                    }, showEditSheet: $showEditSheet )
-                }.frame(width: UIScreen.main.bounds.width * 0.7)
+                                   onNewResult: {
+                                        // Save the edited result back to the list
+                                        if !results.isEmpty {
+                                            results[editingIndex] = ResultInfo(name: nameToEdit, metric: metricToEdit)
+                                        }
+
+                                        showEditSheet = false
+                                    })
+                }
                 .padding(.top, 10)
         }
         
@@ -138,15 +129,14 @@ struct EditResultView: View {
     let COMPETITION: String
     @Binding var nameToEdit : String
     @Binding var metricToEdit: Metric
-    var onSave: () -> Void
-    @Binding var showEditSheet: Bool // Added this to control the sheet dismissal
+    var onNewResult: () -> Void
     
     var body: some View {
             VStack {
                 Text("Ändere den Eintrag").font(.title).bold().padding(.top, 10).padding(.bottom, 15)
 
-                MetricEntry(COMPETITION:COMPETITION,
-                            onNewResult : onSave,
+                ResultEntry(COMPETITION:COMPETITION,
+                            onNewResult : onNewResult,
                             metric : $metricToEdit,
                             name: $nameToEdit,
                             isEdit: true)
@@ -157,14 +147,16 @@ struct EditResultView: View {
     }
 }
 
-struct MetricEntry: View {
+struct ResultEntry: View {
     let COMPETITION : String
     var onNewResult : () -> Void
-    var metric: Binding<Metric>
-    var name: Binding<String>
+    @Binding var metric : Metric
+    @Binding var name: String
     let isEdit: Bool;
 
     var body: some View {
+        print("Result Entry recompute");
+        return
         VStack(spacing: 1) {
             Text("Gebe Daten ein")
                 .font(.title)
@@ -174,7 +166,7 @@ struct MetricEntry: View {
             
             Text("Teilnehmer")
 
-            TextField("Name des Teilnehmers", text: name)
+            TextField("Name des Teilnehmers", text: $name)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
                 .frame(width: 300)
@@ -183,29 +175,29 @@ struct MetricEntry: View {
             {
                 FloatInput(onNewResult: onNewResult,
                            entryTitle: "Zeit in Sekunden",
-                           name: name,
+                           name: $name,
                            txtBeforeValue: "ist 100m in",
-                           value: metric.time,
+                           value: $metric.time,
                            txtAfterValue: "s gelaufen.",
-                           startingInput: isEdit ? String(metric.time.wrappedValue) : "")
+                           startingInput: isEdit ? String(metric.time) : "")
             } else if(COMPETITION == "Weitsprung")
             {
                 FloatInput(onNewResult: onNewResult,
                            entryTitle: "Weite in Meter",
-                           name: name,
+                           name: $name,
                            txtBeforeValue: "ist",
-                           value: metric.length,
+                           value: $metric.length,
                            txtAfterValue: "m weit gesprungen.",
-                           startingInput: isEdit ? String(metric.length.wrappedValue) : "")
+                           startingInput: isEdit ? String(metric.length) : "")
             } else if(COMPETITION == "Hochsprung")
             {
                 FloatInput(onNewResult: onNewResult,
                            entryTitle: "Höhe in Meter",
-                           name: name,
+                           name: $name,
                            txtBeforeValue: "ist",
-                           value: metric.length,
+                           value: $metric.length,
                            txtAfterValue: "m hoch gesprungen.",
-                           startingInput: isEdit ? String(metric.length.wrappedValue) : "")
+                           startingInput: isEdit ? String(metric.length) : "")
             } else {
                 Text("Unknown competition")
             }
@@ -221,11 +213,11 @@ struct MetricEntry: View {
 struct FloatInput : View {
     var onNewResult: () -> Void
     let entryTitle : String
-    var name: Binding<String>
+    @Binding var name: String
     let txtBeforeValue: String
-    var value: Binding<Float32>
+    @Binding var value: Float32
     let txtAfterValue: String
-    let startingInput: String;
+    let startingInput: String
     
     @State private var valueInput : String = ""
     @State private var isValid : Bool = false;
@@ -233,7 +225,7 @@ struct FloatInput : View {
     var body: some View {
         Text(entryTitle)
         
-        TextField("0,0", text: $valueInput)
+        TextField("0.0", text: $valueInput)
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .keyboardType(.decimalPad)
             .padding()
@@ -241,29 +233,30 @@ struct FloatInput : View {
             .frame(width: 80)
             .foregroundColor(isValid ? .black : .red)
             .onAppear(){ valueInput = startingInput }
-            .onChange(of: valueInput){
+            .onChange(of: valueInput) {
                 isValid = validateInput(input: valueInput);
-                if(isValid) { value.wrappedValue = Float(valueInput.replacingOccurrences(of: ",", with: ".")).unsafelyUnwrapped }
+                if(isValid) { value = Float(valueInput.replacingOccurrences(of: ",", with: ".")).unsafelyUnwrapped }
             }
             
 
-        Text(name.wrappedValue.isEmpty ? " " :
-                ( "\(name.wrappedValue.truncated(to: 12)) \(txtBeforeValue) \(value.wrappedValue, specifier: "%.2f") \(txtAfterValue)" ))
+        Text(name.isEmpty ? " " :
+                ( "\(name.truncated(to: 12)) \(txtBeforeValue) \(value, specifier: "%.2f") \(txtAfterValue)" ))
             .font(.subheadline)
             .padding(.all, 10)
             .bold()
             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
         Button(action: {
-            if(!name.wrappedValue.isEmpty && validateInput(input: valueInput)) {
+            if(!name.isEmpty && validateInput(input: valueInput)) {
                 onNewResult();
                 valueInput.removeAll();
             }
         }) {
             
-            Text("Bestätigen").foregroundColor(Color.black)
+            Text("Bestätigen").foregroundColor((isValid && !name.isEmpty) ? Color.black : Color.gray)
         }
         .padding(.vertical, 10)
         .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+        .disabled(!isValid || name.isEmpty)
     }
     
     private func validateInput(input: String) -> Bool {
