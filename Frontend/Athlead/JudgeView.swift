@@ -49,7 +49,8 @@ struct JudgeView : View {
                     newMetric = Metric()
                 },
                 metric: $newMetric,
-                name: $newParticipantName)
+                name: $newParticipantName,
+                isEdit: false)
             .padding()
             
             if(!results.isEmpty) {
@@ -144,7 +145,11 @@ struct EditResultView: View {
             VStack {
                 Text("Ändere den Eintrag").font(.title).bold().padding(.top, 10).padding(.bottom, 15)
 
-                MetricEntry(COMPETITION:COMPETITION, onNewResult : onSave, metric : $metricToEdit, name: $nameToEdit)
+                MetricEntry(COMPETITION:COMPETITION,
+                            onNewResult : onSave,
+                            metric : $metricToEdit,
+                            name: $nameToEdit,
+                            isEdit: true)
                 
             }
             .padding(.all, 10)
@@ -157,6 +162,7 @@ struct MetricEntry: View {
     var onNewResult : () -> Void
     var metric: Binding<Metric>
     var name: Binding<String>
+    let isEdit: Bool;
 
     var body: some View {
         VStack(spacing: 1) {
@@ -176,17 +182,30 @@ struct MetricEntry: View {
             if(COMPETITION == "100m Lauf")
             {
                 FloatInput(onNewResult: onNewResult,
-                           name: name,
                            entryTitle: "Zeit in Sekunden",
+                           name: name,
                            txtBeforeValue: "ist 100m in",
+                           value: metric.time,
                            txtAfterValue: "s gelaufen.",
-                           value: metric.time)
+                           startingInput: isEdit ? String(metric.time.wrappedValue) : "")
             } else if(COMPETITION == "Weitsprung")
             {
-                LongJumpFields(onNewResult: onNewResult, name: name, length: metric.length);
+                FloatInput(onNewResult: onNewResult,
+                           entryTitle: "Weite in Meter",
+                           name: name,
+                           txtBeforeValue: "ist",
+                           value: metric.length,
+                           txtAfterValue: "m weit gesprungen.",
+                           startingInput: isEdit ? String(metric.length.wrappedValue) : "")
             } else if(COMPETITION == "Hochsprung")
             {
-                
+                FloatInput(onNewResult: onNewResult,
+                           entryTitle: "Höhe in Meter",
+                           name: name,
+                           txtBeforeValue: "ist",
+                           value: metric.length,
+                           txtAfterValue: "m hoch gesprungen.",
+                           startingInput: isEdit ? String(metric.length.wrappedValue) : "")
             } else {
                 Text("Unknown competition")
             }
@@ -199,48 +218,34 @@ struct MetricEntry: View {
     }
 }
 
-func validateInput(input: String) -> Bool {
-    // Ensure there is exactly one comma
-    let commaCount = input.filter { $0 == "." }.count
-    if commaCount != 1 {
-        return false
-    }
-    
-    // Ensure all characters are either digits or a single comma
-    for char in input {
-        if !(char.isNumber || char == ".") {
-            return false
-        }
-    }
-    
-    return true
-}
-
 struct FloatInput : View {
     var onNewResult: () -> Void
-    var name: Binding<String>
     let entryTitle : String
+    var name: Binding<String>
     let txtBeforeValue: String
-    let txtAfterValue: String
-    
     var value: Binding<Float32>
+    let txtAfterValue: String
+    let startingInput: String;
+    
     @State private var valueInput : String = ""
     @State private var isValid : Bool = false;
     
     var body: some View {
         Text(entryTitle)
         
-        TextField("0,00", text: $valueInput)
+        TextField("0,0", text: $valueInput)
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .keyboardType(.decimalPad)
             .padding()
             .multilineTextAlignment(.center)
             .frame(width: 80)
             .foregroundColor(isValid ? .black : .red)
+            .onAppear(){ valueInput = startingInput }
             .onChange(of: valueInput){
                 isValid = validateInput(input: valueInput);
-                if(isValid) { value.wrappedValue = Float(valueInput).unsafelyUnwrapped }
+                if(isValid) { value.wrappedValue = Float(valueInput.replacingOccurrences(of: ",", with: ".")).unsafelyUnwrapped }
             }
+            
 
         Text(name.wrappedValue.isEmpty ? " " :
                 ( "\(name.wrappedValue.truncated(to: 12)) \(txtBeforeValue) \(value.wrappedValue, specifier: "%.2f") \(txtAfterValue)" ))
@@ -251,6 +256,7 @@ struct FloatInput : View {
         Button(action: {
             if(!name.wrappedValue.isEmpty && validateInput(input: valueInput)) {
                 onNewResult();
+                valueInput.removeAll();
             }
         }) {
             
@@ -259,76 +265,12 @@ struct FloatInput : View {
         .padding(.vertical, 10)
         .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
     }
-}
-
-struct LongJumpFields : View {
-    var onNewResult: () -> Void
-    var name: Binding<String>
-    var length: Binding<Float32>
-    var body: some View {
-        Text("Länge in Meter")
-
-        TextField("0.00", value: length, format: .number)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            .keyboardType(.decimalPad)
-            .padding()
-            .multilineTextAlignment(.center)
-            .frame(width: 80)
-
-        Text(name.wrappedValue.isEmpty ?
-                    " " :
-                    "\(name.wrappedValue.truncated(to: 12)) jumped \(length.wrappedValue, specifier: "%.2f")m far"
-            )
-            .font(.subheadline)
-            .padding(.all, 10)
-            .bold()
-            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
-        Button(action: {
-            if(!name.wrappedValue.isEmpty && length.wrappedValue != 0.0) {
-                onNewResult();
-            }
-        }) {
-            
-            Text("Bestätigen").foregroundColor(Color.black)
-        }
-        .padding(.vertical, 10)
-        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+    
+    private func validateInput(input: String) -> Bool {
+        let commaSwitchedToPoint = input.replacingOccurrences(of: ",", with: ".");
+        return Float(commaSwitchedToPoint) != nil
     }
 }
 
-struct HighJumpFields : View {
-    var onNewResult: () -> Void
-    var name: Binding<String>
-    var length: Binding<Float32>
-    var body: some View {
-        Text("Länge in Meter")
-
-        TextField("0.00", value: length, format: .number)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            .keyboardType(.decimalPad)
-            .padding()
-            .multilineTextAlignment(.center)
-            .frame(width: 80)
-
-        Text(name.wrappedValue.isEmpty ?
-                    " " :
-                    "\(name.wrappedValue.truncated(to: 12)) jumped \(length.wrappedValue, specifier: "%.2f")m high"
-            )
-            .font(.subheadline)
-            .padding(.all, 10)
-            .bold()
-            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
-        Button(action: {
-            if(!name.wrappedValue.isEmpty && length.wrappedValue != 0.0) {
-                onNewResult();
-            }
-        }) {
-            
-            Text("Bestätigen").foregroundColor(Color.black)
-        }
-        .padding(.vertical, 10)
-        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
-    }
-}
 
 
