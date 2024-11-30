@@ -32,7 +32,7 @@ struct ContentView: View {
                             Text("Wettkämpfe")
                         }
                 } else if(role == .Judge) {
-                    JudgeView()
+                    JudgeOverviewView()
                         .tabItem {
                             Image(systemName: "sportscourt")
                             Text("Wettkämpfe")

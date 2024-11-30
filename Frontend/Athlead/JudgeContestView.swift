@@ -1,5 +1,5 @@
 //
-//  JudgeView.swift
+//  JudgeContestView.swift
 //  Athlead
 //
 //  Created by Oezcan, Elias on 29.11.24.
@@ -23,8 +23,8 @@ struct ResultInfo {
     let metric: Metric
 }
 
-struct JudgeView : View {
-    let COMPETITION = "100m Lauf"
+struct JudgeContestView : View {
+    let COMPETITION : String
     @State private var results: [ResultInfo] = [/*ResultInfo(name: "", metric: Metric())*/]
     // Variables for adding
     @State private var newParticipantName: String = ""
