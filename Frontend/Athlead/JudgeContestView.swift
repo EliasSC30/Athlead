@@ -20,7 +20,9 @@ extension String {
 
 struct JudgeContestView : View {
     let COMPETITION : String
+    // Local results that update the results in the store when leaving
     @State private var results: [ResultInfo] = []
+
     // Variables for adding
     @State private var newParticipantName: String = ""
     @State private var newMetric: Metric = Metric()
@@ -40,8 +42,8 @@ struct JudgeContestView : View {
                     newParticipantName = ""
                     newMetric = Metric()
                 },
-                metric: $newMetric,
                 name: $newParticipantName,
+                metric: $newMetric,
                 isEdit: false)
             .padding()
             
@@ -83,7 +85,7 @@ struct JudgeContestView : View {
                         }
                         .onDelete(perform: delete) // Enable swipe-to-delete functionality
                     }
-                } //List
+                } // List
                 .padding(.top, 5)
                 .foregroundColor(.primary)
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
@@ -138,10 +140,10 @@ struct EditResultView: View {
 
                 ResultEntry(COMPETITION:COMPETITION,
                             onNewResult : onNewResult,
-                            metric : $metricToEdit,
                             name: $nameToEdit,
+                            metric : $metricToEdit,
                             isEdit: true)
-                
+
             }
             .padding(.all, 10)
             .cornerRadius(8)
@@ -151,8 +153,8 @@ struct EditResultView: View {
 struct ResultEntry: View {
     let COMPETITION : String
     var onNewResult : () -> Void
-    @Binding var metric : Metric
     @Binding var name: String
+    @Binding var metric : Metric
     let isEdit: Bool;
 
     var body: some View {
