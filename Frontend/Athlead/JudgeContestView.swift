@@ -18,11 +18,6 @@ extension String {
     }
 }
 
-struct ResultInfo {
-    let name: String
-    let metric: Metric
-}
-
 struct JudgeContestView : View {
     let COMPETITION : String
     @State private var results: [ResultInfo] = []
@@ -37,13 +32,10 @@ struct JudgeContestView : View {
     @State private var editingIndex: Int = 0
     
     var body: some View {
-        print("JudgeContestView recomputed")
-        return
         VStack {
             ResultEntry(
                 COMPETITION: COMPETITION,
                 onNewResult: {
-                    print("Called on new")
                     results.append(ResultInfo(name:newParticipantName, metric:newMetric));
                     newParticipantName = ""
                     newMetric = Metric()
@@ -59,15 +51,15 @@ struct JudgeContestView : View {
                         ForEach(results.indices, id: \.self) { index in
                             HStack {
                                 if(COMPETITION == "100m Lauf") {
-                                    Text("'\(results[index].name)' \(results[index].metric.time, specifier: "%.2f")\(results[index].metric.timeUnit)")
+                                    Text("\(results[index].name) \(results[index].metric.time, specifier: "%.2f")\(results[index].metric.timeUnit)")
                                                                         .padding(.leading)
                                 } else if(COMPETITION == "Weitsprung")
                                 {
-                                    Text("'\(results[index].name)' \(results[index].metric.length, specifier: "%.2f")\(results[index].metric.lengthUnit)")
+                                    Text("\(results[index].name) \(results[index].metric.length, specifier: "%.2f")\(results[index].metric.lengthUnit)")
                                                                         .padding(.leading)
                                 } else if(COMPETITION == "Hochsprung")
                                 {
-                                    Text("'\(results[index].name)' \(results[index].metric.length, specifier: "%.2f")\(results[index].metric.lengthUnit)")
+                                    Text("\(results[index].name) \(results[index].metric.length, specifier: "%.2f")\(results[index].metric.lengthUnit)")
                                                                         .padding(.leading)
                                 } else {
                                     Text("Competition unknown")
@@ -101,22 +93,31 @@ struct JudgeContestView : View {
                 Text("Keine Einträge bisher").bold().padding(.vertical, 10)
                 
             }
+        } // VStack
+        .onDisappear(){
+            // We only write to the store when we leave
+            STORE[COMPETITION] = results
         }
-                .sheet(isPresented: $showEditSheet) {
-                    EditResultView(COMPETITION: COMPETITION,
-                                   nameToEdit: $nameToEdit,
-                                   metricToEdit: $metricToEdit,
-                                   onNewResult: {
-                                        // Save the edited result back to the list
-                                        if !results.isEmpty {
-                                            results[editingIndex] = ResultInfo(name: nameToEdit, metric: metricToEdit)
-                                        }
+        .onAppear(){
+            if(STORE[COMPETITION]) != nil {
+                results = STORE[COMPETITION]!
+            }
+        }
+        .sheet(isPresented: $showEditSheet) {
+            EditResultView(COMPETITION: COMPETITION,
+                           nameToEdit: $nameToEdit,
+                           metricToEdit: $metricToEdit,
+                           onNewResult: {
+                                // Save the edited result back to the list
+                                if !results.isEmpty {
+                                    results[editingIndex] = ResultInfo(name: nameToEdit, metric: metricToEdit)
+                                }
 
-                                        showEditSheet = false
-                                    })
-                }
-                .padding(.top, 10)
+                                showEditSheet = false
+                            })
         }
+        .padding(.top, 10)
+    }
         
 
     // Handle deletion via swipe-to-delete
@@ -155,8 +156,6 @@ struct ResultEntry: View {
     let isEdit: Bool;
 
     var body: some View {
-        print("Result Entry recompute");
-        return
         VStack(spacing: 1) {
             Text("Gebe Daten ein")
                 .font(.title)
@@ -218,10 +217,10 @@ struct FloatInput : View {
     @Binding var value: Float32
     let txtAfterValue: String
     let startingInput: String
-    
+
     @State private var valueInput : String = ""
     @State private var isValid : Bool = false;
-    
+
     var body: some View {
         Text(entryTitle)
         
@@ -230,7 +229,7 @@ struct FloatInput : View {
             .keyboardType(.decimalPad)
             .padding()
             .multilineTextAlignment(.center)
-            .frame(width: 80)
+            .frame(width: 90)
             .foregroundColor(isValid ? .black : .red)
             .onAppear(){ valueInput = startingInput }
             .onChange(of: valueInput) {
