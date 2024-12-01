@@ -177,27 +177,21 @@ struct ResultEntry: View {
                 FloatInput(onNewResult: onNewResult,
                            entryTitle: "Zeit in Sekunden",
                            name: $name,
-                           txtBeforeValue: "ist 100m in",
                            value: $metric.time,
-                           txtAfterValue: "s gelaufen.",
                            startingInput: isEdit ? String(metric.time) : "")
             } else if(COMPETITION == "Weitsprung")
             {
                 FloatInput(onNewResult: onNewResult,
                            entryTitle: "Weite in Meter",
                            name: $name,
-                           txtBeforeValue: "ist",
                            value: $metric.length,
-                           txtAfterValue: "m weit gesprungen.",
                            startingInput: isEdit ? String(metric.length) : "")
             } else if(COMPETITION == "Hochsprung")
             {
                 FloatInput(onNewResult: onNewResult,
                            entryTitle: "Höhe in Meter",
                            name: $name,
-                           txtBeforeValue: "ist",
                            value: $metric.length,
-                           txtAfterValue: "m hoch gesprungen.",
                            startingInput: isEdit ? String(metric.length) : "")
             } else {
                 Text("Unknown competition")
@@ -215,9 +209,7 @@ struct FloatInput : View {
     var onNewResult: () -> Void
     let entryTitle : String
     @Binding var name: String
-    let txtBeforeValue: String
     @Binding var value: Float32
-    let txtAfterValue: String
     let startingInput: String
 
     @State private var valueInput : String = ""
@@ -238,14 +230,7 @@ struct FloatInput : View {
                 isValid = validateInput(input: valueInput);
                 if(isValid) { value = Float(valueInput.replacingOccurrences(of: ",", with: ".")).unsafelyUnwrapped }
             }
-            
 
-        Text(name.isEmpty ? " " :
-                ( "\(name.truncated(to: 12)) \(txtBeforeValue) \(value, specifier: "%.2f") \(txtAfterValue)" ))
-            .font(.subheadline)
-            .padding(.all, 10)
-            .bold()
-            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
         Button(action: {
             if(!name.isEmpty && validateInput(input: valueInput)) {
                 onNewResult();
