@@ -87,19 +87,21 @@ pub async fn details_get_handler(
     }
 }
 
-pub async fn create_details(details : CreateDetails, db : &MySqlPool)
+pub async fn create_details(details : CreateDetails, db : web::Data<AppState>)
     -> impl Responder {
     let new_details_id: Uuid = Uuid::new_v4();
 
+    println!("\n\n{} {}\n\n",details.CONTACTPERSON_ID, details.LOCATION_ID);
+
     let query = sqlx::query(
-        r#"INSERT INTO DETAILS (ID, LOCATION_ID, CONTACTPERSON_ID, NAME, START, END) VALUES (?, ?, ?, ?, ?, ?)"#)
+        "INSERT INTO DETAILS (ID, LOCATION_ID, CONTACTPERSON_ID, NAME, START, END) VALUES (?, ?, ?, ?, ?, ?)")
         .bind(new_details_id.to_string())
         .bind(details.LOCATION_ID.to_string())
         .bind(details.CONTACTPERSON_ID.to_string())
         .bind(details.NAME.clone())
         .bind(details.START)
         .bind(details.END)
-        .execute(db)
+        .execute(&db.db)
         .await.map_err(|e: sqlx::Error| e.to_string());
     if let Err(e) = query {
         if e.contains("foreign key constraint fails") {
@@ -130,7 +132,14 @@ pub async fn create_details(details : CreateDetails, db : &MySqlPool)
 
 #[post("/details")]
 pub async fn details_create_handler(body: web::Json<CreateDetails>, data:web::Data<AppState>) -> impl Responder {
-    create_details(body.into_inner(), &data.db).await
+    println!("Hi from Elias");
+    println!("\n\n{} {}\n\n",body.CONTACTPERSON_ID, body.LOCATION_ID);
+    //let ret = create_details(body.0, data).await;
+    HttpResponse::Created().json(json!({
+        "status": "success",
+        "message": "Details created successfully!",
+        "data": json!({"status" : "Elias"})
+    }))
 }
 
 pub async fn update_details(details_id : String,
