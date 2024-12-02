@@ -13,26 +13,38 @@ struct JudgeOverviewView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 12) {
+                VStack(spacing: 16) {
+                    // Title
                     Text("Wettkämpfe")
-                        .bold()
-                        .font(.title)
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+                        .padding(.top, 20)
+                    
+                    // Competition List
                     ForEach(competitions.indices, id: \.self) { index in
                         NavigationLink(destination: JudgeContestView(COMPETITION: competitions[index])) {
-                            Text(competitions[index])
-                                .bold()
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.white)
-                                .foregroundColor(Color.black)
-                                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(competitions[index])
+                                        .font(.headline)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.gray)
+                                   
+                            }
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(10)
+                            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+                            .padding(.horizontal)
                         }
+                        .padding(.horizontal, 16)
                         .padding(.vertical, 4)
                     }
                 }
                 .padding(.top, 10)
             }
-            .background(Color(UIColor.systemGroupedBackground))
         }
     }
 }

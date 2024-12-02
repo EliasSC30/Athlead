@@ -3,9 +3,9 @@ POST http://localhost:8000/locations
 Content-Type: application/json
 
 {
-  "CITY": "Pfalzplatz",
-  "ZIPCODE": "18769",
-  "STREET": "Kreisel",
-  "STREETNUMBER": "3",
-  "NAME": "Schön"
+  "CITY": "Wiesloch",
+  "ZIPCODE": "69168",
+  "STREET": "Meßplatzstraße",
+  "STREETNUMBER": "15",
+  "NAME": "Die Messis"
 }
