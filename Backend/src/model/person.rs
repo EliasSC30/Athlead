@@ -43,3 +43,9 @@ pub struct CreatePerson {
     pub CONTACTINFO_ID: String,
     pub ROLE: Role
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct UpdatePerson {
+    pub CONTACTINFO_ID: Option<String>,
+    pub ROLE: Option<Role>
+}

@@ -1,0 +1,7 @@
+PATCH http://localhost:8000/contactinfos/a05c3497-ab1c-459f-b430-159c35baedda
+Content-Type: application/json
+
+{
+  "EMAIL": "elias@web.de",
+  "FIRSTNAME" : "Maddie"
+}

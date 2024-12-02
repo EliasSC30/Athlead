@@ -101,12 +101,12 @@ pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, data:we
         }))
     }
 
-    return HttpResponse::Created().json(json!({
+    HttpResponse::Created().json(json!({
         "status": "success",
         "message": "Sportfest created successfully!",
         "data": json!({
             "id": new_sportfest_id.to_string(),
             "details_id": body.DETAILS_ID,
         })
-    }));
+    }))
 }

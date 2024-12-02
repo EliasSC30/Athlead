@@ -18,3 +18,11 @@ pub struct CreateContactInfo {
     pub EMAIL: String,
     pub PHONE: String,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UpdateContactInfo {
+    pub FIRSTNAME: Option<String>,
+    pub LASTNAME: Option<String>,
+    pub EMAIL: Option<String>,
+    pub PHONE: Option<String>,
+}
