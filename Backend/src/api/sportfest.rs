@@ -1,6 +1,6 @@
 use crate::model::sportfest::*;
 use crate::AppState;
-use actix_web::{get, post, web, HttpResponse, Responder};
+use actix_web::{get, post, patch, web, HttpResponse, Responder};
 use serde_json::json;
 use uuid::{Uuid};
 
@@ -109,4 +109,54 @@ pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, data:we
             "details_id": body.DETAILS_ID,
         })
     }))
+}
+
+#[patch("/sportfests/{id}")]
+pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
+                                       data: web::Data<AppState>,
+                                       path: web::Path<String>)
+    -> impl Responder
+{
+    let sportfest_id = path.into_inner();
+
+    let updates_details = body.DETAILS_ID.is_some();
+
+
+    let nr_of_updates : u8 =
+        [updates_details as u8].iter().sum();
+    println!("Updates details: {}", nr_of_updates);
+    if nr_of_updates == 0 { return HttpResponse::BadRequest().json(json!({"status": "Invalid Body Error"})); }
+
+    let mut build_update_query = String::from("SET ");
+
+    if updates_details {
+        build_update_query += format!("DETAILS_ID = '{}', ", body.DETAILS_ID.clone().unwrap()).as_str();
+    }
+
+    // Remove excessive ', '
+    build_update_query.truncate(build_update_query.len().saturating_sub(2));
+
+    let result = format!("UPDATE SPORTFEST {} WHERE ID = '{}'", build_update_query, sportfest_id);
+
+    match sqlx::query(result.as_str()).execute(&data.db).await {
+        Ok(_) => {
+            HttpResponse::Ok().json(
+                json!(
+                                {
+                                    "status": "success",
+                                    "result": json!({
+                                        "ID" : sportfest_id,
+                                        "DETAILS_ID":     if updates_details { body.DETAILS_ID.clone().unwrap() }
+                                                          else { String::from("") },
+                                    }),
+                                }))}
+        Err(e) => {
+            HttpResponse::InternalServerError().json(
+                json!(
+                                {
+                                    "status": "error",
+                                    "message": &e.to_string(),
+                                }))
+        }
+    }
 }

@@ -11,3 +11,8 @@ pub struct Sportfest {
 pub struct CreateSportfest {
     pub DETAILS_ID: String,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UpdateSportfest {
+    pub DETAILS_ID: Option<String>,
+}

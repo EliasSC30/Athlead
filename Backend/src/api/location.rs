@@ -172,15 +172,13 @@ pub async fn locations_update_handler(body: web::Json<UpdateLocation>,
                                         "status": "success",
                                         "result": json!({
                                             "ID" : location_id,
-                                            "LOCATION":     if updates_city { body.CITY.clone().unwrap() }
+                                            "CITY":     if updates_city { body.CITY.clone().unwrap() }
                                                             else { String::from("") },
                                             "ZIPCODE":      if updates_zip { body.ZIPCODE.clone().unwrap() }
                                                             else { String::from("") },
-                                            "STREET":       if updates_name { body.NAME.clone().unwrap() }
+                                            "STREET":       if updates_name { body.STREET.clone().unwrap() }
                                                             else { String::from("") },
-                                            "STREETNUMBER": if updates_street { body.STREET.clone().unwrap().to_string() }
-                                                            else { String::from("") },
-                                            "END":          if updates_street_nr { body.STREETNUMBER.clone().unwrap().to_string() }
+                                            "STREETNUMBER": if updates_street { body.STREETNUMBER.clone().unwrap().to_string() }
                                                             else { String::from("") },
                                             "NAME":         if updates_name { body.NAME.clone().unwrap().to_string() }
                                                             else { String::from("") }

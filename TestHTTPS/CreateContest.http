@@ -1,0 +1,9 @@
+### POST request to create details
+POST http://localhost:8000/contests
+Content-Type: application/json
+
+{
+  "SPORTFEST_ID": "",
+  "DETAILS_ID": "",
+  "CONTESTRESULT_ID": ""
+}

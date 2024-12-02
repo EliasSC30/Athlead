@@ -1,0 +1,7 @@
+PATCH http://localhost:8000/sportfests/dada0bba-3180-459e-9c2b-2118a27d3f6e
+Content-Type: application/json
+
+{
+  "DETAILS_ID" : "563d871d-274b-4f5e-8dee-a21d10b31124"
+}
+

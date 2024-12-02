@@ -5,7 +5,7 @@ Content-Type: application/json
 {
   "LOCATION_ID": "0066fe6c-57de-4485-b90e-b86e5454b30e",
   "CONTACTPERSON_ID": "aae21e69-f8dc-4170-8902-e44a3d674a88",
-  "NAME" : "Detailio",
+  "NAME" : "Detail another one",
   "START": "2021-10-10T00:00:00.000Z",
   "END": "2021-10-10T00:00:00.000Z"
 }
