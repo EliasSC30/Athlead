@@ -13,23 +13,22 @@ struct ContentView: View {
         case Admin
     }
     @State private var isLoggedIn = true // Status für Authentifizierung
-    @State private var role : Role = .Judge // Status für Authentifizierung
+    @State private var role : Role = .Admin // Status für Authentifizierung
 
 
     var body: some View {
         TabView {
-            MainPageView()
-                .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("Hauptseite")
-                }
             if(isLoggedIn) {
-
+                MainPageView()
+                    .tabItem {
+                        Image(systemName: "house.fill")
+                        Text("Hauptseite")
+                    }
                 if (role == .Admin) {
-                    CompetitionsOverviewView()
+                   AdminOverviewView()
                         .tabItem {
-                            Image(systemName: "sportscourt")
-                            Text("Wettkämpfe")
+                            Image(systemName: "person.3.fill")
+                            Text("Administration")
                         }
                 } else if(role == .Judge) {
                     JudgeOverviewView()
@@ -37,13 +36,14 @@ struct ContentView: View {
                             Image(systemName: "sportscourt")
                             Text("Wettkämpfe")
                         }
-                } else if(role == .User) {
-                    CompetitionsOverviewView()
-                       .tabItem {
-                           Image(systemName: "sportscourt")
-                           Text("Wettkämpfe")
-                       }
-               }
+                }
+                YourProfileView()
+                    .tabItem {
+                        Image(systemName: "person.fill")
+                        Text("Profil")
+                    }
+                        
+                        
 
             } else // Is not logged in
             {
