@@ -132,14 +132,7 @@ pub async fn create_details(details : CreateDetails, db : web::Data<AppState>)
 
 #[post("/details")]
 pub async fn details_create_handler(body: web::Json<CreateDetails>, data:web::Data<AppState>) -> impl Responder {
-    println!("Hi from Elias");
-    println!("\n\n{} {}\n\n",body.CONTACTPERSON_ID, body.LOCATION_ID);
-    //let ret = create_details(body.0, data).await;
-    HttpResponse::Created().json(json!({
-        "status": "success",
-        "message": "Details created successfully!",
-        "data": json!({"status" : "Elias"})
-    }))
+    create_details(body.0, data).await
 }
 
 pub async fn update_details(details_id : String,
