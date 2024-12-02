@@ -150,12 +150,13 @@ pub async fn contactinfos_update_handler(body: web::Json<UpdateContactInfo>,
         build_update_query += format!("PHONE = '{}', ", body.PHONE.clone().unwrap()).as_str();
     }
 
+    // Remove excessive ', '
     build_update_query.truncate(build_update_query.len().saturating_sub(2));
 
     let result = format!("UPDATE CONTACTINFO {} WHERE ID = '{}'", build_update_query, ci_id);
 
     match sqlx::query(result.as_str()).execute(&data.db).await {
-        Ok(result) => {
+        Ok(_) => {
                                 HttpResponse::Ok().json(
                                 json!(
                                     {

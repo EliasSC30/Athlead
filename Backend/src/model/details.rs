@@ -21,3 +21,12 @@ pub struct CreateDetails {
     pub START: DateTime<Utc>,
     pub END: DateTime<Utc>
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UpdateDetails {
+    pub LOCATION_ID: Option<String>,
+    pub CONTACTPERSON_ID: Option<String>,
+    pub NAME: Option<String>,
+    pub START: Option<DateTime<Utc>>,
+    pub END: Option<DateTime<Utc>>
+}

@@ -1,6 +1,6 @@
 use crate::model::details::*;
 use crate::AppState;
-use actix_web::{get, post, web, HttpResponse, Responder};
+use actix_web::{get, post, patch, web, HttpResponse, Responder};
 use serde_json::json;
 use uuid::{Uuid};
 
@@ -113,7 +113,7 @@ pub async fn details_create_handler(body: web::Json<CreateDetails>, data:web::Da
         }))
     }
 
-    return HttpResponse::Created().json(json!({
+    HttpResponse::Created().json(json!({
         "status": "success",
         "message": "Details created successfully!",
         "data": json!({
@@ -125,5 +125,82 @@ pub async fn details_create_handler(body: web::Json<CreateDetails>, data:web::Da
             "END": body.END
 
         })
-    }));
+    }))
 }
+
+#[patch("/details/{id}")]
+pub async fn details_update_handler(body: web::Json<UpdateDetails>,
+                                   data:web::Data<AppState>,
+                                   path: web::Path<String>)
+    -> impl Responder {
+    let details_id = path.into_inner();
+
+    let updates_location = body.LOCATION_ID.is_some();
+    let updates_cp = body.CONTACTPERSON_ID.is_some();
+    let updates_name = body.NAME.is_some();
+    let updates_start = body.START.is_some();
+    let updates_end = body.END.is_some();
+
+
+    let nr_of_updates : u8 =
+        [updates_location as u8, updates_cp as u8, updates_name as u8, updates_start as u8, updates_end as u8].iter().sum();
+    if nr_of_updates == 0 { return HttpResponse::BadRequest().json(json!({"status": "Invalid Body Error"})); }
+
+    let mut build_update_query = String::from("SET ");
+
+    if updates_location {
+        build_update_query += format!("LOCATION_ID = '{}', ", body.LOCATION_ID.clone().unwrap()).as_str();
+    }
+    if updates_cp {
+        build_update_query += format!("CONTACTPERSON_ID = '{}', ", body.CONTACTPERSON_ID.clone().unwrap()).as_str();
+    }
+    if updates_name {
+        build_update_query += format!("NAME = '{}', ", body.NAME.clone().unwrap()).as_str()
+    }
+    if updates_start {
+        let mut valid_str = body.START.clone().unwrap().to_string();
+        valid_str.truncate(valid_str.len().saturating_sub(4)); // Remove " UTC"
+        build_update_query += format!("START = '{}', ", valid_str.as_str()).as_str();
+    }
+    if updates_end {
+        let mut valid_str = body.END.clone().unwrap().to_string();
+        valid_str.truncate(valid_str.len().saturating_sub(4)); // Remove " UTC"
+        build_update_query += format!("END = '{}', ", valid_str.as_str()).as_str();
+    }
+
+    // Remove excessive ', '
+    build_update_query.truncate(build_update_query.len().saturating_sub(2));
+
+    let result = format!("UPDATE DETAILS {} WHERE ID = '{}'", build_update_query, details_id);
+
+    match sqlx::query(result.as_str()).execute(&data.db).await {
+        Ok(_) => {
+            HttpResponse::Ok().json(
+                json!(
+                                    {
+                                        "status": "success",
+                                        "result": json!({
+                                            "ID" : details_id,
+                                            "LOCATION":         if updates_location { body.LOCATION_ID.clone().unwrap() }
+                                                                else { String::from("") },
+                                            "CONTACTPERSON_ID": if updates_cp { body.CONTACTPERSON_ID.clone().unwrap() }
+                                                                else { String::from("") },
+                                            "NAME":             if updates_name { body.NAME.clone().unwrap() }
+                                                                else { String::from("") },
+                                            "START":            if updates_start { body.START.clone().unwrap().to_string() }
+                                                                else { String::from("") },
+                                            "END":              if updates_end { body.END.clone().unwrap().to_string() }
+                                                                else { String::from("") }
+                                        }),
+                                    }))}
+        Err(e) => {
+            HttpResponse::InternalServerError().json(
+                json!(
+                                {
+                                    "status": "error",
+                                    "message": &e.to_string(),
+                                }))
+        }
+    }
+}
+

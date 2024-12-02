@@ -1,8 +1,9 @@
 use crate::model::location::*;
 use crate::AppState;
-use actix_web::{get, post, web, HttpResponse, Responder};
+use actix_web::{get, post, patch, web, HttpResponse, Responder};
 use serde_json::json;
 use uuid::{uuid, Uuid};
+use crate::model::details::UpdateDetails;
 
 #[get("/locations")]
 pub async fn locations_list_handler(data: web::Data<AppState>) -> impl Responder {
@@ -108,7 +109,7 @@ pub async fn locations_create_handler(body: web::Json<CreateLocation>, data:web:
     }
 
 
-    return HttpResponse::Created().json(json!({
+    HttpResponse::Created().json(json!({
         "status": "success",
         "message": "Location created successfully!",
         "data": json!({
@@ -119,5 +120,79 @@ pub async fn locations_create_handler(body: web::Json<CreateLocation>, data:web:
             "STREETNUMBER": body.STREETNUMBER,
             "NAME": body.NAME
         })
-    }));
+    }))
+}
+
+#[patch("/locations/{id}")]
+pub async fn locations_update_handler(body: web::Json<UpdateLocation>,
+                                      data:web::Data<AppState>,
+                                      path: web::Path<String>)
+                                      -> impl Responder {
+    let location_id = path.into_inner();
+
+    let updates_city = body.CITY.is_some();
+    let updates_zip = body.ZIPCODE.is_some();
+    let updates_street = body.STREET.is_some();
+    let updates_street_nr = body.STREETNUMBER.is_some();
+    let updates_name = body.NAME.is_some();
+
+
+    let nr_of_updates : u8 =
+        [updates_city as u8, updates_zip as u8, updates_street as u8, updates_street_nr as u8, updates_name as u8].iter().sum();
+    if nr_of_updates == 0 { return HttpResponse::BadRequest().json(json!({"status": "Invalid Body Error"})); }
+
+    let mut build_update_query = String::from("SET ");
+
+    if updates_city {
+        build_update_query += format!("CITY = '{}', ", body.CITY.clone().unwrap()).as_str();
+    }
+    if updates_zip {
+        build_update_query += format!("ZIPCODE = '{}', ", body.ZIPCODE.clone().unwrap()).as_str();
+    }
+    if updates_street {
+        build_update_query += format!("STREET = '{}', ", body.STREET.clone().unwrap()).as_str();
+    }
+    if updates_street_nr {
+        build_update_query += format!("STREETNUMBER = '{}', ", body.STREETNUMBER.clone().unwrap()).as_str();
+    }
+    if updates_name {
+        build_update_query += format!("NAME = '{}', ", body.NAME.clone().unwrap()).as_str()
+    }
+
+    // Remove excessive ', '
+    build_update_query.truncate(build_update_query.len().saturating_sub(2));
+
+    let result = format!("UPDATE LOCATION {} WHERE ID = '{}'", build_update_query, location_id);
+
+    match sqlx::query(result.as_str()).execute(&data.db).await {
+        Ok(_) => {
+            HttpResponse::Ok().json(
+                json!(
+                                    {
+                                        "status": "success",
+                                        "result": json!({
+                                            "ID" : location_id,
+                                            "LOCATION":     if updates_city { body.CITY.clone().unwrap() }
+                                                            else { String::from("") },
+                                            "ZIPCODE":      if updates_zip { body.ZIPCODE.clone().unwrap() }
+                                                            else { String::from("") },
+                                            "STREET":       if updates_name { body.NAME.clone().unwrap() }
+                                                            else { String::from("") },
+                                            "STREETNUMBER": if updates_street { body.STREET.clone().unwrap().to_string() }
+                                                            else { String::from("") },
+                                            "END":          if updates_street_nr { body.STREETNUMBER.clone().unwrap().to_string() }
+                                                            else { String::from("") },
+                                            "NAME":         if updates_name { body.NAME.clone().unwrap().to_string() }
+                                                            else { String::from("") }
+                                        }),
+                                    }))}
+        Err(e) => {
+            HttpResponse::InternalServerError().json(
+                json!(
+                                {
+                                    "status": "error",
+                                    "message": &e.to_string(),
+                                }))
+        }
+    }
 }

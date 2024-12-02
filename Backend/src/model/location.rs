@@ -19,3 +19,12 @@ pub struct CreateLocation {
     pub STREETNUMBER: String,
     pub NAME: Option<String>,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UpdateLocation {
+    pub CITY: Option<String>,
+    pub ZIPCODE: Option<String>,
+    pub STREET: Option<String>,
+    pub STREETNUMBER: Option<String>,
+    pub NAME: Option<String>,
+}
