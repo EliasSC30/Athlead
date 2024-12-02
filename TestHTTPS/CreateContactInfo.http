@@ -3,8 +3,8 @@ POST http://localhost:8000/contactinfos
 Content-Type: application/json
 
 {
-  "FIRSTNAME": "John",
-  "LASTNAME": "Doe",
+  "FIRSTNAME": "Elias",
+  "LASTNAME": "AdminG",
   "EMAIL": "john.doe@web.de",
   "PHONE": "123456789"
 }

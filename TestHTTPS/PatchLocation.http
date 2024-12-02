@@ -1,5 +1,10 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=RustRover
+PATCH http://localhost:8000/locations/8b736243-a456-460e-8bb2-07817c96e68e
+Content-Type: application/json
 
-###
+{
+  "NAME": "Elias yo",
+  "CITY": "Dubai",
+  "ZIPCODE": "69187",
+  "STREET": "Scheune",
+  "STREETNUMBER": "23"
+}

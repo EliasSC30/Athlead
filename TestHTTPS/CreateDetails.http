@@ -3,8 +3,9 @@ POST http://localhost:8000/details
 Content-Type: application/json
 
 {
-  "LOCATION_ID": "14a0be5c-fd25-4400-9dc9-2d3aba3f5353",
-  "CONTACTPERSON_ID": "3300ff3a-a3ed-4a33-9d01-6c1db42dbdc0",
+  "LOCATION_ID": "0066fe6c-57de-4485-b90e-b86e5454b30e",
+  "CONTACTPERSON_ID": "aae21e69-f8dc-4170-8902-e44a3d674a88",
+  "NAME" : "Detailio",
   "START": "2021-10-10T00:00:00.000Z",
   "END": "2021-10-10T00:00:00.000Z"
 }

@@ -1,5 +1,10 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=RustRover
+PATCH http://localhost:8000/details/adc28411-aad5-48cd-9e51-320ba7812090
+Content-Type: application/json
 
-###
+{
+  "NAME": "Elias yo",
+  "START": "2024-10-10T20:00:00.000Z",
+  "END": "2024-10-11T22:00:00.000Z",
+  "CONTACTPERSON_ID": "06c7758b-aa6b-4578-a088-42b4f925019d",
+  "LOCATION_ID": "8b736243-a456-460e-8bb2-07817c96e68e"
+}
