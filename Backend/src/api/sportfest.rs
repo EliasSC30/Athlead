@@ -1,8 +1,13 @@
 use crate::model::sportfest::*;
-use crate::AppState;
+use crate::{model, AppState};
 use actix_web::{get, post, patch, web, HttpResponse, Responder};
 use serde_json::json;
+use sqlx::mysql::MySqlQueryResult;
 use uuid::{Uuid};
+use crate::api::details;
+use crate::api::details::create_details;
+use crate::model::contest::CreateContest;
+use crate::model::details::{CreateDetails, UpdateDetails};
 
 #[get("/sportfests")]
 pub async fn sportfests_list_handler(data: web::Data<AppState>) -> impl Responder {
@@ -159,4 +164,56 @@ pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
                                 }))
         }
     }
+}
+
+#[post("/sportfests/{id}/contests")]
+pub async fn contest_create_handler(body: web::Json<model::contest::CreateContestForFest>,
+                                    data: web::Data<AppState>,
+                                    path :web::Path<String>
+) -> impl Responder {
+    let sf_id = path.into_inner();
+
+    let query = sqlx::query_as!(
+        Sportfest,
+        "SELECT * FROM SPORTFEST WHERE ID = ?",
+        sf_id)
+        .fetch_one(&data.db)
+        .await;
+
+    if let Err(e) = query {
+        return HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": "Failed to create contest with error: ".to_owned() + &e.to_string(),
+        }))
+    }
+
+    let detail_values = CreateDetails::from(body.LOCATION_ID.clone(),
+                                                                body.CONTACTPERSON_ID.clone(),
+                                                                body.NAME.clone(),
+                                                                body.START.clone(),
+                                                                body.END.clone());
+    /*
+    match create_details(detail_values, &data.db) {
+        Ok(_) => {
+
+        },
+        Err(e) => {return HttpResponse::InternalServerError().json(json!(
+            {
+                "status": "error",
+                "message": "Failed to create contest with error: ".to_owned() + &e.to_string(),
+            }
+        ))}
+    };
+
+*/
+    HttpResponse::Created().json(json!({
+        "status": "success",
+        "message": "ContactInfo created successfully!",
+        "data": json!({
+            "ID": "contest_id.to_string()",
+            "SPORTFEST_ID": "body.SPORTFEST_ID",
+            "DETAILS_ID": "body.DETAILS_ID",
+            "CONTESTRESULT_ID": body.CONTESTRESULT_ID,
+        })
+    }))
 }

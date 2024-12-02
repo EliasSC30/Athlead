@@ -1,4 +1,6 @@
+use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
+use crate::model;
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
@@ -15,6 +17,20 @@ pub struct CreateContest {
     pub SPORTFEST_ID: String,
     pub DETAILS_ID: String,
     pub CONTESTRESULT_ID: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
+pub struct CreateContestForFest {
+    //Details fields
+    pub ID: String,
+    pub LOCATION_ID: String,
+    pub CONTACTPERSON_ID: String,
+    pub NAME: Option<String>,
+    pub START: NaiveDateTime,
+    pub END: NaiveDateTime,
+    // End of details fields
+    pub CONTESTRESULT_ID: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]

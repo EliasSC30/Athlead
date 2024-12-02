@@ -10,7 +10,7 @@ use uuid::{Uuid};
 pub async fn contactinfos_list_handler(data: web::Data<AppState>) -> impl Responder {
     let result = sqlx::query_as!(
         ContactInfo,
-        r#"SELECT * FROM CONTACTINFO"#
+        "SELECT * FROM CONTACTINFO"
     )
         .fetch_all(&data.db)
         .await;

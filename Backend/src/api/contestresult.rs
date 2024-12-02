@@ -1,5 +1,6 @@
 use crate::model::contestresult::*;
-use crate::AppState;
+use crate::model::contest::*;
+use crate::{model, AppState};
 use actix_web::{get, post, patch, web, HttpResponse, Responder};
 use env_logger::builder;
 use serde::{Deserialize, Serialize};
@@ -8,7 +9,7 @@ use uuid::{Uuid};
 
 #[get("/contests")]
 pub async fn contests_get_handler(data: web::Data<AppState>) -> impl Responder {
-    let result = sqlx::query_as!(ContestResult, "SELECT * FROM CONTESTRESULT")
+    let result = sqlx::query_as!(Contest, "SELECT * FROM CONTEST")
         .fetch_all(&data.db)
         .await;
 
