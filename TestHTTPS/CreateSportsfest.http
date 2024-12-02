@@ -3,5 +3,5 @@ POST http://localhost:8000/sportfests
 Content-Type: application/json
 
 {
-  "DETAILS_ID": "adc28411-aad5-48cd-9e51-320ba7812090"
+  "DETAILS_ID": "a86581c5-8ccd-4eb7-a75e-85b7d6d39729"
 }
