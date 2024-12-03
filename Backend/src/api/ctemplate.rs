@@ -44,25 +44,28 @@ pub async fn create_contest(contest: CreateCTemplate, data: &web::Data<AppState>
     let template_id: Uuid = Uuid::new_v4();
 
     sqlx::query(
-        "INSERT INTO CONTEST (ID, SPORTFEST_ID, DETAILS_ID, CONTESTRESULT_ID) VALUES (?, ?, ?, ?)")
+        "INSERT INTO C_TEMPLATE (ID, NAME, DESCRIPTION, GRADERANGE, EVALUATION, UNIT) VALUES (?, ?, ?, ?, ?, ?)")
         .bind(template_id.to_string())
         .bind(contest.NAME.clone())
-        .bind(contest.DESCRIPTION.clone())
-        .bind(contest.GRADERANGE.clone())
+        .bind(contest.DESCRIPTION.as_ref().clone().or(Some(&"".to_string())))
+        .bind(contest.GRADERANGE.as_ref().clone().or(Some(&"".to_string())))
+        .bind(contest.EVALUATION.clone())
         .bind(contest.UNIT.clone())
         .execute(&data.db)
         .await.map_err(|e: sqlx::Error| e.to_string())
 }
 
-#[post("/ctemplate")]
-pub async fn ctemplate_create_handler(body: web::Json<CreateCTemplate>, data:web::Data<AppState>) -> impl Responder {
+#[post("/ctemplates")]
+pub async fn create_ctemplate_handler(body: web::Json<CreateCTemplate>, data:web::Data<AppState>) -> impl Responder {
     let query = create_contest(body.0, &data).await;
     match query {
         Ok(result) => {
             HttpResponse::Created().json(json!({
                 "status": "success",
                 "message": "ContactInfo created successfully!",
-                "data": ""
+                "data": json!({
+                            "ID" : ""
+                        })
                 }))
         },
         Err(e) => { HttpResponse::InternalServerError().json(json!({

@@ -1,0 +1,10 @@
+POST http://localhost:8000/ctemplates
+Content-Type: application/json
+
+{
+  "NAME": "",
+  "DESCRIPTION": "value.DESCRIPTION",
+  "GRADERANGE":" value.GRADERANGE",
+  "EVALUATION": "value.EVALUATION",
+  "UNIT": "value.UNIT"
+}

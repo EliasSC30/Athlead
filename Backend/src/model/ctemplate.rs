@@ -16,9 +16,9 @@ pub struct CTemplate {
 #[allow(non_snake_case)]
 pub struct CreateCTemplate {
     pub NAME: String,
-    pub DESCRIPTION: String,
+    pub DESCRIPTION: Option<String>,
     pub GRADERANGE: Option<String>,
-    pub EVALUATION: Option<String>,
+    pub EVALUATION: String,
     pub UNIT: String
 }
 
