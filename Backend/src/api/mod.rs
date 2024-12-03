@@ -8,3 +8,4 @@ mod person;
 mod contest;
 mod contestresult;
 mod metric;
+mod ctemplate;

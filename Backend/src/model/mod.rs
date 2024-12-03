@@ -6,3 +6,4 @@ pub(crate) mod sportfest;
 pub(crate) mod metric;
 pub(crate) mod contestresult;
 pub(crate) mod contest;
+pub(crate) mod ctemplate;

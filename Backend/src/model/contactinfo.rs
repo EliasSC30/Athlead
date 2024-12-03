@@ -9,6 +9,8 @@ pub struct ContactInfo {
     pub LASTNAME: String,
     pub EMAIL: String,
     pub PHONE: String,
+    pub GRADE: Option<String>,
+    pub BIRTH_YEAR: Option<String>
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -17,6 +19,8 @@ pub struct CreateContactInfo {
     pub LASTNAME: String,
     pub EMAIL: String,
     pub PHONE: String,
+    pub GRADE: Option<String>,
+    pub BIRTH_YEAR: Option<String>
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -25,4 +29,6 @@ pub struct UpdateContactInfo {
     pub LASTNAME: Option<String>,
     pub EMAIL: Option<String>,
     pub PHONE: Option<String>,
+    pub GRADE: Option<String>,
+    pub BIRTH_YEAR: Option<String>
 }
