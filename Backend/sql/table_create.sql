@@ -67,7 +67,7 @@ CREATE TABLE METRIC(
 CREATE TABLE C_TEMPLATE(
     ID varchar(36) PRIMARY KEY,
     NAME varchar(255) NOT NULL,
-    DESC varchar(255),
+    DESCRIPTION varchar(255),
     GRADERANGE varchar(255),
     EVALUATION varchar(255) NOT NULL,
     UNIT varchar(255) NOT NULL
