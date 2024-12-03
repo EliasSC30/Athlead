@@ -2,6 +2,9 @@ POST http://localhost:8000/ctemplates
 Content-Type: application/json
 
 {
-  CONTACTPERSON_ID: "76f7f06c-a011-422b-8176-de3f2085076b",
-  DETAILS_ID: "a86581c5-8ccd-4eb7-a75e-85b7d6d39729"
+  "NAME": "contest.NAME.clone()",
+  "DESCRIPTION": "contest.DESCRIPTION.clone()",
+  "GRADERANGE":" contest.GRADERANGE.clone()",
+  "EVALUATION": "contest.EVALUATION.clone()",
+  "UNIT": "contest.UNIT.clone()"
 }

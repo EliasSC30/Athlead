@@ -74,32 +74,41 @@ pub async fn ctemplates_get_by_id_handler(data: web::Data<AppState>, path: web::
     }
 }
 
-pub async fn create_contest(contest: CreateCTemplate, data: &web::Data<AppState>) -> Result<MySqlQueryResult, String> {
-    let template_id: Uuid = Uuid::new_v4();
+pub async fn create_contest(contest: &CreateCTemplate, data: &web::Data<AppState>) -> Result<CTemplate, String> {
+    let template_id = Uuid::new_v4();
 
-    sqlx::query(
+    match sqlx::query(
         "INSERT INTO C_TEMPLATE (ID, NAME, DESCRIPTION, GRADERANGE, EVALUATION, UNIT) VALUES (?, ?, ?, ?, ?, ?)")
-        .bind(template_id.to_string())
+        .bind(template_id.clone().to_string())
         .bind(contest.NAME.clone())
         .bind(contest.DESCRIPTION.as_ref().clone().or(Some(&"".to_string())))
         .bind(contest.GRADERANGE.as_ref().clone().or(Some(&"".to_string())))
         .bind(contest.EVALUATION.clone())
         .bind(contest.UNIT.clone())
         .execute(&data.db)
-        .await.map_err(|e: sqlx::Error| e.to_string())
+        .await.map_err(|e: sqlx::Error| e.to_string()) {
+        Ok(_) => Ok(
+                CTemplate {
+                ID: template_id.to_string(),
+                NAME: contest.NAME.clone(),
+                DESCRIPTION: contest.DESCRIPTION.clone(),
+                GRADERANGE: contest.GRADERANGE.clone(),
+                EVALUATION: contest.EVALUATION.clone(),
+                UNIT: contest.UNIT.clone()
+        }),
+        Err(e) => Err(e.to_string())
+    }
 }
 
 #[post("/ctemplates")]
 pub async fn create_ctemplate_handler(body: web::Json<CreateCTemplate>, data:web::Data<AppState>) -> impl Responder {
-    let query = create_contest(body.0, &data).await;
+    let query = create_contest(&body.0, &data).await;
     match query {
         Ok(result) => {
             HttpResponse::Created().json(json!({
                 "status": "success",
                 "message": "ContactInfo created successfully!",
-                "data": json!({
-                            "ID" : ""
-                        })
+                "data": serde_json::to_value(result).unwrap()
                 }))
         },
         Err(e) => { HttpResponse::InternalServerError().json(json!({
