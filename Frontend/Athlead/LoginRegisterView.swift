@@ -52,38 +52,6 @@ struct LoginRegisterView: View {
     }
 
     func authenticateUser() {
-        // Simulierte Anfrage an Backend
-        guard let url = URL(string: "http://localhost:8080/isLoggedIn") else { return }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let credentials = ["email": email, "password": password]
-
-        do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: credentials)
-        } catch {
-            print("Invalid JSON")
-            return
-        }
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {
-                print("Network error: \(error?.localizedDescription ?? "Unknown error")")
-                return
-            }
-
-            if let response = try? JSONDecoder().decode(LoginResponse.self, from: data) {
-                DispatchQueue.main.async {
-                    self.isLoggedIn = response.isLoggedIn
-                }
-            } else {
-                print("Invalid response")
-            }
-        }.resume()
     }
-}
-
-struct LoginResponse: Codable {
-    let isLoggedIn: Bool
 }

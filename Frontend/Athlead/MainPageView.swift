@@ -20,7 +20,6 @@ struct MainPageView: View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    // Nächste Wettkämpfe
                     Section(header: Text("Nächste Wettkämpfe")
                                 .font(.title2)
                                 .fontWeight(.semibold)
@@ -42,7 +41,6 @@ struct MainPageView: View {
                         
                         }
                     }
-                    // Past Weetkämpfe
                     Section(header: Text("Vergangene Wettkämpfe")
                                 .font(.title2)
                                 .fontWeight(.semibold)
@@ -64,32 +62,6 @@ struct MainPageView: View {
                         
                         }
                     }
-
-                    // Beste Sportart
-                   /* Section(header: Text("Deine beste Sportart")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                                .padding(.horizontal)) {
-                        NavigationLink(destination: BestSportDetailView(sportName: "Weitwurf", score: "85 Meter")) {
-                            BestSportCard(sportName: "Weitwurf", score: "85 Meter")
-                        }
-                    }
-
-                    // Auszeichnungen
-                    Section(header: Text("Auszeichnungen")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                                .padding(.horizontal)) {
-                        NavigationLink(destination: AwardDetailView(awardName: "Goldmedaille - Sprint", year: 2024, medalType: .gold)) {
-                            AwardCard(awardName: "Goldmedaille - Sprint", year: 2024, medalType: .gold)
-                        }
-                        NavigationLink(destination: AwardDetailView(awardName: "Silbermedaille - Weitsprung", year: 2023, medalType: .silver)) {
-                            AwardCard(awardName: "Silbermedaille - Weitsprung", year: 2023, medalType: .silver)
-                        }
-                        NavigationLink(destination: AwardDetailView(awardName: "Bronzemedaille - Hochsprung", year: 2022, medalType: .bronze)) {
-                            AwardCard(awardName: "Bronzemedaille - Hochsprung", year: 2022, medalType: .bronze)
-                        }
-                    } */
                 }
                 .padding(.vertical)
             }
@@ -111,7 +83,7 @@ struct MainPageView: View {
                 return
             }
             
-            guard let data = data, let sportFestsResponse = try? JSONDecoder().decode(SportFestResponse.self, from: data) else {
+            guard let data = data, let sportFestsResponse = try? JSONDecoder().decode(SportFestsResponse.self, from: data) else {
                 print("Failed to decode sportfests")
                 return
             }
@@ -168,44 +140,6 @@ struct MainPageView: View {
         }.resume()
         
     
-    }
-    
-    struct SportFestDisplay: Identifiable, Hashable {
-        let ID: String
-        let DETAILS_ID: String
-        let CONTACTPERSON_ID: String
-        let NAME: String
-        let LOCATION_ID: String
-        let START: Date
-        let END: Date
-        
-        var id: String { return self.ID }
-    }
-    
-    struct SportFestResponse: Decodable {
-        let data: [SportFest]
-        let results: Int
-        let status: String
-    }
-    
-    struct SportFest: Identifiable, Decodable {
-        let id: String
-        let details_id: String
-    }
-    
-    struct DetailsResponse: Decodable {
-        let data: Detail
-        let status: String
-    }
-    struct Detail: Identifiable, Decodable {
-        let ID: String
-        let CONTACTPERSON_ID: String
-        let NAME: String
-        let LOCATION_ID: String
-        let START: String
-        let END: String
-        
-        var id: String { return self.ID }
     }
 }
 

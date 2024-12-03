@@ -26,10 +26,12 @@ struct EventDetailView: View {
     let contests: [Contest] = []
     
     private let apiURL = "http://localhost:8000";
-
+    
     
     @State private var eventStore = EKEventStore()
     @State private var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194), span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))
+    
+    @State private var showAddEventPopover = false
     
     var body: some View {
         ScrollView {
@@ -39,7 +41,7 @@ struct EventDetailView: View {
                 Text(name)
                     .font(.system(.largeTitle, design: .rounded))
                     .fontWeight(.bold)
-                    .padding(.top, 20)
+                    .padding(.top, 10)
                     .accessibilityAddTraits(.isHeader)
                 
                 // Event Duration
@@ -51,8 +53,9 @@ struct EventDetailView: View {
                 // Map View
                 Map
                 {
-                    Marker("Location", coordinate: region.center)
+                    Marker(name, coordinate: region.center)
                 }
+                
                 .frame(height: 200)
                 .cornerRadius(12)
                 .overlay(
@@ -64,63 +67,72 @@ struct EventDetailView: View {
                 .padding(.horizontal)
                 
                 // Contests Section
-                if !contests.isEmpty {
-                    VStack(alignment: .leading, spacing: 15) {
-                        Text("Contests")
-                            .font(.headline)
-                            .padding(.horizontal)
-                        
+                
+                Section(header: Text("Contests")) {
+                    if contests.isEmpty {
+                        VStack {
+                            Text("No contests available")
+                                .font(.callout)
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
                         ForEach(contests) { contest in
-                            HStack {
-                                Image(systemName: "flag.fill")
-                                    .foregroundColor(.blue)
-                                Text(contest.detailsID)
-                                    .font(.body)
+                            NavigationLink(destination: ContestDetailView()) {
+                                HStack {
+                                    Image(systemName: "flag.fill")
+                                        .foregroundColor(.blue)
+                                    Text(contest.detailsID)
+                                        .font(.body)
+                                        .foregroundColor(.secondary)
+                                        .padding(.horizontal)
+                                        .padding(.vertical, 10)
+                                }
                             }
-                            .padding()
-                            .background(Color(UIColor.systemGray6))
-                            .cornerRadius(8)
-                            .padding(.horizontal)
                         }
                     }
-                } else {
-                    Text("No contests available")
-                        .font(.callout)
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal)
+                    
                 }
+                .padding(.vertical, 10)
                 
-                // Add to Calendar Button
-                Button(action: addEventToCalendar) {
-                    Label("Add to Calendar", systemImage: "calendar.badge.plus")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.accentColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                }
-                .padding(.horizontal)
                 
-                // Contact Person Button
-                Button(action: contactPerson) {
-                    Label("Contact \(contactPersonID)", systemImage: "phone.fill")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+                Section(header: Text("Details")) {
+                    // Add to Calendar Button
+                    Button(action: addEventToCalendar) {
+                        Label("Add to Calendar", systemImage: "calendar.badge.plus")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.accentColor)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+                    }
+                    .padding(.horizontal)
+                    .popover(isPresented: $showAddEventPopover) {
+                        VStack {
+                            Text("Event added to calendar")
+                                .font(.headline)
+                        }
+                    }
+                    
+                    // Contact Person Button
+                    Button(action: contactPerson) {
+                        Label("Contact \(contactPersonID)", systemImage: "phone.fill")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.green)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+                    }
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
+                .padding(.top)
             }
-            .padding(.top)
+            .padding(.top, 20)
+            .padding(.horizontal)
         }
-        .background(Color(UIColor.systemGroupedBackground))
-        .navigationTitle("Event Details")
-        .navigationBarTitleDisplayMode(.inline)
     }
     
     func formattedDate(_ date: Date) -> String {
@@ -166,18 +178,19 @@ struct EventDetailView: View {
                 }
                 
                 let coordinate = placemark.location?.coordinate
-                region = MKCoordinateRegion(center: coordinate!, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))
+                region = MKCoordinateRegion(center: coordinate!, span: MKCoordinateSpan(latitudeDelta: 0.00, longitudeDelta: 0.00))
             }
             
-    
+            
             
         }.resume()
-        //region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 48.8566, longitude: 2.3522), span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))
     }
     
     func addEventToCalendar() {
-        eventStore.requestWriteOnlyAccessToEvents(completion: { granted, error in
-            if granted {
+        
+        
+        eventStore.requestWriteOnlyAccessToEvents() { (granted, error) in
+            if granted && error == nil {
                 let event = EKEvent(eventStore: eventStore)
                 event.title = name
                 event.startDate = start
@@ -185,34 +198,22 @@ struct EventDetailView: View {
                 event.calendar = eventStore.defaultCalendarForNewEvents
                 do {
                     try eventStore.save(event, span: .thisEvent)
+                    showAddEventPopover = true
+                    
                 } catch {
                     print("Error saving event: \(error.localizedDescription)")
+                    showAddEventPopover = false
                 }
             } else {
+                showAddEventPopover = false
                 print("Access denied to write events")
             }
-        });
+        }
     }
     
     func contactPerson() {
         // Simulate contacting the person
         print("Contacting \(contactPersonID)")
-    }
-    
-    struct Location: Identifiable, Hashable, Decodable {
-        let ID: String
-        let NAME: String
-        let CITY: String
-        let STREET: String
-        let STREETNUMBER: String
-        let ZIPCODE: String
-        
-        var id: String { return self.ID }
-    }
-
-    struct LocationResponse: Decodable {
-        let data: Location
-        let status: String
     }
 }
 

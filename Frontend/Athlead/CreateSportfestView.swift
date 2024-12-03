@@ -116,7 +116,7 @@ struct CreateSportfestView: View {
             }
             
             do {
-                let locationresponse = try JSONDecoder().decode(LocationResponse.self, from: data)
+                let locationresponse = try JSONDecoder().decode(LocationsResponse.self, from: data)
                 DispatchQueue.main.async {
                     self.locations = locationresponse.data
                     self.selectedLocation = self.locations.first
@@ -145,7 +145,7 @@ struct CreateSportfestView: View {
             }
             
             do {
-                let personResponse = try JSONDecoder().decode(PersonResponse.self, from: data)
+                let personResponse = try JSONDecoder().decode(PersonsResponse.self, from: data)
                 let persons = personResponse.data
                 
                 let dispatchGroup = DispatchGroup()
@@ -224,8 +224,8 @@ struct CreateSportfestView: View {
             NAME: sportfestName,
             LOCATION_ID: selectedLocation.ID,
             CONTACTPERSON_ID: selectedContact,
-            START: startDate.ISO8601Format(),
-            END: endDate.ISO8601Format()
+            START: String(startDate.ISO8601Format().dropLast()),
+            END: String(endDate.ISO8601Format().dropLast())
         )
         
         
@@ -241,6 +241,9 @@ struct CreateSportfestView: View {
         }
         
         
+        let str = String(data: detailsRequest.httpBody!, encoding: .utf8)
+        print("Details Request: \(str!)")
+        
         
         URLSession.shared.dataTask(with: detailsRequest) { data, response, error in
             if let error = error {
@@ -249,6 +252,10 @@ struct CreateSportfestView: View {
                     self.isSubmitting = false
                 }
                 return
+            }
+            
+            if let str = String(data: data!, encoding: .utf8) {
+                print("Details Response: \(str)")
             }
             
             guard let data = data, let detailsResponse = try? JSONDecoder().decode(SportfestDetailsResponse.self, from: data) else {
@@ -284,7 +291,7 @@ struct CreateSportfestView: View {
                 
                 DispatchQueue.main.async {
                     
-                    guard let data = data, let sportfestResponse = try? JSONDecoder().decode(SportFestRepsonse.self, from: data) else {
+                    guard let data = data, let sportfestResponse = try? JSONDecoder().decode(SportFestResponse.self, from: data) else {
                         self.errorMessage = "Failed to create sportfest. Please try again."
                         return
                     }
@@ -295,93 +302,6 @@ struct CreateSportfestView: View {
             }.resume()
             
         }.resume()
-    }
-    
-    struct SportfestDetailsResponse: Decodable {
-        let data: SportfestDetails
-        let message: String
-        let status: String
-    }
-
-    // Mock Data Structures
-    struct Location: Identifiable, Hashable, Decodable {
-        let ID: String
-        let NAME: String
-        let CITY: String
-        let STREET: String
-        let STREETNUMBER: String
-        let ZIPCODE: String
-        
-        var id: String { return self.ID }
-    }
-
-    struct LocationResponse: Decodable {
-        let data: [Location]
-        let results: Int
-        let status: String
-    }
-
-    struct PersonResponse: Decodable {
-        let data: [Person]
-        let results: Int
-        let status: String
-    }
-
-    struct Person: Identifiable, Hashable, Decodable {
-        let ID : String
-        let CONTACTINFO_ID : String
-        let ROLE: String
-        
-        var id: String { return self.ID }
-    }
-    struct Contact: Identifiable, Hashable,Decodable {
-        let ID: String
-        let FIRSTNAME: String
-        let LASTNAME: String
-        let EMAIL: String
-        let PHONE: String
-        let BIRTH_YEAR: String?
-        let GRADE: String?
-        var PERSON_ID: String?
-        
-        var id: String { return self.ID }
-    }
-    struct ContactInfoResponse: Decodable {
-        let data: Contact
-        let status: String
-    }
-
-    struct SportfestDetails: Identifiable, Decodable {
-        let ID: String
-        let NAME: String
-        let LOCATION_ID: String
-        let CONTACTPERSON_ID: String
-        let START: String
-        let END: String
-        
-        var id: String { return self.ID }
-    }
-
-    struct SportfestDetailsCreate: Encodable {
-        let NAME: String
-        let LOCATION_ID: String
-        let CONTACTPERSON_ID: String
-        let START: String
-        let END: String
-    }
-
-    struct SportFestRepsonse: Decodable {
-        let data: SportFest
-        let message: String
-        let status: String
-    }
-
-    struct SportFest: Identifiable, Decodable {
-        let id: String
-        let details_id: String
-    }
-    struct SportFestCreate: Encodable {
-        let DETAILS_ID: String
     }
     
 }
