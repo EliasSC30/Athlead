@@ -3,6 +3,6 @@ POST http://localhost:8000/persons
 Content-Type: application/json
 
 {
-  "CONTACTINFO_ID": "05ee01d9-17bd-4633-8024-07d9260c4347",
+  "CONTACTINFO_ID": "e0f201d0-7f0e-469d-ac53-a28b8454311f",
   "ROLE": "ADMIN"
 }

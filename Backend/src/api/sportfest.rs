@@ -88,7 +88,7 @@ pub async fn sportfests_get_handler(
 pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, data:web::Data<AppState>) -> impl Responder {
     let new_sportfest_id: Uuid = Uuid::new_v4();
     let query = sqlx::query(
-        r#"INSERT INTO sportfest (ID, DETAILS_ID) VALUES (?, ?)"#)
+        "INSERT INTO sportfest (ID, DETAILS_ID) VALUES (?, ?)")
         .bind(new_sportfest_id.to_string())
         .bind(body.DETAILS_ID.to_string())
         .execute(&data.db)
@@ -200,8 +200,15 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
         "message": details_res.unwrap_err().to_string()
     }))};
 
+    let contest_id = Uuid::new_v4();
     let contest_query = sqlx::query(
-            "INSERT INTO CONTEST (ID, SPORTFEST_ID, DETAILS_ID, CONTESTRESULT_ID, C_TEMPLATE_ID) VALUES (?, ?, ?, ?, ?)")
+            "INSERT INTO CONTEST (ID, SPORTFEST_ID, DETAILS_ID, C_TEMPLATE_ID, CONTESTRESULT_ID) VALUES (?, ?, ?, ?, ?)"
+    )
+        .bind(contest_id.clone().to_string())
+        .bind(&sf_id.clone())
+        .bind(&details_res.as_ref().clone().unwrap().ID)
+        .bind(&body.C_TEMPLATE_ID.clone())
+        .bind(None::<String>)
         .execute(&data.db)
         .await.map_err(|e: sqlx::Error| e.to_string());
     match contest_query {
@@ -209,7 +216,11 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
             HttpResponse::Ok().json(json!({
                 "status": "success",
                 "data": json!({
-                    "ID": ""
+                    "ID": contest_id.to_string(),
+                    "SPORTFEST_ID": sf_id,
+                    "DETAILS_ID": details_res.unwrap().ID,
+                    "C_TEMPLATE_ID": body.C_TEMPLATE_ID,
+                    "C_CONTESTRESULT_ID": "",
                 })
             }))
         },

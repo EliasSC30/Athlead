@@ -7,7 +7,7 @@ pub struct Contest {
     pub ID: String,
     pub SPORTFEST_ID: String,
     pub DETAILS_ID: String,
-    pub CONTESTRESULT_ID: String,
+    pub CONTESTRESULT_ID: Option<String>,
     pub C_TEMPLATE_ID: String,
 }
 

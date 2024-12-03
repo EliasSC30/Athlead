@@ -53,7 +53,7 @@ pub async fn contactinfos_get_handler(
 
     let result = sqlx::query_as!(
         ContactInfo,
-        r#"SELECT * FROM CONTACTINFO WHERE ID = ?"#,
+        "SELECT * FROM CONTACTINFO WHERE ID = ?",
         contactinfo_id
     )
         .fetch_one(&data.db)
@@ -63,15 +63,7 @@ pub async fn contactinfos_get_handler(
         Ok(contactinfo) => {
             HttpResponse::Ok().json(json!({
                 "status": "success",
-                "data": {
-                    "ID": contactinfo.ID,
-                    "FIRSTNAME": contactinfo.FIRSTNAME,
-                    "LASTNAME": contactinfo.LASTNAME,
-                    "EMAIL": contactinfo.EMAIL,
-                    "PHONE": contactinfo.PHONE,
-                    "GRADE": contactinfo.GRADE.or(Some("".to_string())),
-                    "BIRTH_YEAR": contactinfo.BIRTH_YEAR.or(Some("".to_string())),
-                }
+                "data": serde_json::to_value(contactinfo).unwrap(),
             }))
         }
         Err(e) => {
@@ -94,7 +86,7 @@ pub async fn contactinfos_create_handler(body: web::Json<CreateContactInfo>, dat
     let new_details_id: Uuid = Uuid::new_v4();
 
     let query = sqlx::query(
-        r#"INSERT INTO CONTACTINFO (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE) VALUES (?, ?, ?, ?, ?)"#)
+        "INSERT INTO CONTACTINFO (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR) VALUES (?, ?, ?, ?, ?, ?, ?)")
         .bind(new_details_id.to_string())
         .bind(body.FIRSTNAME.clone())
         .bind(body.LASTNAME.clone())
