@@ -2,7 +2,7 @@ POST http://localhost:8000/ctemplates
 Content-Type: application/json
 
 {
-  "NAME": "contest.NAME.clone()",
+  "NAME": "Elias",
   "DESCRIPTION": "contest.DESCRIPTION.clone()",
   "GRADERANGE":" contest.GRADERANGE.clone()",
   "EVALUATION": "contest.EVALUATION.clone()",

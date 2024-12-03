@@ -62,14 +62,7 @@ pub async fn details_get_handler(
         Ok(detail) => {
             HttpResponse::Ok().json(json!({
                 "status": "success",
-                "data": {
-                    "ID": detail.ID,
-                    "LOCATION_ID": detail.LOCATION_ID,
-                    "CONTACTPERSON_ID": detail.CONTACTPERSON_ID,
-                    "NAME": detail.NAME,
-                    "START": detail.START,
-                    "END": detail.END,
-                }
+                "data": serde_json::to_string(&detail).unwrap()
             }))
         }
         Err(e) => {
@@ -88,8 +81,8 @@ pub async fn details_get_handler(
     }
 }
 
-pub async fn create_details(details : CreateDetails, db : web::Data<AppState>)
-    -> Option<Details> {
+pub async fn create_details(details : CreateDetails, db : &web::Data<AppState>)
+    -> Result<Details,String> {
     let new_details_id: Uuid = Uuid::new_v4();
 
     let query = sqlx::query(
@@ -102,40 +95,33 @@ pub async fn create_details(details : CreateDetails, db : web::Data<AppState>)
         .bind(details.END)
         .execute(&db.db)
         .await.map_err(|e: sqlx::Error| e.to_string());
-    if let Err(e) = query {
-        return None;
+
+    match query {
+        Ok(_) => Ok(
+            Details {
+                ID: new_details_id.to_string(),
+                LOCATION_ID: details.LOCATION_ID,
+                CONTACTPERSON_ID: details.CONTACTPERSON_ID,
+                NAME: details.NAME,
+                START: details.START,
+                END: details.END
+            }),
+        Err(e) => Err(e.to_string())
     }
-
-
-    Some(Details {
-        ID: new_details_id.to_string(),
-        LOCATION_ID: details.LOCATION_ID,
-        CONTACTPERSON_ID: details.CONTACTPERSON_ID,
-        NAME: details.NAME,
-        START: details.START,
-        END: details.END
-    })
 }
 
 #[post("/details")]
 pub async fn details_create_handler(body: web::Json<CreateDetails>, data:web::Data<AppState>) -> impl Responder {
-    match create_details(body.0, data).await {
-        Some(values) => {
+    match create_details(body.0, &data).await {
+        Ok(values) => {
             HttpResponse::Ok().json(json!(
                                         {
                                             "status": "success",
-                                            "result": json!({
-                                                "ID" : values.ID,
-                                                "LOCATION": values.LOCATION_ID,
-                                                "CONTACTPERSON_ID": values.CONTACTPERSON_ID,
-                                                "NAME": values.NAME,
-                                                "START": values.START,
-                                                "END": values.END
-                                            }),
+                                            "result": serde_json::to_value(&values).unwrap(),
                                         }
             ))
         },
-        None => HttpResponse::InternalServerError().json(json!({"status": "Internal Error"}))
+        Err(e) => HttpResponse::InternalServerError().json(json!({"status": e.to_string()}))
     }
 }
 

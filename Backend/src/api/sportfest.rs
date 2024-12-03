@@ -6,7 +6,7 @@ use sqlx::mysql::MySqlQueryResult;
 use uuid::{Uuid};
 use crate::api::details;
 use crate::api::details::create_details;
-use crate::model::contest::CreateContest;
+use crate::model::sportfest::CreateContestForFest;
 use crate::model::details::{CreateDetails, UpdateDetails};
 
 #[get("/sportfests")]
@@ -167,7 +167,7 @@ pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
 }
 
 #[post("/sportfests/{id}/contests")]
-pub async fn create_contest_for_sf_handler(body: web::Json<model::contest::CreateContestForFest>,
+pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>,
                                     data: web::Data<AppState>,
                                     path :web::Path<String>
 ) -> impl Responder {
@@ -193,16 +193,30 @@ pub async fn create_contest_for_sf_handler(body: web::Json<model::contest::Creat
                                                         body.START.clone(),
                                                         body.END.clone());
 
-    let details = create_details(detail_values, data).await;
-    if details.is_none() { return HttpResponse::InternalServerError().json(json!({
-        "status": "Internal Error",
+    let details_res = create_details(detail_values, &data).await;
+
+    if details_res.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "error",
+        "message": details_res.unwrap_err().to_string()
     }))};
 
-    HttpResponse::Ok().json(details.unwrap())
-/*
-    match create_contest {
-
+    let contest_query = sqlx::query(
+            "INSERT INTO CONTEST (ID, SPORTFEST_ID, DETAILS_ID, CONTESTRESULT_ID, C_TEMPLATE_ID) VALUES (?, ?, ?, ?, ?)")
+        .execute(&data.db)
+        .await.map_err(|e: sqlx::Error| e.to_string());
+    match contest_query {
+        Ok(_) => {
+            HttpResponse::Ok().json(json!({
+                "status": "success",
+                "data": json!({
+                    "ID": ""
+                })
+            }))
+        },
+        Err(e) => HttpResponse::InternalServerError().json(json!({
+        "status": "error",
+        "message": e.to_string()
+    }))
     }
-    */
 
 }

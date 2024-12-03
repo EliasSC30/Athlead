@@ -1,9 +1,10 @@
-POST http://localhost:8000/sportfests/d174119f-fbfc-495a-8f7d-65a910a9df4e/contests
+POST http://localhost:8000/sportfests/f876fc59-04bb-46da-ba98-84c946c93025/contests
 Content-Type: application/json
 
 {
-  "LOCATION_ID": "342895ec-b8c4-45d2-81e1-dc24cd655ce7",
-  "CONTACTPERSON_ID": "213ac5ec-fcf2-4c0b-a42b-16e11b379a81",
+  "LOCATION_ID": "8437e497-bfec-40a2-8ba1-9184b1db22f2",
+  "CONTACTPERSON_ID": "07bbc7fb-57b0-4535-9f13-4ed51427cedd",
+  "C_TEMPLATE_ID" : "1fbe81be-efe2-4488-b409-bd154f40ba99",
   "NAME": "Weitsprung",
   "START": "2025-12-02T15:30:00",
   "END": "2025-12-02T22:00:00"

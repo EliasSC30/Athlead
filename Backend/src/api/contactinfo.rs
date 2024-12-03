@@ -24,6 +24,8 @@ pub async fn contactinfos_list_handler(data: web::Data<AppState>) -> impl Respon
                     "LASTNAME": contactinfo.LASTNAME,
                     "EMAIL": contactinfo.EMAIL,
                     "PHONE": contactinfo.PHONE,
+                    "GRADE": contactinfo.GRADE.or(Some("".to_string())),
+                    "BIRTH_YEAR": contactinfo.BIRTH_YEAR.or(Some("".to_string())),
                 })
             }).collect::<Vec<serde_json::Value>>();
 
@@ -67,6 +69,8 @@ pub async fn contactinfos_get_handler(
                     "LASTNAME": contactinfo.LASTNAME,
                     "EMAIL": contactinfo.EMAIL,
                     "PHONE": contactinfo.PHONE,
+                    "GRADE": contactinfo.GRADE.or(Some("".to_string())),
+                    "BIRTH_YEAR": contactinfo.BIRTH_YEAR.or(Some("".to_string())),
                 }
             }))
         }
@@ -96,6 +100,8 @@ pub async fn contactinfos_create_handler(body: web::Json<CreateContactInfo>, dat
         .bind(body.LASTNAME.clone())
         .bind(body.EMAIL.clone())
         .bind(body.PHONE.clone())
+        .bind(body.GRADE.clone().or(Some("".to_string())))
+        .bind(body.BIRTH_YEAR.clone().or(Some("".to_string())))
         .execute(&data.db)
         .await.map_err(|e: sqlx::Error| e.to_string());
     if let Err(e) = query {
@@ -113,7 +119,9 @@ pub async fn contactinfos_create_handler(body: web::Json<CreateContactInfo>, dat
             "FIRSTNAME": body.FIRSTNAME,
             "LASTNAME": body.LASTNAME,
             "EMAIL": body.EMAIL,
-            "PHONE": body.PHONE
+            "PHONE": body.PHONE,
+            "GRADE": body.GRADE.clone().or(Some("".to_string())),
+            "BIRTH_YEAR": body.BIRTH_YEAR.clone().or(Some("".to_string())),
         })
     }))
 }

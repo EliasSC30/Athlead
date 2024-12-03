@@ -61,8 +61,7 @@ pub async fn ctemplates_get_by_id_handler(data: web::Data<AppState>, path: web::
 
             HttpResponse::Ok().json(json!({
                 "status": "success",
-                "results": contest_response.len(),
-                "data": contest_response,
+                "data": serde_json::to_value(contest_response.get(0)).unwrap(),
             }))
         }
         Err(e) => {
