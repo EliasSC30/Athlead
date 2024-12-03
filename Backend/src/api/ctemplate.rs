@@ -40,6 +40,40 @@ pub async fn ctemplates_get_handler(data: web::Data<AppState>) -> impl Responder
     }
 }
 
+#[get("/ctemplates/{id}")]
+pub async fn ctemplates_get_by_id_handler(data: web::Data<AppState>, path: web::Path<String>) -> impl Responder {
+    let result = sqlx::query_as!(CTemplate, "SELECT * FROM C_TEMPLATE WHERE ID = ?", path.into_inner())
+        .fetch_all(&data.db)
+        .await;
+
+    match result {
+        Ok(templates) => {
+            let contest_response = templates.into_iter().map(|value| {
+                json!({
+                        "ID": value.ID,
+                        "NAME": value.NAME,
+                        "DESCRIPTION": value.DESCRIPTION,
+                        "GRADERANGE": value.GRADERANGE,
+                        "EVALUATION": value.EVALUATION,
+                        "UNIT": value.UNIT
+                })
+            }).collect::<Vec<serde_json::Value>>();
+
+            HttpResponse::Ok().json(json!({
+                "status": "success",
+                "results": contest_response.len(),
+                "data": contest_response,
+            }))
+        }
+        Err(e) => {
+            HttpResponse::InternalServerError().json(json!({
+                "status": "error",
+                "message": format!("Failed to fetch Contests: {}", e),
+            }))
+        }
+    }
+}
+
 pub async fn create_contest(contest: CreateCTemplate, data: &web::Data<AppState>) -> Result<MySqlQueryResult, String> {
     let template_id: Uuid = Uuid::new_v4();
 
