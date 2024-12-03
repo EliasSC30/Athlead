@@ -20,7 +20,7 @@ struct AdminOverviewView: View {
                     NavigationLink(destination: Text("View All Sportfests")) {
                         Label("Manage Sportfests", systemImage: "list.bullet.rectangle")
                     }
-                    NavigationLink(destination: Text("View All Sportfests")) {
+                    NavigationLink(destination: LocationManagerView()) {
                         Label("Manage Locations", systemImage: "mappin.and.ellipse")
                     }
                 }

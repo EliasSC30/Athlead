@@ -76,7 +76,6 @@ struct LocationsResponse: Decodable {
 
 struct LocationResponse: Decodable {
     let data: Location
-    let message: String
     let status: String
 }
 
@@ -107,7 +106,6 @@ struct Contact: Identifiable, Hashable,Decodable {
 }
 struct ContactInfoResponse: Decodable {
     let data: Contact
-    let message: String
     let status: String
 }
 
@@ -137,6 +135,20 @@ struct SportFestResponse: Decodable {
 }
 struct SportFestCreate: Encodable {
     let DETAILS_ID: String
+}
+
+struct LocationData: Encodable {
+    let NAME: String
+    let ZIPCODE: String
+    let CITY: String
+    let STREET: String
+    let STREETNUMBER: String
+}
+
+struct LocationUpdate: Decodable {
+    let result: Location
+    let status: String
+    
 }
 
 var STORE : [String:[ResultInfo]] = [:];

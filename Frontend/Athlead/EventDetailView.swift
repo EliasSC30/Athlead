@@ -116,18 +116,9 @@ struct EventDetailView: View {
                     }
                     
                     // Contact Person Button
-                    Button(action: contactPerson) {
-                        Label("Contact \(contactPersonID)", systemImage: "phone.fill")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.green)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                            .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                    }
-                    .padding(.horizontal)
+                    ContactPersonCard(firstName: "John", lastName: "Doe", phone: "123456789", email: "john@doe.com")
                 }
+                .padding(.bottom)
                 .padding(.top)
             }
             .padding(.top, 20)

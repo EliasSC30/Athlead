@@ -23,6 +23,8 @@ struct CreateSportfestView: View {
     @State private var errorMessage: String? = nil
     @State private var newSportfestID: String? = nil
     
+    private let truncateLimit: Int = 21;
+    
     
     private let apiURL = "http://localhost:8000";
     
@@ -38,7 +40,7 @@ struct CreateSportfestView: View {
                 Section(header: Text("Location")) {
                     Picker("Select Location", selection: $selectedLocation) {
                         ForEach(locations) { location in
-                            Text("\(location.NAME) - \(location.CITY)").tag(location as Location?)
+                            Text("\(location.NAME) - \(location.CITY)".truncated(to: truncateLimit)).tag(location as Location?)
                         }
                     }
                 }
@@ -47,7 +49,7 @@ struct CreateSportfestView: View {
                 Section(header: Text("Contact Person")) {
                     Picker("Select Contact", selection: $selectedContact) {
                         ForEach(contacts) { contact in
-                            Text("\(contact.FIRSTNAME) \(contact.LASTNAME)").tag(contact as Contact?)
+                            Text("\(contact.FIRSTNAME) \(contact.LASTNAME)".truncated(to: truncateLimit)).tag(contact as Contact?)
                         }
                     }
                 }
