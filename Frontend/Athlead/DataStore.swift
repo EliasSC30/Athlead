@@ -39,7 +39,7 @@ struct DetailsResponse: Decodable {
     let data: Detail
     let status: String
 }
-struct Detail: Identifiable, Decodable {
+struct Detail: Identifiable, Decodable, Hashable {
     let ID: String
     let CONTACTPERSON_ID: String
     let NAME: String
@@ -85,6 +85,16 @@ struct PersonsResponse: Decodable {
     let status: String
 }
 
+struct PersonResponse: Decodable {
+    let data: Person
+    let status: String
+}
+
+struct PersonCreate: Encodable {
+    let CONTACTINFO_ID: String
+    let ROLE: String
+}
+
 struct Person: Identifiable, Hashable, Decodable {
     let ID : String
     let CONTACTINFO_ID : String
@@ -92,6 +102,17 @@ struct Person: Identifiable, Hashable, Decodable {
     
     var id: String { return self.ID }
 }
+
+
+struct PersonDisplay: Identifiable, Hashable, Decodable {
+    let ID : String
+    let PERSON: Person
+    let CONTACTINFO_ID : String
+    let CONTACT: Contact
+    
+    var id: String { return self.ID }
+}
+
 struct Contact: Identifiable, Hashable,Decodable {
     let ID: String
     let FIRSTNAME: String
@@ -100,13 +121,21 @@ struct Contact: Identifiable, Hashable,Decodable {
     let PHONE: String
     let BIRTH_YEAR: String?
     let GRADE: String?
-    var PERSON_ID: String?
     
     var id: String { return self.ID }
 }
 struct ContactInfoResponse: Decodable {
     let data: Contact
     let status: String
+}
+
+struct ContactInfoCreate: Encodable {
+    let FIRSTNAME: String
+    let LASTNAME: String
+    let EMAIL: String
+    let PHONE: String
+    let BIRTH_YEAR: String?
+    let GRADE: String?
 }
 
 struct SportfestDetails: Identifiable, Decodable {

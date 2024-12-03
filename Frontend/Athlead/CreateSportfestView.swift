@@ -12,11 +12,11 @@ struct CreateSportfestView: View {
     // Form State
     @State private var sportfestName: String = ""
     @State private var selectedLocation: Location? = nil
-    @State private var selectedContact: Contact? = nil
+    @State private var selectedContact: Person? = nil
     @State private var startDate = Date()
     @State private var endDate = Date()
     @State private var locations: [Location] = []
-    @State private var contacts: [Contact] = []
+    @State private var contacts: [PersonDisplay] = []
     
     @State private var isSubmitting: Bool = false
     @State private var isSuccesful: Bool = false
@@ -49,7 +49,7 @@ struct CreateSportfestView: View {
                 Section(header: Text("Contact Person")) {
                     Picker("Select Contact", selection: $selectedContact) {
                         ForEach(contacts) { contact in
-                            Text("\(contact.FIRSTNAME) \(contact.LASTNAME)".truncated(to: truncateLimit)).tag(contact as Contact?)
+                            Text("\(contact.CONTACT.FIRSTNAME) \(contact.CONTACT.LASTNAME)".truncated(to: truncateLimit)).tag(contact as PersonDisplay?)
                         }
                     }
                 }
@@ -152,7 +152,7 @@ struct CreateSportfestView: View {
                 
                 let dispatchGroup = DispatchGroup()
                 
-                var contacts: [Contact] = []
+                var contacts: [PersonDisplay] = []
                 let contactLock = NSLock()
                 
                 for person in persons {
@@ -187,11 +187,12 @@ struct CreateSportfestView: View {
                         
                         do {
                             let contactInfoResponse = try JSONDecoder().decode(ContactInfoResponse.self, from: data)
-                            var contact = contactInfoResponse.data
+                            let contact = contactInfoResponse.data
+                            
+                            let personDisplay = PersonDisplay(ID: person.ID, PERSON: person, CONTACTINFO_ID: contact.ID, CONTACT: contact)
                             
                             contactLock.lock()
-                            contact.PERSON_ID = person.ID
-                            contacts.append(contact)
+                            contacts.append(personDisplay)
                             contactLock.unlock()
                         } catch {
                             print("Error decoding contact info for person \(person.ID): \(error)")
@@ -202,7 +203,7 @@ struct CreateSportfestView: View {
                 
                 dispatchGroup.notify(queue: DispatchQueue.main) {
                     self.contacts = contacts
-                    self.selectedContact = contacts.first
+                    self.selectedContact = contacts.first?.PERSON
                 }
                 
             } catch {
@@ -214,7 +215,7 @@ struct CreateSportfestView: View {
     
     private func createSportfest() {
         guard let selectedLocation = selectedLocation,
-              let selectedContact = selectedContact?.PERSON_ID else {
+              let selectedContact = selectedContact?.ID else {
             self.errorMessage = "Please select a location and a contact person."
             return
         }

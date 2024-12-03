@@ -17,7 +17,7 @@ struct AdminOverviewView: View {
                     NavigationLink(destination: CreateSportfestView()) {
                         Label("Create New Sportfest", systemImage: "plus.circle")
                     }
-                    NavigationLink(destination: Text("View All Sportfests")) {
+                    NavigationLink(destination: ManageSportfests()) {
                         Label("Manage Sportfests", systemImage: "list.bullet.rectangle")
                     }
                     NavigationLink(destination: LocationManagerView()) {
@@ -50,7 +50,7 @@ struct AdminOverviewView: View {
                 
                 // Administrative Settings
                 Section(header: Text("Admin Settings")) {
-                    NavigationLink(destination: Text("User Management")) {
+                    NavigationLink(destination: PersonManagementView()) {
                         Label("User Management", systemImage: "person.3")
                     }
                     NavigationLink(destination: Text("System Settings")) {
