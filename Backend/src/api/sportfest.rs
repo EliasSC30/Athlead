@@ -13,7 +13,7 @@ use crate::model::details::{CreateDetails, UpdateDetails};
 pub async fn sportfests_list_handler(data: web::Data<AppState>) -> impl Responder {
     let result = sqlx::query_as!(
         Sportfest,
-        r#"SELECT * FROM Sportfest"#
+        "SELECT * FROM SPORTFEST"
     )
         .fetch_all(&data.db)
         .await;
@@ -52,7 +52,7 @@ pub async fn sportfests_get_handler(
 
     let result = sqlx::query_as!(
         Sportfest,
-        r#"SELECT * FROM SPORTFEST WHERE ID = ?"#,
+        "SELECT * FROM SPORTFEST WHERE ID = ?",
         sportfest_id
     )
         .fetch_one(&data.db)
@@ -167,7 +167,7 @@ pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
 }
 
 #[post("/sportfests/{id}/contests")]
-pub async fn contest_create_handler(body: web::Json<model::contest::CreateContestForFest>,
+pub async fn create_contest_for_sf_handler(body: web::Json<model::contest::CreateContestForFest>,
                                     data: web::Data<AppState>,
                                     path :web::Path<String>
 ) -> impl Responder {
@@ -188,32 +188,21 @@ pub async fn contest_create_handler(body: web::Json<model::contest::CreateContes
     }
 
     let detail_values = CreateDetails::from(body.LOCATION_ID.clone(),
-                                                                body.CONTACTPERSON_ID.clone(),
-                                                                body.NAME.clone(),
-                                                                body.START.clone(),
-                                                                body.END.clone());
-    /*
-    match create_details(detail_values, &data.db) {
-        Ok(_) => {
+                                                        body.CONTACTPERSON_ID.clone(),
+                                                        body.NAME.clone(),
+                                                        body.START.clone(),
+                                                        body.END.clone());
 
-        },
-        Err(e) => {return HttpResponse::InternalServerError().json(json!(
-            {
-                "status": "error",
-                "message": "Failed to create contest with error: ".to_owned() + &e.to_string(),
-            }
-        ))}
-    };
+    let details = create_details(detail_values, data).await;
+    if details.is_none() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Internal Error",
+    }))};
 
-*/
-    HttpResponse::Created().json(json!({
-        "status": "success",
-        "message": "ContactInfo created successfully!",
-        "data": json!({
-            "ID": "contest_id.to_string()",
-            "SPORTFEST_ID": "body.SPORTFEST_ID",
-            "DETAILS_ID": "body.DETAILS_ID",
-            "CONTESTRESULT_ID": body.CONTESTRESULT_ID,
-        })
-    }))
+    HttpResponse::Ok().json(details.unwrap())
+/*
+    match create_contest {
+
+    }
+    */
+
 }

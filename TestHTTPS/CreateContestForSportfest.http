@@ -1,0 +1,10 @@
+POST http://localhost:8000/sportfests/d174119f-fbfc-495a-8f7d-65a910a9df4e/contests
+Content-Type: application/json
+
+{
+  "LOCATION_ID": "342895ec-b8c4-45d2-81e1-dc24cd655ce7",
+  "CONTACTPERSON_ID": "213ac5ec-fcf2-4c0b-a42b-16e11b379a81",
+  "NAME": "Weitsprung",
+  "START": "2025-12-02T15:30:00",
+  "END": "2025-12-02T22:00:00"
+}

@@ -1,6 +1,7 @@
 use crate::model::details::*;
 use crate::AppState;
 use actix_web::{get, post, patch, web, HttpResponse, Responder};
+use actix_web::http::header::LOCATION;
 use serde_json::json;
 use sqlx::mysql::{MySqlPool};
 use uuid::{Uuid};
@@ -51,7 +52,7 @@ pub async fn details_get_handler(
 
     let result = sqlx::query_as!(
         Details,
-        r#"SELECT * FROM DETAILS WHERE ID = ?"#,
+        "SELECT * FROM DETAILS WHERE ID = ?",
         details_id
     )
         .fetch_one(&data.db)
@@ -59,7 +60,7 @@ pub async fn details_get_handler(
 
     match result {
         Ok(detail) => {
-            actix_web::HttpResponse::Ok().json(json!({
+            HttpResponse::Ok().json(json!({
                 "status": "success",
                 "data": {
                     "ID": detail.ID,
@@ -88,10 +89,8 @@ pub async fn details_get_handler(
 }
 
 pub async fn create_details(details : CreateDetails, db : web::Data<AppState>)
-    -> impl Responder {
+    -> Option<Details> {
     let new_details_id: Uuid = Uuid::new_v4();
-
-    println!("\n\n{} {}\n\n",details.CONTACTPERSON_ID, details.LOCATION_ID);
 
     let query = sqlx::query(
         "INSERT INTO DETAILS (ID, LOCATION_ID, CONTACTPERSON_ID, NAME, START, END) VALUES (?, ?, ?, ?, ?, ?)")
@@ -104,35 +103,40 @@ pub async fn create_details(details : CreateDetails, db : web::Data<AppState>)
         .execute(&db.db)
         .await.map_err(|e: sqlx::Error| e.to_string());
     if let Err(e) = query {
-        if e.contains("foreign key constraint fails") {
-            return HttpResponse::BadRequest().json(json!({
-                "status": "error",
-                "message": "Failed to create Details, because location_id or contactperson_id does not exist",
-            }))
-        }
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to create Details, with error: ".to_owned() + &e.to_string(),
-        }))
+        return None;
     }
 
-    HttpResponse::Created().json(json!({
-        "status": "success",
-        "message": "Details created successfully!",
-        "data": json!({
-            "ID": new_details_id.to_string(),
-            "LOCATION_ID": details.LOCATION_ID,
-            "CONTACTPERSON_ID": details.CONTACTPERSON_ID,
-            "NAME": details.NAME,
-            "START": details.START,
-            "END": details.END
-        })
-    }))
+
+    Some(Details {
+        ID: new_details_id.to_string(),
+        LOCATION_ID: details.LOCATION_ID,
+        CONTACTPERSON_ID: details.CONTACTPERSON_ID,
+        NAME: details.NAME,
+        START: details.START,
+        END: details.END
+    })
 }
 
 #[post("/details")]
 pub async fn details_create_handler(body: web::Json<CreateDetails>, data:web::Data<AppState>) -> impl Responder {
-    create_details(body.0, data).await
+    match create_details(body.0, data).await {
+        Some(values) => {
+            HttpResponse::Ok().json(json!(
+                                        {
+                                            "status": "success",
+                                            "result": json!({
+                                                "ID" : values.ID,
+                                                "LOCATION": values.LOCATION_ID,
+                                                "CONTACTPERSON_ID": values.CONTACTPERSON_ID,
+                                                "NAME": values.NAME,
+                                                "START": values.START,
+                                                "END": values.END
+                                            }),
+                                        }
+            ))
+        },
+        None => HttpResponse::InternalServerError().json(json!({"status": "Internal Error"}))
+    }
 }
 
 pub async fn update_details(details_id : String,

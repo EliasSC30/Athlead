@@ -7,3 +7,4 @@ mod contactinfo;
 mod person;
 mod contest;
 mod contestresult;
+mod metric;

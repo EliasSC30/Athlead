@@ -3,7 +3,6 @@ POST http://localhost:8000/contests
 Content-Type: application/json
 
 {
-  "SPORTFEST_ID": "",
-  "DETAILS_ID": "",
-  "CONTESTRESULT_ID": ""
+  "SPORTFEST_ID": "d174119f-fbfc-495a-8f7d-65a910a9df4e",
+  "DETAILS_ID": "a86581c5-8ccd-4eb7-a75e-85b7d6d39729"
 }

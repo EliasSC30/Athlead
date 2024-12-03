@@ -9,7 +9,7 @@ use crate::model::details::UpdateDetails;
 pub async fn locations_list_handler(data: web::Data<AppState>) -> impl Responder {
     let result = sqlx::query_as!(
         Location,
-        r#"SELECT * FROM LOCATION"#
+        "SELECT * FROM LOCATION"
     )
         .fetch_all(&data.db)
         .await;
@@ -51,7 +51,7 @@ pub async fn locations_get_handler(
 
     let result = sqlx::query_as!(
         Location,
-        r#"SELECT * FROM LOCATION WHERE ID = ?"#,
+        "SELECT * FROM LOCATION WHERE ID = ?",
         location_id
     )
         .fetch_one(&data.db)
