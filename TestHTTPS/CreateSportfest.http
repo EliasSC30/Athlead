@@ -3,5 +3,13 @@ POST http://localhost:8000/sportfests
 Content-Type: application/json
 
 {
-  "DETAILS_ID": "a7139f2b-2397-432e-8f4d-4bb802630440"
+  "CONTACTPERSON_ID": "127228d9-77e2-478a-abc7-afcf7ef7699c",
+  "fest_name": "Sportfest",
+  "fest_start": "2024-12-02T15:30:00",
+  "fest_end": "2025-12-02T15:30:00",
+  "city": "Gau-Algesheim",
+  "zip_code": "55435",
+  "street": "Laurenziberg",
+  "streetnumber": "13",
+  "location_name": "Eue"
 }

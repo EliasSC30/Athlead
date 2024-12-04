@@ -86,40 +86,47 @@ pub async fn locations_get_handler(
     }
 }
 
-#[post("/locations")]
-pub async fn locations_create_handler(body: web::Json<CreateLocation>, data:web::Data<AppState>) -> impl Responder {
+pub async fn create_location(loc: &CreateLocation, data: &web::Data<AppState>) -> Result<Location, String>
+{
     let new_location_id: Uuid = Uuid::new_v4();
     let query = sqlx::query(
-        r#"INSERT INTO LOCATION (ID, CITY, ZIPCODE, STREET, STREETNUMBER, NAME) VALUES (?, ?, ?, ?, ?, ?)"#)
+        "INSERT INTO LOCATION (ID, CITY, ZIPCODE, STREET, STREETNUMBER, NAME) VALUES (?, ?, ?, ?, ?, ?)",
+    )
         .bind(new_location_id.to_string())
-        .bind(body.CITY.clone())
-        .bind(body.ZIPCODE.clone())
-        .bind(body.STREET.clone())
-        .bind(body.STREETNUMBER.clone())
-        .bind(body.NAME.clone())
+        .bind(loc.CITY.clone())
+        .bind(loc.ZIPCODE.clone())
+        .bind(loc.STREET.clone())
+        .bind(loc.STREETNUMBER.clone())
+        .bind(loc.NAME.clone())
         .execute(&data.db)
-        .await.map_err(|e: sqlx::Error| e.to_string());
+        .await;
 
-    if let Err(e) = query {
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to create location, with error: ".to_owned() + &e.to_string(),
-        }))
+    match query {
+        Ok(_) => Ok(Location {
+            ID: new_location_id.to_string(),
+            CITY: loc.CITY.clone(),
+            ZIPCODE: loc.ZIPCODE.clone(),
+            STREET: loc.STREET.clone(),
+            STREETNUMBER: loc.STREETNUMBER.clone(),
+            NAME: loc.NAME.clone()
+        }),
+        Err(e) => Err(e.to_string())
     }
 
+}
 
-    HttpResponse::Created().json(json!({
-        "status": "success",
-        "message": "Location created successfully!",
-        "data": json!({
-            "ID": new_location_id.to_string(),
-            "CITY": body.CITY,
-            "ZIPCODE": body.ZIPCODE,
-            "STREET": body.STREET,
-            "STREETNUMBER": body.STREETNUMBER,
-            "NAME": body.NAME
-        })
-    }))
+#[post("/locations")]
+pub async fn locations_create_handler(body: web::Json<CreateLocation>, data:web::Data<AppState>) -> impl Responder {
+    match create_location(&body.0, &data).await {
+
+        Ok(location) => HttpResponse::Ok().json(json!({
+            "status": "success",
+            "data": serde_json::to_value(&location).unwrap()
+        })),
+        Err(e) => HttpResponse::InternalServerError().json(json!({
+            "status": "Location Error",
+            "message": e
+        }))}
 }
 
 #[patch("/locations/{id}")]

@@ -79,7 +79,7 @@ pub async fn details_get_handler(
     }
 }
 
-pub async fn create_details(details : CreateDetails, db : &web::Data<AppState>)
+pub async fn create_details(details : &CreateDetails, db : &web::Data<AppState>)
     -> Result<Details,String> {
     let new_details_id: Uuid = Uuid::new_v4();
 
@@ -98,11 +98,11 @@ pub async fn create_details(details : CreateDetails, db : &web::Data<AppState>)
         Ok(_) => Ok(
             Details {
                 ID: new_details_id.to_string(),
-                LOCATION_ID: details.LOCATION_ID,
-                CONTACTPERSON_ID: details.CONTACTPERSON_ID,
-                NAME: details.NAME,
-                START: details.START,
-                END: details.END
+                LOCATION_ID: details.LOCATION_ID.clone(),
+                CONTACTPERSON_ID: details.CONTACTPERSON_ID.clone(),
+                NAME: details.NAME.clone(),
+                START: details.START.clone(),
+                END: details.END.clone()
             }),
         Err(e) => Err(e.to_string())
     }
@@ -110,7 +110,7 @@ pub async fn create_details(details : CreateDetails, db : &web::Data<AppState>)
 
 #[post("/details")]
 pub async fn details_create_handler(body: web::Json<CreateDetails>, data:web::Data<AppState>) -> impl Responder {
-    match create_details(body.0, &data).await {
+    match create_details(&body.0, &data).await {
         Ok(values) => {
             HttpResponse::Ok().json(json!(
                                         {

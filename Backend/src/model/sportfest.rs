@@ -10,7 +10,18 @@ pub struct Sportfest {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateSportfest {
-    pub DETAILS_ID: String,
+    // Detail Fields
+    pub CONTACTPERSON_ID: String,
+    pub fest_name: Option<String>,
+    pub fest_start: NaiveDateTime,
+    pub fest_end: NaiveDateTime,
+
+    // Location Fields
+    pub city: String,
+    pub zip_code: String,
+    pub street: String,
+    pub streetnumber: String,
+    pub location_name: Option<String>
 }
 
 #[derive(Serialize, Deserialize, Debug)]

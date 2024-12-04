@@ -4,8 +4,10 @@ use actix_web::{get, post, patch, web, HttpResponse, Responder};
 use serde_json::json;
 use uuid::{Uuid};
 use crate::api::details::create_details;
+use crate::api::location::create_location;
 use crate::model::sportfest::CreateContestForFest;
 use crate::model::details::{CreateDetails};
+use crate::model::location::CreateLocation;
 
 #[get("/sportfests")]
 pub async fn sportfests_list_handler(data: web::Data<AppState>) -> impl Responder {
@@ -117,35 +119,57 @@ pub async fn sportfests_get_handler(
 }
 
 #[post("/sportfests")]
-pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, data:web::Data<AppState>) -> impl Responder {
+pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, data: web::Data<AppState>) -> impl Responder {
     let new_sportfest_id: Uuid = Uuid::new_v4();
-    let query = sqlx::query(
+
+    let location_for_create = CreateLocation {
+        CITY: body.city.clone(),
+        ZIPCODE: body.zip_code.clone(),
+        STREET: body.street.clone(),
+        STREETNUMBER: body.streetnumber.clone(),
+        NAME: body.location_name.clone(),
+    };
+    let create_location = create_location(&location_for_create, &data).await;
+    if create_location.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "error",
+        "message": create_location.unwrap_err().to_string(),
+    }))};
+
+    let details_for_create = CreateDetails {
+        LOCATION_ID: create_location.unwrap().ID.clone(),
+        CONTACTPERSON_ID: body.CONTACTPERSON_ID.clone(),
+        NAME: body.fest_name.clone(),
+        START: body.fest_start.clone(),
+        END: body.fest_end.clone(),
+    };
+
+    let create_details = create_details(&details_for_create, &data).await;
+    if create_details.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "error",
+        "message": create_details.unwrap_err()
+    }))}
+
+    let sf_query = sqlx::query(
         "INSERT INTO SPORTFEST (ID, DETAILS_ID) VALUES (?, ?)")
         .bind(new_sportfest_id.to_string())
-        .bind(body.DETAILS_ID.to_string())
+        .bind(create_details.as_ref().clone().unwrap().ID.to_string())
         .execute(&data.db)
-        .await.map_err(|e: sqlx::Error| e.to_string());
-    if let Err(e) = query {
-        if e.contains("foreign key constraint fails") {
-            return HttpResponse::BadRequest().json(json!({
-                "status": "error",
-                "message": "Failed to create sportfest, because details_id does not exist",
-            }))
-        }
-        return HttpResponse::InternalServerError().json(json!({
+        .await;
+
+    match sf_query {
+        Ok(_) => HttpResponse::Ok().json(json!({
+            "status": "success",
+            "data": json!({
+                "ID": new_sportfest_id.to_string(),
+                "DETAILS_ID": create_details.unwrap().ID,
+            }),
+        })),
+        Err(e) => HttpResponse::InternalServerError().json(json!({
             "status": "error",
-            "message": "Failed to create sportfest, with error: ".to_owned() + &e.to_string(),
+            "message": format!("Failed to insert SPORTFEST: {}", e),
         }))
     }
 
-    HttpResponse::Created().json(json!({
-        "status": "success",
-        "message": "Sportfest created successfully!",
-        "data": json!({
-            "id": new_sportfest_id.to_string(),
-            "details_id": body.DETAILS_ID,
-        })
-    }))
 }
 
 #[patch("/sportfests/{id}")]
@@ -247,7 +271,7 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
                                                         body.START.clone(),
                                                         body.END.clone());
 
-    let details_res = create_details(detail_values, &data).await;
+    let details_res = create_details(&detail_values, &data).await;
 
     if details_res.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "error",

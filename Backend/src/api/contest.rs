@@ -18,7 +18,7 @@ pub async fn get_contest(id: String, db: &web::Data<AppState>) -> Result<Contest
 }
 
 #[get("/contests/{id}/contestresults")]
-pub async fn get_con_results_conview_handler(path: web::Path<String>,data: web::Data<AppState>)
+pub async fn contests_get_results_handler(path: web::Path<String>,data: web::Data<AppState>)
     -> impl Responder {
     let contest_id = path.into_inner();
     let contest_res = get_contest(contest_id.clone(), &data).await;
@@ -74,7 +74,7 @@ pub async fn get_con_results_conview_handler(path: web::Path<String>,data: web::
 }
 
 #[post("/contests/{id}/contestresults")]
-pub async fn create_con_results_handler(body: web::Json<Vec<CreateContestResultContestView>>,
+pub async fn contests_create_results(body: web::Json<Vec<CreateContestResultContestView>>,
                                         path: web::Path<String>,
                                         data: web::Data<AppState>)
                                              -> impl Responder
@@ -156,8 +156,8 @@ pub async fn create_con_results_handler(body: web::Json<Vec<CreateContestResultC
 }
 
 #[get("/contests/{id}")]
-pub async fn get_contest_handler(path: web::Path<String>, data: web::Data<AppState>)
-    -> impl Responder {
+pub async fn contests_get_master_view_handler(path: web::Path<String>, data: web::Data<AppState>)
+                                              -> impl Responder {
     let contest_id = path.into_inner();
 
     let contest_res = get_contest(contest_id.clone(), &data).await;
