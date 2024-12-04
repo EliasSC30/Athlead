@@ -200,6 +200,28 @@ pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
     }
 }
 
+#[get("/sportfests/{sf_id}/contests")]
+pub async fn get_contest_of_sf_handler(path: web::Path<String>, data: web::Data<AppState>)
+    -> impl Responder {
+    let sf_id = path.into_inner();
+
+    let sf_query = sqlx::query_as!(
+        Sportfest,
+        "SELECT * FROM SPORTFEST WHERE ID = ?",
+        sf_id.clone()
+    )
+        .fetch_one(&data.db)
+        .await;
+
+    if sf_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "error",
+        "message": sf_query.unwrap_err().to_string(),
+    }))};
+
+   // let contest_query = sqlx::query_as!("");
+    HttpResponse::Ok().json(json!(sf_query.unwrap()))
+}
+
 #[post("/sportfests/{id}/contests")]
 pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>,
                                     data: web::Data<AppState>,

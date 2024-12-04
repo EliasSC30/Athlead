@@ -1,8 +1,7 @@
 use crate::api::health::health_checker_handler;
 use actix_web::{web};
 use crate::api::contactinfo::{contactinfos_create_handler, contactinfos_get_handler, contactinfos_list_handler, contactinfos_update_handler};
-use crate::api::contest::{contest_create_handler, get_contest_handler};
-use crate::api::contestresult::contestresult_create_handler;
+use crate::api::contest::{contest_create_handler, create_con_results_handler, get_con_results_conview_handler, get_contest_handler};
 use crate::api::ctemplate::{create_ctemplate_handler, ctemplates_get_by_id_handler, ctemplates_get_handler};
 use crate::api::details::{details_create_handler, details_get_handler, details_list_handler, details_update_handler};
 use crate::api::location::{locations_create_handler, locations_get_handler, locations_list_handler, locations_update_handler};
@@ -35,11 +34,12 @@ pub fn config(conf: &mut web::ServiceConfig) {
         .service(contest_create_handler)
         .service(persons_create_handler)
         .service(create_contest_for_sf_handler)
-        .service(contestresult_create_handler)
         .service(create_ctemplate_handler)
         .service(ctemplates_get_handler)
         .service(ctemplates_get_by_id_handler)
-        .service(get_contest_handler);
+        .service(get_contest_handler)
+        .service(get_con_results_conview_handler)
+        .service(create_con_results_handler);
 
     conf.service(scope);
 }

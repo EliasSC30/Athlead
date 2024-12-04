@@ -62,7 +62,7 @@ pub async fn details_get_handler(
         Ok(detail) => {
             HttpResponse::Ok().json(json!({
                 "status": "success",
-                "data": serde_json::to_string(&detail).unwrap()
+                "data": serde_json::to_value(&detail).unwrap()
             }))
         }
         Err(e) => {

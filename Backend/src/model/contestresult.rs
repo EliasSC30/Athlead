@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use crate::model::contactinfo::ContactInfo;
+use crate::model::metric::CreateMetric;
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
@@ -12,17 +14,36 @@ pub struct ContestResult {
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
 pub struct CreateContestResult {
-    pub PERSON_ID: String,
+    pub PERSON_ID: Vec<String>,
     pub CONTEST_ID: String,
-    pub METRIC_ID: String,
     // Metric Fields
-    pub TIME: f64,
-    pub TIMEUNIT: Option<String>,
-    pub LENGTH: f64,
-    pub LENGTHUNIT: Option<String>,
-    pub WEIGHT: f64,
-    pub WEIGHTUNIT: Option<String>,
-    pub AMOUNT: f64,
+    pub metric: Vec<CreateMetric>,
+}
+
+
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
+pub struct ContestResultContestView {
+    pub CONTEST_ID: String,
+
+    // Person Fields
+    pub p_id: String,
+    pub p_role: String,
+    pub p_firstname: String,
+    pub p_lastname: String,
+    pub p_email: String,
+    pub p_phone: String,
+    pub p_grade: Option<String>,
+    pub p_birth_year: Option<String>,
+
+    // Metric Fields
+    pub time: Option<f64>,
+    pub time_unit: Option<String>,
+    pub length: Option<f64>,
+    pub length_unit: Option<String>,
+    pub weight: Option<f64>,
+    pub weight_unit: Option<String>,
+    pub amount: Option<f64>,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]

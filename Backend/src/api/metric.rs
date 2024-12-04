@@ -4,18 +4,6 @@ use crate::AppState;
 use crate::model::contestresult::CreateContestResult;
 use crate::model::metric::{CreateMetric, Metric};
 
-pub fn to_metric(body: &web::Json<CreateContestResult>) -> CreateMetric {
-    CreateMetric {
-        TIME: body.TIME,
-        TIMEUNIT : body.TIMEUNIT.clone().or(Some("SECONDS".to_string())),
-        LENGTH: body.LENGTH,
-        LENGTHUNIT: body.LENGTHUNIT.clone().or(Some("METERS".to_string())),
-        WEIGHT: body.TIME,
-        WEIGHTUNIT : body.WEIGHTUNIT.clone().or(Some("KILOGRAMS".to_string())),
-        AMOUNT : body.AMOUNT,
-    }
-}
-
 pub async fn create_metric(metric: CreateMetric, data: &web::Data<AppState>) -> Option<Metric> {
     let metric_id = Uuid::new_v4();
     let metric_query =

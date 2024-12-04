@@ -2,6 +2,10 @@ POST http://localhost:8000/contestresults
 Content-Type: application/json
 
 {
-  CONTACTPERSON_ID: "76f7f06c-a011-422b-8176-de3f2085076b",
-  DETAILS_ID: "a86581c5-8ccd-4eb7-a75e-85b7d6d39729"
+  PERSON_ID: "String",
+  CONTEST_ID: "String",
+  TIME: 3.0,
+  LENGTH: 1.0,
+  WEIGHT: 2.0,
+  AMOUNT: 0.0
 }
