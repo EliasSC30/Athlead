@@ -28,8 +28,6 @@ pub struct CreateContestForFest {
     pub NAME: Option<String>,
     pub START: NaiveDateTime,
     pub END: NaiveDateTime,
-    // End of details fields
-    pub CONTESTRESULT_ID: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]

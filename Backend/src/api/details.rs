@@ -1,9 +1,7 @@
 use crate::model::details::*;
 use crate::AppState;
 use actix_web::{get, post, patch, web, HttpResponse, Responder};
-use actix_web::http::header::LOCATION;
 use serde_json::json;
-use sqlx::mysql::{MySqlPool};
 use uuid::{Uuid};
 
 #[get("/details")]

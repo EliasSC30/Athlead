@@ -3,7 +3,6 @@ use crate::AppState;
 use actix_web::{get, post,patch, web, HttpResponse, Responder};
 use serde_json::json;
 use uuid::{Uuid};
-use std::fmt;
 
 
 #[patch("/persons/{id}")]
@@ -151,36 +150,45 @@ pub async fn persons_get_handler(
 
 #[post("/persons")]
 pub async fn persons_create_handler(body: web::Json<CreatePerson>, data:web::Data<AppState>) -> impl Responder {
-    let new_person_id: Uuid = Uuid::new_v4();
+    let new_ci_id = Uuid::new_v4();
+    let new_person_id = Uuid::new_v4();
 
-    let query = sqlx::query(
-        r#"INSERT INTO PERSON (ID, CONTACTINFO_ID, ROLE) VALUES (?, ?, ?)"#)
-        .bind(new_person_id.to_string())
-        .bind(body.CONTACTINFO_ID.clone())
-        .bind(body.ROLE.to_string())
+    let ci_query = sqlx::query(
+        "INSERT INTO CONTACTINFO (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR) VALUES (?, ?, ?, ?, ?, ?, ?)")
+        .bind(&new_ci_id.to_string())
+        .bind(body.first_name.clone())
+        .bind(body.last_name.clone())
+        .bind(body.email.clone())
+        .bind(body.phone.clone())
+        .bind(body.grade.clone())
+        .bind(body.birth_year.clone())
         .execute(&data.db)
-        .await.map_err(|e: sqlx::Error| e.to_string());
+        .await;
 
-    if let Err(e) = query {
-        if e.contains("foreign key constraint fails") {
-            return HttpResponse::BadRequest().json(json!({
-                "status": "error",
-                "message": "Failed to create PERSON, because CONTACTINFO_ID does not exist",
-            }))
-        }
-        return HttpResponse::InternalServerError().json(json!({
+    if ci_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "error",
+        "message": ci_query.unwrap_err().to_string(),
+    }))};
+
+    let person_query = sqlx::query(
+        "INSERT INTO PERSON (ID, CONTACTINFO_ID, ROLE) VALUES (?, ?, ?)")
+        .bind(&new_person_id.to_string())
+        .bind(new_ci_id.to_string())
+        .bind(body.role.clone())
+        .execute(&data.db)
+        .await;
+
+    match person_query {
+        Ok(_) => HttpResponse::Ok().json(json!({
+            "status": "success",
+            "data": json!({
+                    "ID": new_person_id,
+                    "CONTACTINFO_ID": new_ci_id,
+            })
+        })),
+        Err(e) => HttpResponse::InternalServerError().json(json!({
             "status": "error",
-            "message": "Failed to create Person, with error: ".to_owned() + &e.to_string(),
+            "message": format!("Failed to create person: {}", e),
         }))
     }
-
-    HttpResponse::Created().json(json!({
-        "status": "success",
-        "message": "Person created successfully!",
-        "data": json!({
-            "ID": new_person_id.to_string(),
-            "CONTACTINFO_ID": body.CONTACTINFO_ID,
-            "ROLE": body.ROLE
-        })
-    }))
 }

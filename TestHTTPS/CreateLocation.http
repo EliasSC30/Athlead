@@ -3,9 +3,9 @@ POST http://localhost:8000/locations
 Content-Type: application/json
 
 {
-  "CITY": "Wiesloch",
-  "ZIPCODE": "69168",
-  "STREET": "Meßplatzstraße",
-  "STREETNUMBER": "15",
-  "NAME": "Die Messis v2"
+  "CITY": "Gau-Algesheim",
+  "ZIPCODE": "55435",
+  "STREET": "Laurenziberg",
+  "STREETNUMBER": "13",
+  "NAME": "Eue"
 }

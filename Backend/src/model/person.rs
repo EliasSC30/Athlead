@@ -40,8 +40,14 @@ impl fmt::Display for Role {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CreatePerson {
-    pub CONTACTINFO_ID: String,
-    pub ROLE: Role
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub phone: String,
+    pub grade: Option<String>,
+    pub birth_year: Option<String>,
+    // Person Fields
+    pub role: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

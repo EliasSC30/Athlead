@@ -1,13 +1,11 @@
 use crate::model::sportfest::*;
-use crate::{model, AppState};
+use crate::{AppState};
 use actix_web::{get, post, patch, web, HttpResponse, Responder};
 use serde_json::json;
-use sqlx::mysql::MySqlQueryResult;
 use uuid::{Uuid};
-use crate::api::details;
 use crate::api::details::create_details;
 use crate::model::sportfest::CreateContestForFest;
-use crate::model::details::{CreateDetails, UpdateDetails};
+use crate::model::details::{CreateDetails};
 
 #[get("/sportfests")]
 pub async fn sportfests_list_handler(data: web::Data<AppState>) -> impl Responder {
@@ -122,7 +120,7 @@ pub async fn sportfests_get_handler(
 pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, data:web::Data<AppState>) -> impl Responder {
     let new_sportfest_id: Uuid = Uuid::new_v4();
     let query = sqlx::query(
-        "INSERT INTO sportfest (ID, DETAILS_ID) VALUES (?, ?)")
+        "INSERT INTO SPORTFEST (ID, DETAILS_ID) VALUES (?, ?)")
         .bind(new_sportfest_id.to_string())
         .bind(body.DETAILS_ID.to_string())
         .execute(&data.db)
@@ -238,8 +236,8 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
 
     if let Err(e) = query {
         return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to create contest with error: ".to_owned() + &e.to_string(),
+            "status": "Find Sportfest Error",
+            "message": e.to_string(),
         }))
     }
 
@@ -258,13 +256,12 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
 
     let contest_id = Uuid::new_v4();
     let contest_query = sqlx::query(
-            "INSERT INTO CONTEST (ID, SPORTFEST_ID, DETAILS_ID, C_TEMPLATE_ID, CONTESTRESULT_ID) VALUES (?, ?, ?, ?, ?)"
+            "INSERT INTO CONTEST (ID, SPORTFEST_ID, DETAILS_ID, C_TEMPLATE_ID) VALUES (?, ?, ?, ?)"
     )
         .bind(contest_id.clone().to_string())
         .bind(&sf_id.clone())
         .bind(&details_res.as_ref().clone().unwrap().ID)
         .bind(&body.C_TEMPLATE_ID.clone())
-        .bind(None::<String>)
         .execute(&data.db)
         .await.map_err(|e: sqlx::Error| e.to_string());
     match contest_query {
@@ -276,12 +273,11 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
                     "SPORTFEST_ID": sf_id,
                     "DETAILS_ID": details_res.unwrap().ID,
                     "C_TEMPLATE_ID": body.C_TEMPLATE_ID,
-                    "C_CONTESTRESULT_ID": "",
                 })
             }))
         },
         Err(e) => HttpResponse::InternalServerError().json(json!({
-        "status": "error",
+        "status": "Create Contest Error",
         "message": e.to_string()
     }))
     }

@@ -1,7 +1,6 @@
 use actix_web::web;
 use uuid::Uuid;
 use crate::AppState;
-use crate::model::contestresult::CreateContestResult;
 use crate::model::metric::{CreateMetric, Metric};
 
 pub async fn create_metric(metric: CreateMetric, data: &web::Data<AppState>) -> Option<Metric> {

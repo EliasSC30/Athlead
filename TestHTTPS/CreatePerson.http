@@ -3,6 +3,9 @@ POST http://localhost:8000/persons
 Content-Type: application/json
 
 {
-  "CONTACTINFO_ID": "e0f201d0-7f0e-469d-ac53-a28b8454311f",
-  "ROLE": "ADMIN"
+  "first_name": "Mama",
+  "last_name": "AdminG",
+  "email": "john.doe@web.de",
+  "phone": "123456789",
+  "role": "ADMIN"
 }

@@ -7,7 +7,6 @@ pub struct Contest {
     pub ID: String,
     pub SPORTFEST_ID: String,
     pub DETAILS_ID: String,
-    pub CONTESTRESULT_ID: Option<String>,
     pub C_TEMPLATE_ID: String,
 }
 
@@ -54,7 +53,6 @@ pub struct ContestMaster {
     pub ct_streetnumber: String,
     pub ct_location_name: Option<String>,
 
-    pub CONTESTRESULT_ID: Option<String>,
     pub C_TEMPLATE_ID: String,
 }
 
@@ -91,8 +89,11 @@ pub struct GetContestWithResult {
 pub struct CreateContest {
     pub SPORTFEST_ID: String,
     pub DETAILS_ID: String,
-    pub CONTESTRESULT_ID: Option<String>,
-    pub C_TEMPLATE_ID: String,
+    pub NAME: String,
+    pub ct_description: Option<String>,
+    pub ct_graderange: Option<String>,
+    pub ct_evaluation: String,
+    pub ct_unit: String
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
@@ -100,6 +101,5 @@ pub struct CreateContest {
 pub struct UpdateContest {
     pub SPORTFEST_ID: Option<String>,
     pub DETAILS_ID: Option<String>,
-    pub CONTESTRESULT_ID: Option<String>,
     pub C_TEMPLATE_ID: Option<String>,
 }

@@ -3,9 +3,9 @@ POST http://localhost:8000/details
 Content-Type: application/json
 
 {
-  "LOCATION_ID": "22d5f09d-c8c0-4566-9aca-8b8fefdf7cf1",
-  "CONTACTPERSON_ID": "b0efa307-60cc-4c01-91d3-6095408e9280",
-  "NAME" : "Thats a name",
+  "LOCATION_ID": "a3314749-baf2-485c-ba90-7673d7755062",
+  "CONTACTPERSON_ID": "127228d9-77e2-478a-abc7-afcf7ef7699c",
+  "NAME" : "My Sportfest",
   "START": "2024-12-02T15:30:00",
   "END": "2024-12-02T15:30:00"
 }

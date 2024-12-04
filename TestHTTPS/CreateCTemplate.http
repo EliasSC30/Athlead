@@ -2,9 +2,9 @@ POST http://localhost:8000/ctemplates
 Content-Type: application/json
 
 {
-  "NAME": "Elias",
-  "DESCRIPTION": "contest.DESCRIPTION.clone()",
-  "GRADERANGE":" contest.GRADERANGE.clone()",
-  "EVALUATION": "contest.EVALUATION.clone()",
-  "UNIT": "contest.UNIT.clone()"
+  "NAME": "Wichtiger Wettkampf",
+  "DESCRIPTION": "Hier wird gewettkampft",
+  "GRADERANGE":"Alle erlaubt",
+  "EVALUATION": "ASCENDING",
+  "UNIT": "M"
 }

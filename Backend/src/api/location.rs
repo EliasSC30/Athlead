@@ -2,8 +2,7 @@ use crate::model::location::*;
 use crate::AppState;
 use actix_web::{get, post, patch, web, HttpResponse, Responder};
 use serde_json::json;
-use uuid::{uuid, Uuid};
-use crate::model::details::UpdateDetails;
+use uuid::{Uuid};
 
 #[get("/locations")]
 pub async fn locations_list_handler(data: web::Data<AppState>) -> impl Responder {

@@ -1,18 +1,13 @@
-use std::fs::metadata;
 use crate::model::contest::*;
 use crate::AppState;
 use actix_web::{get, post, patch, web, HttpResponse, Responder};
-use env_logger::builder;
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::mysql::MySqlQueryResult;
 use uuid::{Uuid};
-use crate::model::contactinfo::CreateContactInfo;
-use crate::model::contestresult::{ContestResultContestView, CreateContestResult};
+use crate::model::contestresult::{ContestResultContestView, CreateContestResultContestView};
 
 pub async fn get_contest(id: String, db: &web::Data<AppState>) -> Result<Contest, String>
 {
-
     let contest_query = sqlx::query_as!(Contest, "SELECT * FROM CONTEST WHERE ID = ?", id.clone())
         .fetch_one(&db.db)
         .await;
@@ -22,7 +17,7 @@ pub async fn get_contest(id: String, db: &web::Data<AppState>) -> Result<Contest
     }
 }
 
-#[get("/contests/{id}/results")]
+#[get("/contests/{id}/contestresults")]
 pub async fn get_con_results_conview_handler(path: web::Path<String>,data: web::Data<AppState>)
     -> impl Responder {
     let contest_id = path.into_inner();
@@ -78,23 +73,24 @@ pub async fn get_con_results_conview_handler(path: web::Path<String>,data: web::
     }
 }
 
-#[post("/contests/{id}/results")]
-pub async fn create_con_results_handler(body: web::Json<Vec<ContestResultContestView>>,
+#[post("/contests/{id}/contestresults")]
+pub async fn create_con_results_handler(body: web::Json<Vec<CreateContestResultContestView>>,
                                         path: web::Path<String>,
                                         data: web::Data<AppState>)
-                                             -> impl Responder {
+                                             -> impl Responder
+{
     let contest_id = path.into_inner();
     let find_contest_query = get_contest(contest_id.clone(), &data).await;
 
     if find_contest_query.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "error",
+        "status": "Find Contest Error",
         "message": find_contest_query.unwrap_err().to_string()
     })); }
 
     let mut build_metrics_query =
         String::from("INSERT INTO METRIC (ID, TIME, TIMEUNIT, LENGTH, LENGTHUNIT, WEIGHT, WEIGHTUNIT, AMOUNT) VALUES ");
 
-    let mut build_cr_query = String::from("INSERT INTO CONTEST_RESULT (ID, PERSON_ID, CONTEST_ID, METRIC_ID) VALUES ");
+    let mut build_cr_query = String::from("INSERT INTO CONTESTRESULT (ID, PERSON_ID, CONTEST_ID, METRIC_ID) VALUES ");
 
     let mut metric_parameters: Vec<(String, Option<f64>, String, Option<f64>, String, Option<f64>, String, Option<f64>)> = Vec::new();
     let mut cr_parameters : Vec<(String, String, String, String)> = Vec::new();
@@ -118,7 +114,7 @@ pub async fn create_con_results_handler(body: web::Json<Vec<ContestResultContest
         cr_parameters.push((
             new_cr_id.clone(),
             info.p_id.clone(),
-            info.CONTEST_ID.clone(),
+            contest_id.clone(),
             new_metric_id.clone()
         ));
     }
@@ -126,9 +122,12 @@ pub async fn create_con_results_handler(body: web::Json<Vec<ContestResultContest
     build_metrics_query.pop();
     build_cr_query.pop();
 
+    println!("build_cr_query: {:?}", build_cr_query.clone());
+    println!("params: {:?}", cr_parameters.clone());
+
     let mut metrics_query_builder = sqlx::query(&build_metrics_query);
     for (id, t, tu, l, lu, w, wu, a) in &metric_parameters {
-        metrics_query_builder = metrics_query_builder.bind(t).bind(tu).bind(l).bind(lu).bind(w).bind(wu).bind(a);
+        metrics_query_builder = metrics_query_builder.bind(id).bind(t).bind(tu).bind(l).bind(lu).bind(w).bind(wu).bind(a);
     }
 
     let mut cr_query_builder = sqlx::query(&build_cr_query);
@@ -136,24 +135,21 @@ pub async fn create_con_results_handler(body: web::Json<Vec<ContestResultContest
         cr_query_builder = cr_query_builder.bind(cr_id).bind(p_id).bind(cont_id).bind(m_id);
     }
 
-
     let metrics_res = metrics_query_builder.execute(&data.db).await;
     let cr_res = cr_query_builder.execute(&data.db).await;
 
     if metrics_res.is_err() {return HttpResponse::InternalServerError().json(json!({
-        "status": "error",
+        "status": "Metrics Error",
         "message": metrics_res.unwrap_err().to_string()
     }))};
 
-
-
     match cr_res {
-        Ok(res) => HttpResponse::Ok().json(json!({
+        Ok(_) => HttpResponse::Ok().json(json!({
             "status": "success",
             "results": cr_parameters.len(),
         })),
         Err(e) => HttpResponse::InternalServerError().json(json!({
-            "status": "error",
+            "status": "ContestResult Error",
             "message": e.to_string()
         }))
     }
@@ -172,8 +168,7 @@ pub async fn get_contest_handler(path: web::Path<String>, data: web::Data<AppSta
 
     let master_query = sqlx::query_as!(
         ContestMaster,
-        r#"
-            SELECT
+        r#"   SELECT
                 ct.ID AS ct_id,
                 sf.ID AS sf_id,
 
@@ -214,7 +209,6 @@ pub async fn get_contest_handler(path: web::Path<String>, data: web::Data<AppSta
                 ctl.STREETNUMBER AS ct_streetnumber,
                 ctl.NAME AS ct_location_name,
 
-                ct.CONTESTRESULT_ID AS CONTESTRESULT_ID,
                 ct.C_TEMPLATE_ID AS C_TEMPLATE_ID
 
                    FROM
@@ -263,22 +257,12 @@ pub async fn contests_get_handler(data: web::Data<AppState>) -> impl Responder {
         .await;
 
     match result {
-        Ok(details) => {
-            let contest_response = details.into_iter().map(|contest_info| {
-                json!({
-                    "ID": contest_info.ID,
-                    "SPORTFEST_ID": contest_info.SPORTFEST_ID,
-                    "DETAILS_ID": contest_info.DETAILS_ID,
-                    "CONTESTRESULT_ID": contest_info.CONTESTRESULT_ID,
-                })
-            }).collect::<Vec<serde_json::Value>>();
-
-            HttpResponse::Ok().json(json!({
+        Ok(details) => HttpResponse::Ok().json(json!({
                 "status": "success",
-                "results": contest_response.len(),
-                "data": contest_response,
-            }))
-        }
+                "results": details.len(),
+                "data": serde_json::to_value(&details).unwrap(),
+                }))
+        ,
         Err(e) => {
             HttpResponse::InternalServerError().json(json!({
                 "status": "error",
@@ -289,20 +273,37 @@ pub async fn contests_get_handler(data: web::Data<AppState>) -> impl Responder {
 }
 
 pub async fn create_contest(contest: CreateContest, data: &web::Data<AppState>) -> Result<MySqlQueryResult, String> {
-    let contest_id: Uuid = Uuid::new_v4();
+    let contest_id = Uuid::new_v4();
+    let new_template_id = Uuid::new_v4();
+
+    let template_query =
+        sqlx::query(r#"INSERT INTO C_TEMPLATE (ID, DESCRIPTION, GRADERANGE, EVALUATION, UNIT)
+                        VALUES (?, ?, ?, ?, ?)
+        "#)
+            .bind(new_template_id.to_string())
+            .bind(contest.ct_description.clone())
+            .bind(contest.ct_graderange.clone())
+            .bind(contest.ct_evaluation.clone())
+            .bind(contest.ct_evaluation.clone())
+            .bind(contest.ct_unit.clone())
+            .execute(&data.db)
+            .await;
+
+    if template_query.is_err() { return Err(template_query.unwrap_err().to_string()); }
 
     sqlx::query(
-        "INSERT INTO CONTEST (ID, SPORTFEST_ID, DETAILS_ID, CONTESTRESULT_ID) VALUES (?, ?, ?, ?)")
+        "INSERT INTO CONTEST (ID, SPORTFEST_ID, DETAILS_ID, C_TEMPLATE_ID) VALUES (?, ?, ?, ?)")
         .bind(contest_id.to_string())
         .bind(contest.SPORTFEST_ID.clone())
         .bind(contest.DETAILS_ID.clone())
-        .bind(contest.CONTESTRESULT_ID.clone())
+        .bind(new_template_id.to_string())
         .execute(&data.db)
         .await.map_err(|e: sqlx::Error| e.to_string())
 }
 
 #[post("/contests")]
-pub async fn contest_create_handler(body: web::Json<CreateContest>, data:web::Data<AppState>) -> impl Responder {
+pub async fn create_contest_handler(body: web::Json<CreateContest>, data:web::Data<AppState>)
+    -> impl Responder {
     let query = create_contest(body.0, &data).await;
     match query {
         Ok(result) => {
@@ -312,7 +313,8 @@ pub async fn contest_create_handler(body: web::Json<CreateContest>, data:web::Da
                 "data": ""
                 }))
         },
-        Err(e) => { HttpResponse::InternalServerError().json(json!({
+        Err(e) => {
+            HttpResponse::InternalServerError().json(json!({
                 "status": "error",
                 "message": "Failed to create contest with error: ".to_owned() + &e.to_string()
             }))

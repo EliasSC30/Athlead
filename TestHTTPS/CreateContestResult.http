@@ -3,7 +3,7 @@ Content-Type: application/json
 
 {
   PERSON_ID: "String",
-  CONTEST_ID: "String",
+  CONTEST_ID: "6a25123e-b5dd-453b-9605-913eceff54d7",
   TIME: 3.0,
   LENGTH: 1.0,
   WEIGHT: 2.0,
