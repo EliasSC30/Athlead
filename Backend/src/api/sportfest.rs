@@ -50,36 +50,70 @@ pub async fn sportfests_get_handler(
 ) -> impl Responder {
     let sportfest_id = path.into_inner();
 
+    let details_id_query =
+        sqlx::query_as!(
+            Sportfest,
+            "SELECT * FROM SPORTFEST WHERE ID = ?",
+            sportfest_id.clone()).fetch_one(&data.db).await;
+
+    if details_id_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "error",
+        "message": details_id_query.unwrap_err().to_string(),
+    }))}
+
     let result = sqlx::query_as!(
-        Sportfest,
-        "SELECT * FROM SPORTFEST WHERE ID = ?",
-        sportfest_id
-    )
+            SportfestMaster,
+            r#"SELECT
+                SPORTFEST.ID AS sportfest_id,
+
+                DETAILS.ID AS details_id,
+                DETAILS.START AS details_start,
+                DETAILS.END AS details_end,
+
+                LOCATION.ID AS location_id,
+                LOCATION.NAME AS location_name,
+                LOCATION.CITY AS location_city,
+                LOCATION.ZIPCODE AS location_zipcode,
+                LOCATION.STREET AS location_street,
+                LOCATION.STREETNUMBER AS location_street_number,
+
+                PERSON.ID AS person_id,
+                PERSON.ROLE as person_role,
+
+                CONTACTINFO.ID AS cp_id,
+                CONTACTINFO.FIRSTNAME AS cp_firstname,
+                CONTACTINFO.LASTNAME AS cp_lastname,
+                CONTACTINFO.EMAIL AS cp_email,
+                CONTACTINFO.PHONE AS cp_phone,
+                CONTACTINFO.GRADE AS cp_grade,
+                CONTACTINFO.BIRTH_YEAR AS cp_birth_year
+
+                   FROM
+                    SPORTFEST JOIN
+                     DETAILS ON DETAILS.ID = ?
+                     JOIN
+                     LOCATION ON DETAILS.LOCATION_ID = LOCATION.ID
+                     JOIN
+                     PERSON ON PERSON.ID = DETAILS.CONTACTPERSON_ID
+                     JOIN
+                     CONTACTINFO ON CONTACTINFO.ID = PERSON.CONTACTINFO_ID"#,
+            details_id_query.unwrap().DETAILS_ID.clone()
+        )
         .fetch_one(&data.db)
         .await;
 
     match result {
-        Ok(sportfest) => {
+        Ok(values) => {
             HttpResponse::Ok().json(json!({
                 "status": "success",
-                "data": {
-                    "id": sportfest.ID,
-                    "details_id": sportfest.DETAILS_ID,
-                }
+                "data": serde_json::to_value(values).unwrap(),
             }))
         }
         Err(e) => {
-            if e.to_string().contains("no rows returned by a query that expected to return at least one row") {
-                HttpResponse::NotFound().json(json!({
-                    "status": "error",
-                    "message": "Sportfests not found",
-                }))
-            } else {
-                HttpResponse::InternalServerError().json(json!({
-                    "status": "error",
-                    "message": format!("Failed to fetch Sportfests: {}", e),
-                }))
-            }
+            HttpResponse::InternalServerError().json(json!({
+                "status": "error",
+                "message": format!("Failed to fetch Sportfests: {}", e),
+            }))
         }
     }
 }

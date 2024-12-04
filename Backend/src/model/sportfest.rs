@@ -31,3 +31,31 @@ pub struct CreateContestForFest {
     // End of details fields
     pub CONTESTRESULT_ID: Option<String>,
 }
+
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
+pub struct SportfestMaster {
+    pub sportfest_id : String,
+
+    pub details_id : String,
+    pub details_start : NaiveDateTime,
+    pub details_end : NaiveDateTime,
+
+    pub location_id : String,
+    pub location_name : Option<String>,
+    pub location_city : String,
+    pub location_zipcode : String,
+    pub location_street : String,
+    pub location_street_number : String,
+
+    pub person_id : String,
+    pub person_role : String,
+
+    pub cp_id : String,
+    pub cp_firstname : String,
+    pub cp_lastname : String,
+    pub cp_email : String,
+    pub cp_phone : String,
+    pub cp_grade : Option<String>,
+    pub cp_birth_year : Option<String>
+}
