@@ -3,7 +3,7 @@ POST http://localhost:8000/persons
 Content-Type: application/json
 
 {
-  "first_name": "Mama",
+  "first_name": "Jan",
   "last_name": "AdminG",
   "email": "john.doe@web.de",
   "phone": "123456789",

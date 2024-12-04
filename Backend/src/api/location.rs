@@ -5,7 +5,7 @@ use serde_json::json;
 use uuid::{Uuid};
 
 #[get("/locations")]
-pub async fn locations_list_handler(data: web::Data<AppState>) -> impl Responder {
+pub async fn locations_get_all_handler(data: web::Data<AppState>) -> impl Responder {
     let result = sqlx::query_as!(
         Location,
         "SELECT * FROM LOCATION"
@@ -14,24 +14,10 @@ pub async fn locations_list_handler(data: web::Data<AppState>) -> impl Responder
         .await;
 
     match result {
-        Ok(locations) => {
-            let location_response = locations.into_iter().map(|location| {
-                json!({
-                    "ID": location.ID,
-                    "CITY": location.CITY,
-                    "ZIPCODE": location.ZIPCODE,
-                    "STREET": location.STREET,
-                    "STREETNUMBER": location.STREETNUMBER,
-                    "NAME": location.NAME
-                })
-            }).collect::<Vec<serde_json::Value>>();
-
-            HttpResponse::Ok().json(json!({
-                "status": "success",
-                "results": location_response.len(),
-                "data": location_response,
-            }))
-        }
+        Ok(locations) => HttpResponse::Ok().json(json!({
+            "status": "success",
+            "data": serde_json::to_value(&locations).unwrap(),
+        })),
         Err(e) => {
             HttpResponse::InternalServerError().json(json!({
                 "status": "error",
@@ -42,7 +28,7 @@ pub async fn locations_list_handler(data: web::Data<AppState>) -> impl Responder
 }
 
 #[get("/locations/{id}")]
-pub async fn locations_get_handler(
+pub async fn locations_get_by_id_handler(
     data: web::Data<AppState>,
     path: web::Path<String>
 ) -> impl Responder {
@@ -57,32 +43,14 @@ pub async fn locations_get_handler(
         .await;
 
     match result {
-        Ok(location) => {
-            HttpResponse::Ok().json(json!({
-                "status": "success",
-                "data": {
-                    "ID": location.ID,
-                    "CITY": location.CITY,
-                    "ZIPCODE": location.ZIPCODE,
-                    "STREET": location.STREET,
-                    "STREETNUMBER": location.STREETNUMBER,
-                    "NAME": location.NAME
-                }
-            }))
-        }
-        Err(e) => {
-            if e.to_string().contains("no rows returned by a query that expected to return at least one row") {
-                HttpResponse::NotFound().json(json!({
-                    "status": "error",
-                    "message": "Locations not found",
-                }))
-            } else {
-                HttpResponse::InternalServerError().json(json!({
-                    "status": "error",
-                    "message": format!("Failed to fetch Locations: {}", e),
-                }))
-            }
-        }
+        Ok(location) => HttpResponse::Ok().json(json!({
+            "status": "success",
+            "data": serde_json::to_value(&location).unwrap(),
+        })),
+        Err(e) => HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": format!("Failed to fetch location: {}", e),
+        }))
     }
 }
 
@@ -171,32 +139,28 @@ pub async fn locations_update_handler(body: web::Json<UpdateLocation>,
     let result = format!("UPDATE LOCATION {} WHERE ID = '{}'", build_update_query, location_id);
 
     match sqlx::query(result.as_str()).execute(&data.db).await {
-        Ok(_) => {
-            HttpResponse::Ok().json(
-                json!(
-                                    {
-                                        "status": "success",
-                                        "result": json!({
-                                            "ID" : location_id,
-                                            "CITY":     if updates_city { body.CITY.clone().unwrap() }
-                                                            else { String::from("") },
-                                            "ZIPCODE":      if updates_zip { body.ZIPCODE.clone().unwrap() }
-                                                            else { String::from("") },
-                                            "STREET":       if updates_name { body.STREET.clone().unwrap() }
-                                                            else { String::from("") },
-                                            "STREETNUMBER": if updates_street { body.STREETNUMBER.clone().unwrap().to_string() }
-                                                            else { String::from("") },
-                                            "NAME":         if updates_name { body.NAME.clone().unwrap().to_string() }
-                                                            else { String::from("") }
-                                        }),
-                                    }))}
-        Err(e) => {
-            HttpResponse::InternalServerError().json(
-                json!(
+        Ok(_) => HttpResponse::Ok().json(json!(
                                 {
-                                    "status": "error",
-                                    "message": &e.to_string(),
+                                    "status": "success",
+                                    "result": json!({
+                                        "ID" : location_id,
+                                        "CITY":     if updates_city { body.CITY.clone().unwrap() }
+                                                        else { String::from("") },
+                                        "ZIPCODE":      if updates_zip { body.ZIPCODE.clone().unwrap() }
+                                                        else { String::from("") },
+                                        "STREET":       if updates_name { body.STREET.clone().unwrap() }
+                                                        else { String::from("") },
+                                        "STREETNUMBER": if updates_street { body.STREETNUMBER.clone().unwrap().to_string() }
+                                                        else { String::from("") },
+                                        "NAME":         if updates_name { body.NAME.clone().unwrap().to_string() }
+                                                        else { String::from("") }
+                                    }),
                                 }))
-        }
+        ,
+        Err(e) => HttpResponse::InternalServerError().json(json!({
+                                "status": "error",
+                                "message": &e.to_string()
+            }))
+
     }
 }

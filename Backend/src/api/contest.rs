@@ -8,18 +8,14 @@ use crate::model::contestresult::{ContestResultContestView, CreateContestResultC
 
 pub async fn get_contest(id: String, db: &web::Data<AppState>) -> Result<Contest, String>
 {
-    let contest_query = sqlx::query_as!(Contest, "SELECT * FROM CONTEST WHERE ID = ?", id.clone())
+    sqlx::query_as!(Contest, "SELECT * FROM CONTEST WHERE ID = ?", id.clone())
         .fetch_one(&db.db)
-        .await;
-    match contest_query {
-        Ok(contest) => Ok(contest),
-        Err(_) => Err(format!("Contest with id {} not found", id))
-    }
+        .await.map_err(|e| e.to_string())
 }
 
 #[get("/contests/{id}/contestresults")]
-pub async fn contests_get_results_handler(path: web::Path<String>,data: web::Data<AppState>)
-    -> impl Responder {
+pub async fn contest_get_results_by_id_handler(path: web::Path<String>, data: web::Data<AppState>)
+                                               -> impl Responder {
     let contest_id = path.into_inner();
     let contest_res = get_contest(contest_id.clone(), &data).await;
 
@@ -272,53 +268,59 @@ pub async fn contests_get_handler(data: web::Data<AppState>) -> impl Responder {
     }
 }
 
-pub async fn create_contest(contest: CreateContest, data: &web::Data<AppState>) -> Result<MySqlQueryResult, String> {
+pub async fn create_contest(contest: CreateContest, data: &web::Data<AppState>) -> Result<Contest, String> {
     let contest_id = Uuid::new_v4();
     let new_template_id = Uuid::new_v4();
 
     let template_query =
-        sqlx::query(r#"INSERT INTO C_TEMPLATE (ID, DESCRIPTION, GRADERANGE, EVALUATION, UNIT)
-                        VALUES (?, ?, ?, ?, ?)
+        sqlx::query(r#"INSERT INTO C_TEMPLATE (ID, NAME, DESCRIPTION, GRADERANGE, EVALUATION, UNIT)
+                        VALUES (?, ?, ?, ?, ?, ?)
         "#)
             .bind(new_template_id.to_string())
+            .bind(contest.ct_name.clone())
             .bind(contest.ct_description.clone())
             .bind(contest.ct_graderange.clone())
-            .bind(contest.ct_evaluation.clone())
             .bind(contest.ct_evaluation.clone())
             .bind(contest.ct_unit.clone())
             .execute(&data.db)
             .await;
 
-    if template_query.is_err() { return Err(template_query.unwrap_err().to_string()); }
+    if template_query.is_err() { return Err(template_query.unwrap_err().to_string() + " in template query"); }
 
-    sqlx::query(
+    let contest_query = sqlx::query(
         "INSERT INTO CONTEST (ID, SPORTFEST_ID, DETAILS_ID, C_TEMPLATE_ID) VALUES (?, ?, ?, ?)")
         .bind(contest_id.to_string())
         .bind(contest.SPORTFEST_ID.clone())
         .bind(contest.DETAILS_ID.clone())
         .bind(new_template_id.to_string())
         .execute(&data.db)
-        .await.map_err(|e: sqlx::Error| e.to_string())
+        .await;
+
+    match contest_query {
+        Ok(_) => Ok(Contest {
+            ID: contest_id.to_string(),
+            SPORTFEST_ID: contest.SPORTFEST_ID.clone(),
+            DETAILS_ID: contest.DETAILS_ID.clone(),
+            C_TEMPLATE_ID: new_template_id.to_string()
+        }),
+        Err(e) => Err(e.to_string() + " in contest query")
+    }
 }
 
 #[post("/contests")]
-pub async fn create_contest_handler(body: web::Json<CreateContest>, data:web::Data<AppState>)
-    -> impl Responder {
+pub async fn contests_create_handler(body: web::Json<CreateContest>, data:web::Data<AppState>)
+                                    -> impl Responder {
     let query = create_contest(body.0, &data).await;
     match query {
-        Ok(result) => {
-            HttpResponse::Created().json(json!({
+        Ok(result) => HttpResponse::Created().json(json!({
                 "status": "success",
-                "message": "ContactInfo created successfully!",
-                "data": ""
+                "data": serde_json::to_value(&result).unwrap(),
                 }))
-        },
-        Err(e) => {
-            HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": "Failed to create contest with error: ".to_owned() + &e.to_string()
+        ,
+        Err(e) => HttpResponse::InternalServerError().json(json!({
+                "status": "Contest Create Error",
+                "message":  e
             }))
-        }
     }
 }
 

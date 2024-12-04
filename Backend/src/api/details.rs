@@ -5,33 +5,21 @@ use serde_json::json;
 use uuid::{Uuid};
 
 #[get("/details")]
-pub async fn details_list_handler(data: web::Data<AppState>) -> impl Responder {
-    let result = sqlx::query_as!(
+pub async fn details_get_all_handler(data: web::Data<AppState>) -> impl Responder {
+    let query = sqlx::query_as!(
         Details,
         "SELECT * FROM DETAILS"
     )
         .fetch_all(&data.db)
         .await;
 
-    match result {
-        Ok(details) => {
-            let details_response = details.into_iter().map(|details| {
-                json!({
-                    "ID": details.ID,
-                    "LOCATION_ID": details.LOCATION_ID,
-                    "CONTACTPERSON_ID": details.CONTACTPERSON_ID,
-                    "NAME": details.NAME,
-                    "START": details.START,
-                    "END": details.END,
-                })
-            }).collect::<Vec<serde_json::Value>>();
-
-            HttpResponse::Ok().json(json!({
+    match query {
+        Ok(details) => HttpResponse::Ok().json(json!({
                 "status": "success",
-                "results": details_response.len(),
-                "data": details_response,
+                "results": details.len(),
+                "data": serde_json::to_value(&details).unwrap(),
             }))
-        }
+        ,
         Err(e) => {
             HttpResponse::InternalServerError().json(json!({
                 "status": "error",
@@ -42,7 +30,7 @@ pub async fn details_list_handler(data: web::Data<AppState>) -> impl Responder {
 }
 
 #[get("/details/{id}")]
-pub async fn details_get_handler(
+pub async fn details_get_by_id_handler(
     data: web::Data<AppState>,
     path: web::Path<String>
 ) -> impl Responder {
@@ -63,19 +51,10 @@ pub async fn details_get_handler(
                 "data": serde_json::to_value(&detail).unwrap()
             }))
         }
-        Err(e) => {
-            if e.to_string().contains("no rows returned by a query that expected to return at least one row") {
-                HttpResponse::NotFound().json(json!({
-                    "status": "error",
-                    "message": "Details not found",
-                }))
-            } else {
-                HttpResponse::InternalServerError().json(json!({
-                    "status": "error",
-                    "message": format!("Failed to fetch Details: {}", e),
-                }))
-            }
-        }
+        Err(e) => HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": format!("Failed to fetch Details: {}", e),
+        }))
     }
 }
 

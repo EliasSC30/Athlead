@@ -73,47 +73,36 @@ pub async fn persons_update_handler(body: web::Json<UpdatePerson>,
 
 
 #[get("/persons")]
-pub async fn persons_list_handler(data: web::Data<AppState>) -> impl Responder {
-    let result = sqlx::query_as!(
+pub async fn persons_get_all_handler(data: web::Data<AppState>) -> impl Responder {
+    let query = sqlx::query_as!(
         Person,
         "SELECT * FROM PERSON"
     )
         .fetch_all(&data.db)
         .await;
 
-    match result {
-        Ok(persons) => {
-            let persons_response = persons.into_iter().map(|person| {
-                json!({
-                    "ID": person.ID,
-                    "CONTACTINFO_ID": person.CONTACTINFO_ID,
-                    "ROLE": person.ROLE
-                })
-            }).collect::<Vec<serde_json::Value>>();
-
-            HttpResponse::Ok().json(json!({
+    match query {
+        Ok(persons) => HttpResponse::Ok().json(json!({
                 "status": "success",
-                "results": persons_response.len(),
-                "data": persons_response,
+                "results": persons.len(),
+                "data": serde_json::to_value(persons).unwrap(),
             }))
-        }
-        Err(e) => {
-            HttpResponse::InternalServerError().json(json!({
+        ,
+        Err(e) => HttpResponse::InternalServerError().json(json!({
                 "status": "error",
                 "message": format!("Failed to fetch persons: {}", e),
             }))
-        }
     }
 }
 
 #[get("/persons/{id}")]
-pub async fn persons_get_handler(
+pub async fn persons_get_by_id_handler(
     data: web::Data<AppState>,
     path: web::Path<String>
 ) -> impl Responder {
     let person_id = path.into_inner();
 
-    let result = sqlx::query_as!(
+    let query = sqlx::query_as!(
         Person,
         "SELECT * FROM PERSON WHERE ID = ?",
         person_id
@@ -121,30 +110,16 @@ pub async fn persons_get_handler(
         .fetch_one(&data.db)
         .await;
 
-    match result {
-        Ok(person) => {
-            HttpResponse::Ok().json(json!({
+    match query {
+        Ok(person) => HttpResponse::Ok().json(json!({
                 "status": "success",
-                "data": {
-                    "ID": person.ID,
-                    "CONTACTINFO_ID": person.CONTACTINFO_ID,
-                    "ROLE": person.ROLE
-                }
+                "data": serde_json::to_value(&person).unwrap(),
             }))
-        }
-        Err(e) => {
-            if e.to_string().contains("no rows returned by a query that expected to return at least one row") {
-                HttpResponse::NotFound().json(json!({
-                    "status": "error",
-                    "message": "Persons not found",
-                }))
-            } else {
-                HttpResponse::InternalServerError().json(json!({
-                    "status": "error",
-                    "message": format!("Failed to fetch Persons: {}", e),
-                }))
-            }
-        }
+        ,
+        Err(e) => HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": format!("Failed to fetch person: {}", e),
+        }))
     }
 }
 

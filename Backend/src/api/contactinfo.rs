@@ -7,7 +7,7 @@ use serde_json::json;
 use uuid::{Uuid};
 
 #[get("/contactinfos")]
-pub async fn contactinfos_list_handler(data: web::Data<AppState>) -> impl Responder {
+pub async fn contactinfos_get_all_handler(data: web::Data<AppState>) -> impl Responder {
     let result = sqlx::query_as!(
         ContactInfo,
         "SELECT * FROM CONTACTINFO"
@@ -16,42 +16,27 @@ pub async fn contactinfos_list_handler(data: web::Data<AppState>) -> impl Respon
         .await;
 
     match result {
-        Ok(details) => {
-            let contactinfo_response = details.into_iter().map(|contactinfo| {
-                json!({
-                    "ID": contactinfo.ID,
-                    "FIRSTNAME": contactinfo.FIRSTNAME,
-                    "LASTNAME": contactinfo.LASTNAME,
-                    "EMAIL": contactinfo.EMAIL,
-                    "PHONE": contactinfo.PHONE,
-                    "GRADE": contactinfo.GRADE.or(Some("".to_string())),
-                    "BIRTH_YEAR": contactinfo.BIRTH_YEAR.or(Some("".to_string())),
-                })
-            }).collect::<Vec<serde_json::Value>>();
-
-            HttpResponse::Ok().json(json!({
+        Ok(infos) => HttpResponse::Ok().json(json!({
                 "status": "success",
-                "results": contactinfo_response.len(),
-                "data": contactinfo_response,
+                "results": infos.len(),
+                "data": serde_json::to_value(&infos).unwrap(),
             }))
-        }
-        Err(e) => {
-            HttpResponse::InternalServerError().json(json!({
+        ,
+        Err(e) => HttpResponse::InternalServerError().json(json!({
                 "status": "error",
                 "message": format!("Failed to fetch ContactInfo: {}", e),
             }))
-        }
     }
 }
 
 #[get("/contactinfos/{id}")]
-pub async fn contactinfos_get_handler(
+pub async fn contactinfos_get_by_id_handler(
     data: web::Data<AppState>,
     path: web::Path<String>
 ) -> impl Responder {
     let contactinfo_id = path.into_inner();
 
-    let result = sqlx::query_as!(
+    let query = sqlx::query_as!(
         ContactInfo,
         "SELECT * FROM CONTACTINFO WHERE ID = ?",
         contactinfo_id
@@ -59,26 +44,17 @@ pub async fn contactinfos_get_handler(
         .fetch_one(&data.db)
         .await;
 
-    match result {
-        Ok(contactinfo) => {
-            HttpResponse::Ok().json(json!({
+    match query {
+        Ok(contactinfo) => HttpResponse::Ok().json(json!({
                 "status": "success",
                 "data": serde_json::to_value(contactinfo).unwrap(),
             }))
-        }
-        Err(e) => {
-            if e.to_string().contains("no rows returned by a query that expected to return at least one row") {
-                HttpResponse::NotFound().json(json!({
-                    "status": "error",
-                    "message": "ContactInfo not found",
-                }))
-            } else {
-                HttpResponse::InternalServerError().json(json!({
-                    "status": "error",
-                    "message": format!("Failed to fetch ContactInfo: {}", e),
-                }))
-            }
-        }
+        ,
+        Err(e) => HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": format!("Failed to fetch ContactInfo: {}", e),
+        }))
+
     }
 }
 #[post("/contactinfos")]

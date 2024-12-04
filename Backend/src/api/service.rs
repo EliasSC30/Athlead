@@ -1,12 +1,14 @@
 use crate::api::health::health_checker_handler;
 use actix_web::{web};
-use crate::api::contactinfo::{contactinfos_create_handler, contactinfos_get_handler, contactinfos_list_handler, contactinfos_update_handler};
-use crate::api::contest::{contests_create_results, contests_get_results_handler, contests_get_master_view_handler};
-use crate::api::ctemplate::{create_ctemplate_handler, ctemplates_get_by_id_handler, ctemplates_get_handler};
-use crate::api::details::{details_create_handler, details_get_handler, details_list_handler, details_update_handler};
-use crate::api::location::{locations_create_handler, locations_get_handler, locations_list_handler, locations_update_handler};
-use crate::api::person::{persons_update_handler, persons_create_handler, persons_get_handler, persons_list_handler};
-use crate::api::sportfest::{create_contest_for_sf_handler, sportfests_create_handler, sportfests_get_handler, sportfests_list_handler, sportfests_update_handler};
+use actix_web::web::service;
+use crate::api::contactinfo::{contactinfos_create_handler, contactinfos_get_by_id_handler, contactinfos_get_all_handler, contactinfos_update_handler};
+use crate::api::contest::{contests_create_results, contest_get_results_by_id_handler, contests_get_master_view_handler, contests_create_handler};
+use crate::api::contestresult::contestresult_create_handler;
+use crate::api::ctemplate::{ctemplate_create_handler, ctemplates_get_by_id_handler, ctemplates_get_all_handler};
+use crate::api::details::{details_create_handler, details_get_by_id_handler, details_get_all_handler, details_update_handler};
+use crate::api::location::{locations_create_handler, locations_get_by_id_handler, locations_get_all_handler, locations_update_handler};
+use crate::api::person::{persons_update_handler, persons_create_handler, persons_get_by_id_handler, persons_get_all_handler};
+use crate::api::sportfest::{create_contest_for_sf_handler, sportfests_create_handler, sportfests_get_masterview_handler, sportfests_list_handler, sportfests_update_handler};
 
 pub fn config(conf: &mut web::ServiceConfig) {
     let scope = web::scope("")
@@ -16,44 +18,48 @@ pub fn config(conf: &mut web::ServiceConfig) {
         // Sportfest
         .service(sportfests_list_handler) // for now simply queries db content of sf table
         .service(sportfests_create_handler) // works
-        .service(sportfests_get_handler)
-        .service(sportfests_update_handler)
-        .service(create_contest_for_sf_handler)
+        .service(sportfests_get_masterview_handler) // works
+        .service(sportfests_update_handler) // wip, takes id's not attributes
+        .service(create_contest_for_sf_handler) // works
 
         // Details
-        .service(details_list_handler)
-        .service(details_get_handler)
-        .service(details_create_handler)
-        .service(details_update_handler)
+        .service(details_get_all_handler) // works
+        .service(details_get_by_id_handler) // works
+        .service(details_create_handler) // works but needs location and contact-person id
+        .service(details_update_handler) // wip, probably works but takes ids
 
         // Location
-        .service(locations_list_handler)
-        .service(locations_get_handler)
-        .service(locations_create_handler)
-        .service(locations_update_handler)
+        .service(locations_get_all_handler) // works
+        .service(locations_get_by_id_handler) // works
+        .service(locations_create_handler) // works
+        .service(locations_update_handler) // works
 
         // ContactInfos
-        .service(contactinfos_list_handler)
-        .service(contactinfos_create_handler)
-        .service(contactinfos_get_handler)
-        .service(contactinfos_update_handler)
+        .service(contactinfos_get_all_handler) // works
+        .service(contactinfos_create_handler) // works
+        .service(contactinfos_get_by_id_handler) // works
+        .service(contactinfos_update_handler) // works but two fields are missing
 
         // Persons
-        .service(persons_list_handler)
-        .service(persons_get_handler)
-        .service(persons_update_handler)
-        .service(persons_create_handler)
+        .service(persons_get_all_handler) // wip, works but returns contactinfo id
+        .service(persons_get_by_id_handler) // works
+        .service(persons_update_handler)// wip, works but only role and contactinfo_id can be updated
+        .service(persons_create_handler) // works
 
         // C_Templates
-        .service(create_ctemplate_handler)
-        .service(ctemplates_get_handler)
-        .service(ctemplates_get_by_id_handler)
+        .service(ctemplates_get_all_handler) // works
+        .service(ctemplates_get_by_id_handler) // works
+        .service(ctemplate_create_handler) // works
 
 
         // Contests
-        .service(contests_create_results)
-        .service(contests_get_results_handler)
-        .service(contests_get_master_view_handler)
-;
+        // Note no getters since all fields are ids, only complex getters are useful
+        .service(contest_get_results_by_id_handler) // works
+        .service(contests_create_results) // works
+        .service(contests_create_handler) // works
+        .service(contests_get_master_view_handler) // works
+
+        // ContestResults
+        .service(contestresult_create_handler); // works
     conf.service(scope);
 }

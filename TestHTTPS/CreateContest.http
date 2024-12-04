@@ -3,6 +3,24 @@ POST http://localhost:8000/contests
 Content-Type: application/json
 
 {
-  "SPORTFEST_ID": "d174119f-fbfc-495a-8f7d-65a910a9df4e",
-  "DETAILS_ID": "a86581c5-8ccd-4eb7-a75e-85b7d6d39729"
+  "SPORTFEST_ID": "f888fb77-7d67-4351-a316-70b9f382df36",
+  "DETAILS_ID": "f77210ac-5cd2-4050-ab81-b6583d54e4d9",
+  "NAME": "100m Lauf",
+  "ct_name": "Nice template",
+  "ct_description": "A nice contest",
+  "ct_graderange": "1-4",
+  "ct_evaluation": "ASCENDING",
+  "ct_unit": "KG"
 }
+
+###
+# DETAILS_ID: "",
+# SPORTFEST_ID: String,
+# DETAILS_ID: String,
+# NAME: String,
+# ct_name: String,
+# ct_description: Option<String>,
+# ct_graderange: Option<String>,
+# ct_evaluation: String,
+# ct_unit: String
+#

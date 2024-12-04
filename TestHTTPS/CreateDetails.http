@@ -3,9 +3,9 @@ POST http://localhost:8000/details
 Content-Type: application/json
 
 {
-  "LOCATION_ID": "a3314749-baf2-485c-ba90-7673d7755062",
-  "CONTACTPERSON_ID": "127228d9-77e2-478a-abc7-afcf7ef7699c",
-  "NAME" : "My Sportfest",
+  "LOCATION_ID": "f66d94c2-ad43-4b50-aeb6-e4301c016af4",
+  "CONTACTPERSON_ID": "af603112-47a8-4bc8-b218-88c9981a23ff",
+  "NAME" : "100m Lauf",
   "START": "2024-12-02T15:30:00",
   "END": "2024-12-02T15:30:00"
 }

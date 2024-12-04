@@ -44,7 +44,7 @@ pub async fn sportfests_list_handler(data: web::Data<AppState>) -> impl Responde
 
 
 #[get("/sportfests/{id}")]
-pub async fn sportfests_get_handler(
+pub async fn sportfests_get_masterview_handler(
     data: web::Data<AppState>,
     path: web::Path<String>
 ) -> impl Responder {
@@ -181,7 +181,6 @@ pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
     let sportfest_id = path.into_inner();
 
     let updates_details = body.DETAILS_ID.is_some();
-
 
     let nr_of_updates : u8 =
         [updates_details as u8].iter().sum();

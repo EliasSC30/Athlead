@@ -1,10 +1,10 @@
-PATCH http://localhost:8000/locations/8b736243-a456-460e-8bb2-07817c96e68e
+PATCH http://localhost:8000/locations/a4ff5fe5-39ff-4347-adef-c2803d8e6afc
 Content-Type: application/json
 
 {
-  "NAME": "Elias yo",
+  "NAME": "Elias",
   "CITY": "Dubai",
   "ZIPCODE": "69187",
-  "STREET": "Scheune",
-  "STREETNUMBER": "23"
+  "STREET": "Fussballplatz",
+  "STREETNUMBER": "13"
 }

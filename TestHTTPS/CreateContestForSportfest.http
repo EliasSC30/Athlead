@@ -5,7 +5,7 @@ Content-Type: application/json
   "LOCATION_ID": "a3314749-baf2-485c-ba90-7673d7755062",
   "CONTACTPERSON_ID": "127228d9-77e2-478a-abc7-afcf7ef7699c",
   "C_TEMPLATE_ID" : "8e461179-a6b9-4053-b333-2a11eee26f5d",
-  "NAME": "Weitsprung",
+  "NAME": "100m Lauf",
   "START": "2025-12-02T15:30:00",
   "END": "2025-12-02T22:00:00"
 }

@@ -90,6 +90,7 @@ pub struct CreateContest {
     pub SPORTFEST_ID: String,
     pub DETAILS_ID: String,
     pub NAME: String,
+    pub ct_name: String,
     pub ct_description: Option<String>,
     pub ct_graderange: Option<String>,
     pub ct_evaluation: String,

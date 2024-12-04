@@ -1,7 +1,6 @@
-PATCH http://localhost:8000/persons/aae21e69-f8dc-4170-8902-e44a3d674a88
+PATCH http://localhost:8000/persons/8b3bc690-9654-4db4-9d0b-3cabd5070fc6
 Content-Type: application/json
 
 {
-  "CONTACTINFO_ID" : "5c6ccf5a-c762-4387-be4d-158e535b5a4f",
-  "ROLE" : "ADMIN"
+  "ROLE" : "JUDGE"
 }

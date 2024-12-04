@@ -1,0 +1,29 @@
+POST http://localhost:8000/contests/cc596311-bf32-4eca-8088-072b3da45c39/contestresults
+Content-Type: application/json
+
+[
+  {
+    "p_id" :  "2c94ecc8-c944-4c52-b192-77fcc090e254",
+    "time" : 10.0
+  },
+  {
+    "p_id" :  "8bfb54c5-7bda-4c63-9dc7-3c124905ca1e",
+    "time" : 13.0
+  },
+  {
+    "p_id" :  "8c6a8392-db10-4904-8dd1-bac11596cae8",
+    "time" : 19.0
+  },
+  {
+    "p_id" :  "9802dda1-aef0-4362-b408-844a5107117d",
+    "time" : 20.0
+  },
+  {
+    "p_id" :  "984edec5-5970-4e3d-a4d9-14a0159afc54",
+    "time" : 32.0
+  },
+  {
+    "p_id" :  "af603112-47a8-4bc8-b218-88c9981a23ff",
+    "time" : 8.0
+  }
+]
