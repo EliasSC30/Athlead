@@ -18,108 +18,124 @@ struct LocationManagerView: View {
     @State private var streetNumber = ""
     @State private var zipcode = ""
     @State private var city = ""
+    
+    @State private var isLoading: Bool = true
+    @State private var errorMessageLoad: String?
 
     var body: some View {
         VStack {
-            List {
-                Section(header: Text("Locations")) {
-                    if allLocations.isEmpty {
-                        Text("No locations available")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    } else {
-                        ForEach(allLocations, id: \.self) { location in
-                            NavigationLink(
-                                destination: LocationView(location: location)
-                            ) {
-                                Label(
-                                    location.NAME,
-                                    systemImage: "mappin.and.ellipse")
-                            }
-                        }.onDelete(perform: {
-                            indexSet in
-                            let index = indexSet.first!
-                            let location = allLocations[index]
-                            deleteLocation(location: location)
-                        })
-                    }
-
-                }.onAppear(perform: loadLocations)
-
-                Section(header: Text("Add Location")) {
-                    Button(action: {
-                        showAddLocation = true
-                    }) {
-                        Label("Add Location", systemImage: "plus.circle")
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .padding()
-                    .popover(
-                        isPresented: $showAddLocation,
-                        content: {
-                            NavigationView {
-                                Form {
-                                    Section(
-                                        header: Text("Location Details").font(
-                                            .subheadline
-                                        ).foregroundColor(.secondary)
+            Group {
+                if isLoading {
+                    ProgressView("Loading Location data...")
+                } else if let error = errorMessageLoad {
+                    Text("Error: \(error)")
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
+                } else {
+                    List {
+                        Section(header: Text("Locations")) {
+                            if allLocations.isEmpty {
+                                Text("No locations available")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                ForEach(allLocations, id: \.self) { location in
+                                    NavigationLink(
+                                        destination: LocationView(location: location)
                                     ) {
-                                        HStack {
-                                            Text("Name")
-                                                .foregroundColor(.secondary)
-                                                .padding(.trailing)
-                                            Spacer()
-                                            TextField("Name", text: $name)
-                                                .textFieldStyle(
-                                                    DefaultTextFieldStyle())
-                                        }
+                                        Label(
+                                            location.NAME,
+                                            systemImage: "mappin.and.ellipse")
                                     }
-
-                                    Section(
-                                        header: Text("Address").font(
-                                            .subheadline
-                                        ).foregroundColor(.secondary)
-                                    ) {
-                                        TextField("Street", text: $street)
-                                            .textFieldStyle(
-                                                DefaultTextFieldStyle())
-
-                                        TextField(
-                                            "Street Number", text: $streetNumber
-                                        )
-                                        .textFieldStyle(DefaultTextFieldStyle())
-                                        .keyboardType(.numberPad)
-
-                                        TextField("Zipcode", text: $zipcode)
-                                            .textFieldStyle(
-                                                DefaultTextFieldStyle())
-
-                                        TextField("City", text: $city)
-                                            .textFieldStyle(
-                                                DefaultTextFieldStyle())
-                                    }
-
-                                    Button(action: createLocation) {
-                                        HStack {
-                                            Spacer()
-                                            Text("Save")
-                                                .font(.headline)
-                                                .foregroundColor(
-                                                    Color.accentColor)
-                                            Spacer()
-                                        }
-                                    }
-
-                                }
-                                .navigationTitle("Create Location")
-                                .navigationBarTitleDisplayMode(.inline)
+                                }.onDelete(perform: {
+                                    indexSet in
+                                    let index = indexSet.first!
+                                    let location = allLocations[index]
+                                    deleteLocation(location: location)
+                                })
                             }
-                        })
+                            
+                        }
+                        
+                        Section(header: Text("Add Location")) {
+                            Button(action: {
+                                showAddLocation = true
+                            }) {
+                                Label("Add Location", systemImage: "plus.circle")
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .padding()
+                            .popover(
+                                isPresented: $showAddLocation,
+                                content: {
+                                    NavigationView {
+                                        Form {
+                                            Section(
+                                                header: Text("Location Details").font(
+                                                    .subheadline
+                                                ).foregroundColor(.secondary)
+                                            ) {
+                                                HStack {
+                                                    Text("Name")
+                                                        .foregroundColor(.secondary)
+                                                        .padding(.trailing)
+                                                    Spacer()
+                                                    TextField("Name", text: $name)
+                                                        .textFieldStyle(
+                                                            DefaultTextFieldStyle())
+                                                }
+                                            }
+                                            
+                                            Section(
+                                                header: Text("Address").font(
+                                                    .subheadline
+                                                ).foregroundColor(.secondary)
+                                            ) {
+                                                TextField("Street", text: $street)
+                                                    .textFieldStyle(
+                                                        DefaultTextFieldStyle())
+                                                
+                                                TextField(
+                                                    "Street Number", text: $streetNumber
+                                                )
+                                                .textFieldStyle(DefaultTextFieldStyle())
+                                                .keyboardType(.numberPad)
+                                                
+                                                TextField("Zipcode", text: $zipcode)
+                                                    .textFieldStyle(
+                                                        DefaultTextFieldStyle())
+                                                
+                                                TextField("City", text: $city)
+                                                    .textFieldStyle(
+                                                        DefaultTextFieldStyle())
+                                            }
+                                            
+                                            Button(action: createLocation) {
+                                                HStack {
+                                                    Spacer()
+                                                    Text("Save")
+                                                        .font(.headline)
+                                                        .foregroundColor(
+                                                            Color.accentColor)
+                                                    Spacer()
+                                                }
+                                            }
+                                            
+                                        }
+                                        .navigationTitle("Create Location")
+                                        .navigationBarTitleDisplayMode(.inline)
+                                    }
+                                })
+                        }
+                    }
+                    .listStyle(InsetGroupedListStyle())
+                    .navigationTitle("Locations")
                 }
-            }
-            .listStyle(InsetGroupedListStyle())
-            .navigationTitle("Locations")
+            }.onAppear(perform: loadLocations)
+                .navigationBarItems(trailing: Button(action: loadLocations) {
+                    Image(systemName: "arrow.clockwise")
+                })
         }
     }
 
@@ -194,6 +210,9 @@ struct LocationManagerView: View {
     }
 
     private func loadLocations() {
+        isLoading = true
+        errorMessageLoad = nil
+        
         let url = URL(string: "\(apiURL)/locations")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -202,10 +221,18 @@ struct LocationManagerView: View {
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 print("Error fetching locations: \(error)")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorMessageLoad = "Failed to fetch locations"
+                }
                 return
             }
 
             guard let data = data else {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorMessageLoad = "Failed to fetch locations"
+                }
                 return
             }
 
@@ -215,8 +242,16 @@ struct LocationManagerView: View {
                 DispatchQueue.main.async {
                     self.allLocations = locationresponse.data
                 }
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorMessageLoad = nil
+                }
             } catch {
                 print("Error decoding locations: \(error)")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorMessageLoad = "Failed to fetch locations"
+                }
             }
 
         }.resume()
@@ -235,7 +270,6 @@ struct LocationView: View {
     }
 
     var body: some View {
-        NavigationView {
             Form {
                 Section(
                     header: Text("Location Details").font(.subheadline)
@@ -291,7 +325,6 @@ struct LocationView: View {
             }
             .navigationTitle("Edit Location")
             .navigationBarTitleDisplayMode(.inline)
-        }
     }
 
     private func saveLocation() {

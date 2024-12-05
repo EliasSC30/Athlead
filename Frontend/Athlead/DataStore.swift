@@ -36,6 +36,12 @@ struct SportFest: Identifiable, Decodable {
 }
 
 struct DetailsResponse: Decodable {
+    let data: [Detail]
+    let results: Int
+    let status: String
+}
+
+struct DetailResponse: Decodable {
     let data: Detail
     let status: String
 }
@@ -51,8 +57,7 @@ struct Detail: Identifiable, Decodable, Hashable {
 }
 
 struct SportfestDetailsResponse: Decodable {
-    let data: SportfestDetails
-    let message: String
+    let result: SportfestDetails
     let status: String
 }
 
@@ -70,7 +75,6 @@ struct Location: Identifiable, Hashable, Decodable {
 
 struct LocationsResponse: Decodable {
     let data: [Location]
-    let results: Int
     let status: String
 }
 
@@ -113,7 +117,7 @@ struct PersonDisplay: Identifiable, Hashable, Decodable {
     var id: String { return self.ID }
 }
 
-struct Contact: Identifiable, Hashable,Decodable {
+struct Contact: Identifiable, Hashable, Decodable {
     let ID: String
     let FIRSTNAME: String
     let LASTNAME: String
@@ -180,4 +184,48 @@ struct LocationUpdate: Decodable {
     
 }
 
+struct CTemplate: Identifiable, Decodable {
+    let ID: String
+    let NAME: String
+    let DESCRIPTION: String?
+    let GRADERANGE: String?
+    let EVALUATION: String
+    let UNIT: String
+    
+    var id: String { return self.ID }
+    
+}
+
+struct CreateCTemplateResponse: Decodable {
+    let data: CTemplate
+    let message: String
+    let status: String
+}
+
+struct CTemplatesResponse: Decodable {
+    let data: [CTemplate]
+    let results: Int
+    let status: String
+}
+
+struct CreateCTemplate: Encodable {
+    let NAME: String
+    let DESCRIPTION: String?
+    let GRADERANGE: String?
+    let EVALUATION: String
+    let UNIT: String
+}
+struct UpdateCTemplateResponse: Decodable {
+    let result: CTemplate
+    let status: String
+}
+
+struct AssignContestSportFestCreate: Encodable {
+    let LOCATION_ID: String
+    let CONTACTPERSON_ID: String
+    let C_TEMPLATE_ID: String
+    let NAME : String
+    let START: Date
+    let END: Date
+}
 var STORE : [String:[ResultInfo]] = [:];

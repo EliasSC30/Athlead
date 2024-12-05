@@ -13,65 +13,81 @@ struct MainPageView: View {
     @State private var past_sportfests: [SportFestDisplay] = []
     
     
+    @State private var isLoading: Bool = true
+    @State private var errorMessage: String?
+    
     private let apiURL = "http://localhost:8000";
     
     
+    
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    Section(header: Text("Nächste Wettkämpfe")
+        Group {
+            if isLoading {
+                ProgressView("Loading sportfests...")
+            } else if let error = errorMessage {
+                Text("Error: \(error)")
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+            } else {
+                NavigationView {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
+                            Section(header: Text("Nächste Wettkämpfe")
                                 .font(.title2)
                                 .fontWeight(.semibold)
                                 .padding(.horizontal)) {
-                        VStack(spacing: 15) {
-                            
-                            if upcoming_sportsfests.isEmpty {
-                                Text("Keine Wettkämpfe in nächster Zeit")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal)
-                            }
-                            
-                            ForEach(upcoming_sportsfests, id: \.self) { sportfest in
-                                NavigationLink(destination: EventDetailView(id: sportfest.ID, name: sportfest.NAME, start: sportfest.START, end: sportfest.END, locationID: sportfest.LOCATION_ID, contactPersonID: sportfest.CONTACTPERSON_ID, detailsID: sportfest.DETAILS_ID)) {
-                                    EventCard(eventName: sportfest.NAME, date: sportfest.START)
+                                    VStack(spacing: 15) {
+                                        
+                                        if upcoming_sportsfests.isEmpty {
+                                            Text("Keine Wettkämpfe in nächster Zeit")
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                                .padding(.horizontal)
+                                        }
+                                        
+                                        ForEach(upcoming_sportsfests, id: \.self) { sportfest in
+                                            NavigationLink(destination: EventDetailView(id: sportfest.ID, name: sportfest.NAME, start: sportfest.START, end: sportfest.END, locationID: sportfest.LOCATION_ID, contactPersonID: sportfest.CONTACTPERSON_ID, detailsID: sportfest.DETAILS_ID)) {
+                                                EventCard(eventName: sportfest.NAME, date: sportfest.START)
+                                            }
+                                        }
+                                        
+                                    }
                                 }
-                            }
-                        
-                        }
-                    }
-                    Section(header: Text("Vergangene Wettkämpfe")
+                            Section(header: Text("Vergangene Wettkämpfe")
                                 .font(.title2)
                                 .fontWeight(.semibold)
                                 .padding(.horizontal)) {
-                        VStack(spacing: 15) {
-                            
-                            if past_sportfests.isEmpty {
-                                Text("Keine bisherigen Wettkämpfe")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal)
-                            }
-                            
-                            ForEach(past_sportfests, id: \.self) { sportfest in
-                                NavigationLink(destination: EventDetailView(id: sportfest.ID, name: sportfest.NAME, start: sportfest.START, end: sportfest.END, locationID: sportfest.LOCATION_ID, contactPersonID: sportfest.CONTACTPERSON_ID, detailsID: sportfest.DETAILS_ID)) {
-                                    EventCard(eventName: sportfest.NAME, date: sportfest.END)
+                                    VStack(spacing: 15) {
+                                        
+                                        if past_sportfests.isEmpty {
+                                            Text("Keine bisherigen Wettkämpfe")
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                                .padding(.horizontal)
+                                        }
+                                        
+                                        ForEach(past_sportfests, id: \.self) { sportfest in
+                                            NavigationLink(destination: EventDetailView(id: sportfest.ID, name: sportfest.NAME, start: sportfest.START, end: sportfest.END, locationID: sportfest.LOCATION_ID, contactPersonID: sportfest.CONTACTPERSON_ID, detailsID: sportfest.DETAILS_ID)) {
+                                                EventCard(eventName: sportfest.NAME, date: sportfest.END)
+                                            }
+                                        }
+                                        
+                                    }
                                 }
-                            }
-                        
                         }
+                        .padding(.vertical)
                     }
+                    .navigationTitle("Athlead")
                 }
-                .padding(.vertical)
             }
-            .navigationTitle("Athlead")
-            .onAppear(perform: loadSportFests)
-        }
+        }.onAppear(perform: loadSportFests)
     }
     
     
     private func loadSportFests() {
+        isLoading = true
+        errorMessage = nil
+        
         let url = URL(string: apiURL + "/sportfests")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -80,11 +96,19 @@ struct MainPageView: View {
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 print("Error fetching locations: \(error)")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorMessage = "Failed to fetch sportfests"
+                }
                 return
             }
             
             guard let data = data, let sportFestsResponse = try? JSONDecoder().decode(SportFestsResponse.self, from: data) else {
                 print("Failed to decode sportfests")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorMessage = "Failed to fetch sportfests"
+                }
                 return
             }
             
@@ -98,15 +122,26 @@ struct MainPageView: View {
                 URLSession.shared.dataTask(with: detailRequest) { detailData, detailResponse, detailError in
                     if let detailError = detailError {
                         print("Error fetching locations: \(detailError)")
+                        DispatchQueue.main.async {
+                            self.isLoading = false
+                            self.errorMessage = "Failed to fetch sportfests"
+                        }
                         return
                     }
                     
-                    guard let detailData = detailData, let detailsResponse = try? JSONDecoder().decode(DetailsResponse.self, from: detailData) else {
+                    guard let detailData = detailData, let detailsResponse = try? JSONDecoder().decode(DetailResponse.self, from: detailData) else {
                         print("Failed to decode details")
+                        DispatchQueue.main.async {
+                            self.isLoading = false
+                            self.errorMessage = "Failed to fetch sportfests"
+                        }
                         return
                     }
                     
                     if self.past_sportfests.contains(where: { $0.ID == sportFestID }) || self.upcoming_sportsfests.contains(where: { $0.ID == sportFestID }) {
+                        DispatchQueue.main.async {
+                            self.isLoading = false
+                        }
                         return
                     }
                     
@@ -130,6 +165,11 @@ struct MainPageView: View {
                     
                     self.upcoming_sportsfests.sort(by: { $0.START < $1.START })
                     self.past_sportfests.sort(by: { $0.START < $1.START })
+                    
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                        self.errorMessage = nil
+                    }
                                 
                     
                     
@@ -137,6 +177,11 @@ struct MainPageView: View {
                 }.resume()
             }
             
+            
+            DispatchQueue.main.async {
+                self.isLoading = false
+                self.errorMessage = nil
+            }
         }.resume()
         
     

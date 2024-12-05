@@ -12,7 +12,7 @@ struct CreateSportfestView: View {
     // Form State
     @State private var sportfestName: String = ""
     @State private var selectedLocation: Location? = nil
-    @State private var selectedContact: Person? = nil
+    @State private var selectedContact: PersonDisplay? = nil
     @State private var startDate = Date()
     @State private var endDate = Date()
     @State private var locations: [Location] = []
@@ -28,72 +28,82 @@ struct CreateSportfestView: View {
     
     private let apiURL = "http://localhost:8000";
     
+    @State private var isLoading: [Bool] = [true, true]
+    @State private var errorMessageLoad: String?
+    
     var body: some View {
-        NavigationView {
-            Form {
-                // Sportfest Name
-                Section(header: Text("Sportfest Details")) {
-                    TextField("Sportfest Name", text: $sportfestName)
-                }
-                
-                // Location Picker
-                Section(header: Text("Location")) {
-                    Picker("Select Location", selection: $selectedLocation) {
-                        ForEach(locations) { location in
-                            Text("\(location.NAME) - \(location.CITY)".truncated(to: truncateLimit)).tag(location as Location?)
-                        }
+        Group {
+            if isLoading[0] && isLoading[1] {
+                ProgressView("Loading Sportfest data...")
+            } else if let error = errorMessageLoad {
+                Text("Error: \(error)")
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+            } else {
+                Form {
+                    // Sportfest Name
+                    Section(header: Text("Sportfest Details")) {
+                        TextField("Sportfest Name", text: $sportfestName)
                     }
-                }
-                
-                // Contact Person Picker
-                Section(header: Text("Contact Person")) {
-                    Picker("Select Contact", selection: $selectedContact) {
-                        ForEach(contacts) { contact in
-                            Text("\(contact.CONTACT.FIRSTNAME) \(contact.CONTACT.LASTNAME)".truncated(to: truncateLimit)).tag(contact as PersonDisplay?)
-                        }
-                    }
-                }
-                
-                // Date Range
-                Section(header: Text("Event Dates")) {
-                    DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
-                    DatePicker("End Date", selection: $endDate, displayedComponents: .date)
-                }
-                
-                // Submit Button
-                Section {
-                    if isSubmitting {
-                        ProgressView("Submitting...")
-                    } else {
-                        Button("Create Sportfest") {
-                            createSportfest()
-                        }.popover(isPresented: $isSuccesful) {
-                            NavigationLink(destination: SportfestDetailView(sportfestID: newSportfestID!)) {
-                                Text("Sportfest created successfully. Click here to view.")
-                                    .foregroundColor(.black)
+                    
+                    // Location Picker
+                    Section(header: Text("Location")) {
+                        Picker("Select Location", selection: $selectedLocation) {
+                            ForEach(locations, id: \.self) { location in
+                                Text("\(location.NAME) - \(location.CITY)".truncated(to: truncateLimit)).tag(location as Location)
                             }
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(10)
-                            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
-                            .padding(.horizontal)
+                        }
+                    }
+                    
+                    // Contact Person Picker
+                    Section(header: Text("Contact Person")) {
+                        Picker("Select Contact", selection: $selectedContact) {
+                            ForEach(contacts) { contact in
+                                Text("\(contact.CONTACT.FIRSTNAME) \(contact.CONTACT.LASTNAME)".truncated(to: truncateLimit)).tag(contact as PersonDisplay)
+                            }
+                        }
+                    }
+                    
+                    // Date Range
+                    Section(header: Text("Event Dates")) {
+                        DatePicker("Start Date", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
+                        DatePicker("End Date", selection: $endDate, displayedComponents: [.date, .hourAndMinute])
+                    }
+                    
+                    // Submit Button
+                    Section {
+                        if isSubmitting {
+                            ProgressView("Submitting...")
+                        } else {
+                            Button("Create Sportfest") {
+                                createSportfest()
+                            }.popover(isPresented: $isSuccesful) {
+                                NavigationLink(destination: SportfestDetailView(sportfestID: newSportfestID!)) {
+                                    Text("Sportfest created successfully. Click here to view.")
+                                        .foregroundColor(.black)
+                                }
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(10)
+                                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+                                .padding(.horizontal)
+                                
+                            }
                             
                         }
-                        
+                    }
+                    
+                    // Error Message
+                    if let error = errorMessage {
+                        Section {
+                            Text(error)
+                                .foregroundColor(.red)
+                        }
                     }
                 }
-                
-                // Error Message
-                if let error = errorMessage {
-                    Section {
-                        Text(error)
-                            .foregroundColor(.red)
-                    }
-                }
+                .navigationTitle("Create Sportfest")
             }
-            .navigationTitle("Create Sportfest")
-            .onAppear(perform: fetchData)
-        }
+        }.onAppear(perform: fetchData)
     }
     
     private func fetchData() {
@@ -102,6 +112,10 @@ struct CreateSportfestView: View {
     }
     
     private func fetchLocations() {
+        isLoading[0] = true
+        errorMessageLoad = nil
+        
+        
         let url = URL(string: "\(apiURL)/locations")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -110,6 +124,10 @@ struct CreateSportfestView: View {
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 print("Error fetching locations: \(error)")
+                DispatchQueue.main.async {
+                    self.isLoading[0] = false
+                    self.errorMessageLoad = "Error fetching locations"
+                }
                 return
             }
             
@@ -122,15 +140,24 @@ struct CreateSportfestView: View {
                 DispatchQueue.main.async {
                     self.locations = locationresponse.data
                     self.selectedLocation = self.locations.first
+                    self.isLoading[0] = false
+                    self.errorMessageLoad = nil
+                    
                 }
             } catch {
-                print("Error decoding locations: \(error)")
+                DispatchQueue.main.async {
+                    self.isLoading[0] = false
+                    self.errorMessageLoad = "Error fetching locations"
+                }
             }
             
         }.resume()
     }
     
     private func fetchContacts() {
+        isLoading[1] = true
+        errorMessageLoad = nil
+        
         let personsURL = URL(string: "\(apiURL)/persons")!
         var request = URLRequest(url: personsURL)
         request.httpMethod = "GET"
@@ -139,6 +166,10 @@ struct CreateSportfestView: View {
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 print("Error fetching persons: \(error)")
+                DispatchQueue.main.async {
+                    self.isLoading[1] = false
+                    self.errorMessageLoad = "Error fetching administrators"
+                }
                 return
             }
             
@@ -178,6 +209,10 @@ struct CreateSportfestView: View {
                         
                         if let error = error {
                             print("Error fetching contact info for person \(person.ID): \(error)")
+                            DispatchQueue.main.async {
+                                self.isLoading[1] = false
+                                self.errorMessageLoad = "Error fetching administrators"
+                            }
                             return
                         }
                         
@@ -194,8 +229,14 @@ struct CreateSportfestView: View {
                             contactLock.lock()
                             contacts.append(personDisplay)
                             contactLock.unlock()
+                        
+                            
                         } catch {
                             print("Error decoding contact info for person \(person.ID): \(error)")
+                            DispatchQueue.main.async {
+                                self.isLoading[1] = false
+                                self.errorMessageLoad = "Error fetching administrators"
+                            }
                         }
                         
                     }.resume()
@@ -203,7 +244,9 @@ struct CreateSportfestView: View {
                 
                 dispatchGroup.notify(queue: DispatchQueue.main) {
                     self.contacts = contacts
-                    self.selectedContact = contacts.first?.PERSON
+                    self.selectedContact = contacts.first
+                    self.isLoading[1] = false
+                    self.errorMessageLoad = nil
                 }
                 
             } catch {
@@ -215,7 +258,7 @@ struct CreateSportfestView: View {
     
     private func createSportfest() {
         guard let selectedLocation = selectedLocation,
-              let selectedContact = selectedContact?.ID else {
+              let selectedContact = selectedContact else {
             self.errorMessage = "Please select a location and a contact person."
             return
         }
@@ -226,7 +269,7 @@ struct CreateSportfestView: View {
         let details = SportfestDetailsCreate(
             NAME: sportfestName,
             LOCATION_ID: selectedLocation.ID,
-            CONTACTPERSON_ID: selectedContact,
+            CONTACTPERSON_ID: selectedContact.PERSON.ID,
             START: String(startDate.ISO8601Format().dropLast()),
             END: String(endDate.ISO8601Format().dropLast())
         )
@@ -256,11 +299,7 @@ struct CreateSportfestView: View {
                 }
                 return
             }
-            
-            if let str = String(data: data!, encoding: .utf8) {
-                print("Details Response: \(str)")
-            }
-            
+        
             guard let data = data, let detailsResponse = try? JSONDecoder().decode(SportfestDetailsResponse.self, from: data) else {
                 DispatchQueue.main.async {
                     self.errorMessage = "Failed to create details. Please try again."
@@ -269,7 +308,7 @@ struct CreateSportfestView: View {
                 return
             }
             
-            let detailsID = detailsResponse.data.ID
+            let detailsID = detailsResponse.result.ID
             
             
             let sportfest = SportFestCreate(DETAILS_ID: detailsID)

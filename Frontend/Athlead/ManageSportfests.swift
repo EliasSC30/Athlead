@@ -15,88 +15,108 @@ struct ManageSportfests: View {
     @State var newSportfests: [SportFestDisplay] = []
     
     
+    
+    @State private var isLoading: Bool = true;
+    @State private var errorMessageLoad: String?
+    
     var body: some View {
         VStack {
-            List {
-                Section(header: Text("Current Sportfests")) {
-                    if currentSportFests.isEmpty {
-                        Text("No current sportfests available")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    } else {
-                        ForEach(currentSportFests, id: \.self) { sportfest in
-                            NavigationLink(
-                               destination: Text("Details for \(sportfest.NAME)")
-                            ) {
-                                Label(
-                                    sportfest.NAME,
-                                    systemImage: "figure.disc.sports")
+            Group {
+                if isLoading {
+                    ProgressView("Loading Sportfest data...")
+                } else if let error = errorMessageLoad {
+                    Text("Error: \(error)")
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
+                } else {
+                    List {
+                        Section(header: Text("Current Sportfests")) {
+                            if currentSportFests.isEmpty {
+                                Text("No current sportfests available")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                ForEach(currentSportFests, id: \.self) { sportfest in
+                                    NavigationLink(
+                                        destination: Text("Details for \(sportfest.NAME)")
+                                    ) {
+                                        Label(
+                                            sportfest.NAME,
+                                            systemImage: "figure.disc.sports")
+                                    }
+                                }.onDelete(perform: {
+                                    indexSet in
+                                    let index = indexSet.first!
+                                    let sportfest = currentSportFests[index]
+                                    deleteSportfests(sportFest: sportfest)
+                                })
                             }
-                        }.onDelete(perform: {
-                            indexSet in
-                            let index = indexSet.first!
-                            let sportfest = currentSportFests[index]
-                            deleteSportfests(sportFest: sportfest)
-                        })
-                    }
-
-                }
-                
-                Section(header: Text("Upcoming Sportfests")) {
-                    if newSportfests.isEmpty {
-                        Text("No upcoming sportfests available")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    } else {
-                        ForEach(newSportfests, id: \.self) { sportfest in
-                            NavigationLink(
-                               destination: Text("Details for \(sportfest.NAME)")
-                            ) {
-                                Label(
-                                    sportfest.NAME,
-                                    systemImage: "figure.run")
+                            
+                        }
+                        
+                        Section(header: Text("Upcoming Sportfests")) {
+                            if newSportfests.isEmpty {
+                                Text("No upcoming sportfests available")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                ForEach(newSportfests, id: \.self) { sportfest in
+                                    NavigationLink(
+                                        destination: Text("Details for \(sportfest.NAME)")
+                                    ) {
+                                        Label(
+                                            sportfest.NAME,
+                                            systemImage: "figure.run")
+                                    }
+                                }.onDelete(perform: {
+                                    indexSet in
+                                    let index = indexSet.first!
+                                    let sportfest = newSportfests[index]
+                                    deleteSportfests(sportFest: sportfest)
+                                })
                             }
-                        }.onDelete(perform: {
-                            indexSet in
-                            let index = indexSet.first!
-                            let sportfest = newSportfests[index]
-                            deleteSportfests(sportFest: sportfest)
-                        })
-                    }
-
-                }
-            
-                Section(header: Text("Past Sportfests")) {
-                    if oldSportFests.isEmpty {
-                        Text("No past sportfests available")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    } else {
-                        ForEach(oldSportFests, id: \.self) { sportfest in
-                            NavigationLink(
-                               destination: Text("Details for \(sportfest.NAME)")
-                            ) {
-                                Label(
-                                    sportfest.NAME,
-                                    systemImage: "flag.pattern.checkered")
+                            
+                        }
+                        
+                        Section(header: Text("Past Sportfests")) {
+                            if oldSportFests.isEmpty {
+                                Text("No past sportfests available")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                ForEach(oldSportFests, id: \.self) { sportfest in
+                                    NavigationLink(
+                                        destination: Text("Details for \(sportfest.NAME)")
+                                    ) {
+                                        Label(
+                                            sportfest.NAME,
+                                            systemImage: "flag.pattern.checkered")
+                                    }
+                                }.onDelete(perform: {
+                                    indexSet in
+                                    let index = indexSet.first!
+                                    let sportfest = oldSportFests[index]
+                                    deleteSportfests(sportFest: sportfest)
+                                })
                             }
-                        }.onDelete(perform: {
-                            indexSet in
-                            let index = indexSet.first!
-                            let sportfest = oldSportFests[index]
-                            deleteSportfests(sportFest: sportfest)
-                        })
+                            
+                        }
+                        
                     }
-
+                    .listStyle(InsetGroupedListStyle())
+                    .navigationTitle("Sportfests")
                 }
-
-            }
-            .listStyle(InsetGroupedListStyle())
-            .navigationTitle("Sportfests")
-        }.onAppear(perform: loadSportFests)
+            }.onAppear(perform: loadSportFests)
+            .navigationBarItems(trailing: Button(action: loadSportFests) {
+                    Image(systemName: "arrow.clockwise")
+                })
+        }
     }
     
     private func loadSportFests(){
+        isLoading = true
+        errorMessageLoad = nil
+        
         let url = URL(string: "\(apiURL)/sportfests")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -105,11 +125,19 @@ struct ManageSportfests: View {
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 print("Error fetching sportfests: \(error)")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorMessageLoad = "Failed to fetch sportfests"
+                }
                 return
             }
             
             guard let data = data, let sportfestsResponse = try? JSONDecoder().decode(SportFestsResponse.self, from: data) else {
                 print("Failed to decode sportfests")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorMessageLoad = "Failed to fetch sportfests"
+                }
                 return
             }
             
@@ -124,10 +152,18 @@ struct ManageSportfests: View {
                 URLSession.shared.dataTask(with: detailRequest) { data, response, error in
                     if let error = error {
                         print("Error fetching details: \(error)")
+                        DispatchQueue.main.async {
+                            self.isLoading = false
+                            self.errorMessageLoad = "Failed to fetch sportfests"
+                        }
                         return
                     }
-                    guard let data = data, let detailsResponse = try? JSONDecoder().decode(DetailsResponse.self, from: data) else {
+                    guard let data = data, let detailsResponse = try? JSONDecoder().decode(DetailResponse.self, from: data) else {
                         print("Failed to decode details")
+                        DispatchQueue.main.async {
+                            self.isLoading = false
+                            self.errorMessageLoad = "Failed to fetch sportfests"
+                        }
                         return
                     }
                     
@@ -175,12 +211,18 @@ struct ManageSportfests: View {
                             }
                         }
                             
+                        isLoading = false
+                        errorMessageLoad = nil
                             
                         
                         
                     }
                 }.resume()
                 
+            }
+            DispatchQueue.main.async {
+                self.isLoading = false
+                self.errorMessageLoad = nil
             }
             
         }.resume()

@@ -20,111 +20,147 @@ struct PersonManagementView: View {
     @State private var showAddPersonSheet = false
     @State private var personToEdit: PersonDisplay? = nil
     
+    @State private var isLoading: Bool = true
+    @State private var errorMessageLoad: String?
+    
     var body: some View {
-          NavigationView {
-              List {
-                  Section("Administrators") {
-                      ForEach(personsAdmins) { personDisplay in
-                          HStack {
-                              VStack(alignment: .leading) {
-                                  Text("\(personDisplay.CONTACT.FIRSTNAME) \(personDisplay.CONTACT.LASTNAME)")
-                                      .font(.headline)
-                                  Text(personDisplay.CONTACT.EMAIL)
-                                      .font(.subheadline)
-                                      .foregroundColor(.gray)
-                                  Text("Role: \(personDisplay.PERSON.ROLE)")
-                                      .font(.footnote)
-                                      .foregroundColor(.blue)
-                              }
-                              Spacer()
-                              Button(action: {
-                                  personToEdit = personDisplay
-                              }) {
-                                  Text("Edit")
-                                      .font(.caption)
-                                      .padding(5)
-                                      .background(Color.blue.opacity(0.2))
-                                      .cornerRadius(5)
-                              }
-                          }
-                      }
-                      .onDelete(perform: deletePerson)
-                  }
-                  Section("Judges") {
-                      ForEach(personsJudges) { personDisplay in
-                          HStack {
-                              VStack(alignment: .leading) {
-                                  Text("\(personDisplay.CONTACT.FIRSTNAME) \(personDisplay.CONTACT.LASTNAME)")
-                                      .font(.headline)
-                                  Text(personDisplay.CONTACT.EMAIL)
-                                      .font(.subheadline)
-                                      .foregroundColor(.gray)
-                                  Text("Role: \(personDisplay.PERSON.ROLE)")
-                                      .font(.footnote)
-                                      .foregroundColor(.blue)
-                              }
-                              Spacer()
-                              Button(action: {
-                                  personToEdit = personDisplay
-                              }) {
-                                  Text("Edit")
-                                      .font(.caption)
-                                      .padding(5)
-                                      .background(Color.blue.opacity(0.2))
-                                      .cornerRadius(5)
-                              }
-                          }
-                      }
-                      .onDelete(perform: deletePerson)
-                  }
-                  Section("Contestants") {
-                      ForEach(personsContestants) { personDisplay in
-                          HStack {
-                              VStack(alignment: .leading) {
-                                  Text("\(personDisplay.CONTACT.FIRSTNAME) \(personDisplay.CONTACT.LASTNAME)")
-                                      .font(.headline)
-                                  Text(personDisplay.CONTACT.EMAIL)
-                                      .font(.subheadline)
-                                      .foregroundColor(.gray)
-                                  Text("Role: \(personDisplay.PERSON.ROLE)")
-                                      .font(.footnote)
-                                      .foregroundColor(.blue)
-                              }
-                              Spacer()
-                              Button(action: {
-                                  personToEdit = personDisplay
-                              }) {
-                                  Text("Edit")
-                                      .font(.caption)
-                                      .padding(5)
-                                      .background(Color.blue.opacity(0.2))
-                                      .cornerRadius(5)
-                              }
-                          }
-                      }
-                      .onDelete(perform: deletePerson)
-                  }
-              }
-              .navigationTitle("Person Management")
-              .toolbar {
-                  ToolbarItem(placement: .navigationBarTrailing) {
-                      Button(action: {
-                          showAddPersonSheet = true
-                      }) {
-                          Label("Add Person", systemImage: "plus")
-                      }
-                  }
-              }
-              .sheet(item: $personToEdit, onDismiss: clearEditPerson) { personDisplay in
-                  //PersonEditView(personDisplay: personDisplay, onSave: updatePerson)
-              }
-              .sheet(isPresented: $showAddPersonSheet) {
-                  PersonAddView(onAddVoid: addPerson)
-              }
-          }.onAppear(perform: loadPersons)
-      }
+        Group {
+            if isLoading {
+                ProgressView("Loading Person data...")
+            } else if let error = errorMessageLoad {
+                Text("Error: \(error)")
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+            } else {
+                List {
+                    Section("Administrators") {
+                        if personsJudges.isEmpty {
+                            Text("No administrators available.")
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                        } else {
+                            ForEach(personsAdmins) { personDisplay in
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text("\(personDisplay.CONTACT.FIRSTNAME) \(personDisplay.CONTACT.LASTNAME)")
+                                            .font(.headline)
+                                        Text(personDisplay.CONTACT.EMAIL)
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                        Text("Role: \(personDisplay.PERSON.ROLE)")
+                                            .font(.footnote)
+                                            .foregroundColor(.blue)
+                                    }
+                                    Spacer()
+                                    Button(action: {
+                                        personToEdit = personDisplay
+                                    }) {
+                                        Text("Edit")
+                                            .font(.caption)
+                                            .padding(5)
+                                            .background(Color.blue.opacity(0.2))
+                                            .cornerRadius(5)
+                                    }
+                                }
+                            }
+                            .onDelete(perform: deletePerson)
+                        }
+                    }
+                    Section("Judges") {
+                        if personsJudges.isEmpty {
+                            Text("No judges available.")
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                        } else {
+                            ForEach(personsJudges) { personDisplay in
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text("\(personDisplay.CONTACT.FIRSTNAME) \(personDisplay.CONTACT.LASTNAME)")
+                                            .font(.headline)
+                                        Text(personDisplay.CONTACT.EMAIL)
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                        Text("Role: \(personDisplay.PERSON.ROLE)")
+                                            .font(.footnote)
+                                            .foregroundColor(.blue)
+                                    }
+                                    Spacer()
+                                    Button(action: {
+                                        personToEdit = personDisplay
+                                    }) {
+                                        Text("Edit")
+                                            .font(.caption)
+                                            .padding(5)
+                                            .background(Color.blue.opacity(0.2))
+                                            .cornerRadius(5)
+                                    }
+                                }
+                            }
+                            .onDelete(perform: deletePerson)
+                        }
+                    }
+                    Section("Contestants") {
+                        if personsContestants.isEmpty {
+                            Text("No contestants available.")
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                        } else {
+                            ForEach(personsContestants) { personDisplay in
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text("\(personDisplay.CONTACT.FIRSTNAME) \(personDisplay.CONTACT.LASTNAME)")
+                                            .font(.headline)
+                                        Text(personDisplay.CONTACT.EMAIL)
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                        Text("Role: \(personDisplay.PERSON.ROLE)")
+                                            .font(.footnote)
+                                            .foregroundColor(.blue)
+                                    }
+                                    Spacer()
+                                    Button(action: {
+                                        personToEdit = personDisplay
+                                    }) {
+                                        Text("Edit")
+                                            .font(.caption)
+                                            .padding(5)
+                                            .background(Color.blue.opacity(0.2))
+                                            .cornerRadius(5)
+                                    }
+                                }
+                            }
+                            .onDelete(perform: deletePerson)
+                        }
+                    }
+                }
+                .navigationTitle("Person Management")
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            showAddPersonSheet = true
+                        }) {
+                            Label("Add Person", systemImage: "plus")
+                        }
+                    }
+                }
+                .sheet(item: $personToEdit, onDismiss: clearEditPerson) { personDisplay in
+                    //PersonEditView(personDisplay: personDisplay, onSave: updatePerson)
+                }
+                .sheet(isPresented: $showAddPersonSheet) {
+                    PersonAddView(onAddVoid: addPerson)
+                }
+            }
+        }.onAppear(perform: loadPersons)
+            .navigationBarItems(trailing: Button(action: loadPersons) {
+                Image(systemName: "arrow.clockwise")
+            })
+        
+    }
     
     private func loadPersons(){
+        isLoading = true
+        errorMessageLoad = nil
+        
         let url = URL(string: "\(apiURL)/persons")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -134,10 +170,18 @@ struct PersonManagementView: View {
             
             if let error = error {
                 print("Error \(error)")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorMessageLoad = "Failed to fetch persons"
+                }
                 return
             }
             guard let data = data, let personResponse = try? JSONDecoder().decode(PersonsResponse.self, from: data) else {
                 print("Coulnd decode")
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorMessageLoad = "Failed to fetch persons"
+                }
                 return
             }
             
@@ -153,10 +197,18 @@ struct PersonManagementView: View {
                 URLSession.shared.dataTask(with: request) { data, response, error in
                     if let error = error {
                         print("Error \(error)")
+                        DispatchQueue.main.async {
+                            self.isLoading = false
+                            self.errorMessageLoad = "Failed to fetch persons"
+                        }
                         return
                     }
                     guard let data = data, let contactInfoResponse = try? JSONDecoder().decode(ContactInfoResponse.self, from: data) else {
                         print("Coulnd decode")
+                        DispatchQueue.main.async {
+                            self.isLoading = false
+                            self.errorMessageLoad = "Failed to fetch persons"
+                        }
                         return
                     }
                     
@@ -176,10 +228,16 @@ struct PersonManagementView: View {
                                 personsContestants.append(person)
                             }
                         }
+                        self.isLoading = false
+                        self.errorMessageLoad = nil
                         
                     }
                 }.resume()
-                
+            }
+            
+            DispatchQueue.main.async {
+                self.isLoading = false
+                self.errorMessageLoad = nil
             }
         }.resume()
         

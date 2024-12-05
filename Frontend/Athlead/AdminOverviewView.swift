@@ -27,13 +27,13 @@ struct AdminOverviewView: View {
                 
                 // Competitions Management Section
                 Section(header: Text("Contests")) {
-                    NavigationLink(destination: Text("Add New Competition")) {
+                    NavigationLink(destination: AddContestView()) {
                         Label("Add Contests", systemImage: "plus.square")
                     }
-                    NavigationLink(destination: Text("Manage Competitions")) {
+                    NavigationLink(destination: ManageContestView()) {
                         Label("Manage Contests", systemImage: "gearshape")
                     }
-                    NavigationLink(destination: Text("Assign Competitions to Sportfests")) {
+                    NavigationLink(destination: AssignContestToSportfestView()) {
                         Label("Assign to Sportfest", systemImage: "arrowshape.turn.up.right")
                     }
                 }
@@ -45,6 +45,9 @@ struct AdminOverviewView: View {
                     }
                     NavigationLink(destination: Text("Generate Participation Statistics")) {
                         Label("Participation Stats", systemImage: "percent")
+                    }
+                    NavigationLink(destination: Text("Certificate Generation")) {
+                        Label("Certificate Generation", systemImage: "doc.badge.plus")
                     }
                 }
                 
