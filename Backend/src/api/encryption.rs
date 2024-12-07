@@ -3,7 +3,6 @@ pub mod encryption
 {
     use std::fmt;
     use std::mem::swap;
-    use std::ptr::copy;
 
     pub struct BigInt<const N: usize> {
         pub bits: [u32;N]
@@ -216,13 +215,13 @@ pub mod encryption
     }
     pub fn generate_key() -> (u128, u128, u128)
     {
-        let p = 7; // GPT...
-        let q = 47; // GPT...
+        let p = 1708023547; // GPT...
+        let q = 7260931823; // GPT...
 
         let n = p*q;
         let phi_n = (p-1u128) * (q -1u128);
 
-        let e = 17;
+        let e = 1099511627791;
 
         let gcd = gcd(e, phi_n);
 
@@ -281,13 +280,33 @@ pub mod encryption
         ms.iter().map(|m| crypt(*m, d_or_e, n)).collect()
     }
 
+    fn array_to_u64(bytes: [u8; 8]) -> u64 {
+        let mut result = 0u64;
+        for &byte in &bytes {
+            result = (result << 8) | u64::from(byte);
+        }
+        result
+    }
+
+    // For now, we only have 128bit and the algorithm needs to be able to square the value.., ie 8 u8-characters
+    pub fn crypt_str(string: &[u8; 8], d_or_e : u128, n: u128) -> [u8;8]
+    {
+        assert!(string.len() <= 8, "Before we have a bigint lib we are limited to 16 character");
+
+        let cryptable_format = array_to_u64(string.clone()); // 128 bits
+
+        let encrypted = crypt(cryptable_format as u128, d_or_e, n);
+
+        (encrypted as u64).to_be_bytes()
+    }
+
     fn highest_bit_pos(n: u128) -> u32 {
         128 - n.leading_zeros() - 1
     }
 
     fn get_nth_bit(d: u128, n: u32) -> bool
     {
-        (d & ((1 << n) as u128)) == (1 << n) as u128
+        (d & (1u128 << n)) == (1u128 << n)
     }
 }
 
