@@ -1,6 +1,5 @@
 use crate::api::health::health_checker_handler;
 use actix_web::{web};
-use actix_web::web::service;
 use crate::api::contactinfo::{contactinfos_create_handler, contactinfos_get_by_id_handler, contactinfos_get_all_handler, contactinfos_update_handler};
 use crate::api::contest::{contests_create_results, contest_get_results_by_id_handler, contests_get_master_view_handler, contests_create_handler};
 use crate::api::contestresult::contestresult_create_handler;

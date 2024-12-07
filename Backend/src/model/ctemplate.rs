@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use crate::model;
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]

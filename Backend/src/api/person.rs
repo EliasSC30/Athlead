@@ -53,7 +53,7 @@ pub async fn persons_update_handler(body: web::Json<UpdatePerson>,
         .execute(&data.db).await;
 
     match result {
-        Ok(person) => {
+        Ok(_) => {
             HttpResponse::Ok().json(json!(
             {
                     "status": "success",

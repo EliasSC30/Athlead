@@ -1,8 +1,7 @@
 use crate::model::contest::*;
 use crate::AppState;
-use actix_web::{get, post, patch, web, HttpResponse, Responder};
+use actix_web::{get, post, web, HttpResponse, Responder};
 use serde_json::json;
-use sqlx::mysql::MySqlQueryResult;
 use uuid::{Uuid};
 use crate::model::contestresult::{ContestResultContestView, CreateContestResultContestView};
 

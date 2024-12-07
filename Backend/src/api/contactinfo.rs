@@ -1,8 +1,6 @@
 use crate::model::contactinfo::*;
 use crate::AppState;
 use actix_web::{get, post, patch, web, HttpResponse, Responder};
-use env_logger::builder;
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::{Uuid};
 

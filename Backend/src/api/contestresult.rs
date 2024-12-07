@@ -1,8 +1,7 @@
 use crate::model::contestresult::*;
 use crate::{AppState};
-use actix_web::{get, post, patch, web, HttpResponse, Responder};
+use actix_web::{post, get, web, HttpResponse, Responder};
 use serde_json::json;
-use sqlx::Row;
 use uuid::Uuid;
 use crate::api::metric::create_metric;
 use crate::model::metric::CreateMetric;
