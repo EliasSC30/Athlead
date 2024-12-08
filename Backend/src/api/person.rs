@@ -123,8 +123,7 @@ pub async fn persons_get_by_id_handler(
     }
 }
 
-#[post("/persons")]
-pub async fn persons_create_handler(body: web::Json<CreatePerson>, data:web::Data<AppState>) -> impl Responder {
+pub async fn create_person(body: CreatePerson, data: &web::Data<AppState>) -> Result<Person, String> {
     let new_ci_id = Uuid::new_v4();
     let new_person_id = Uuid::new_v4();
 
@@ -140,10 +139,7 @@ pub async fn persons_create_handler(body: web::Json<CreatePerson>, data:web::Dat
         .execute(&data.db)
         .await;
 
-    if ci_query.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "error",
-        "message": ci_query.unwrap_err().to_string(),
-    }))};
+    if ci_query.is_err() { return Err(ci_query.err().unwrap().to_string()); };
 
     let person_query = sqlx::query(
         "INSERT INTO PERSON (ID, CONTACTINFO_ID, ROLE) VALUES (?, ?, ?)")
@@ -154,12 +150,22 @@ pub async fn persons_create_handler(body: web::Json<CreatePerson>, data:web::Dat
         .await;
 
     match person_query {
-        Ok(_) => HttpResponse::Ok().json(json!({
+        Ok(_) => Ok( Person {
+            ID: new_person_id.to_string(),
+            CONTACTINFO_ID: new_ci_id.to_string(),
+            ROLE: body.role.clone()
+        }),
+        Err(e) => Err(e.to_string())
+    }
+}
+
+#[post("/persons")]
+pub async fn persons_create_handler(body: web::Json<CreatePerson>, data:web::Data<AppState>) -> impl Responder {
+    let res = create_person(body.0, &data).await;
+    match res {
+        Ok(person) => HttpResponse::Ok().json(json!({
             "status": "success",
-            "data": json!({
-                    "ID": new_person_id,
-                    "CONTACTINFO_ID": new_ci_id,
-            })
+            "data": serde_json::to_value(&person).unwrap(),
         })),
         Err(e) => HttpResponse::InternalServerError().json(json!({
             "status": "error",

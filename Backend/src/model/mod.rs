@@ -7,3 +7,4 @@ pub(crate) mod metric;
 pub(crate) mod contestresult;
 pub(crate) mod contest;
 pub(crate) mod ctemplate;
+pub(crate) mod logon;

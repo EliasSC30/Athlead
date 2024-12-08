@@ -1,0 +1,14 @@
+POST http://localhost:8000/register
+Content-Type: application/json
+
+{
+  "password": "Elias123",
+
+  "first_name": "String",
+  "last_name": "String",
+  "email": "12345678",
+  "phone": "String",
+  "grade": "Option<String>",
+  "birth_year": "Option<String>",
+  "role": "Admin"
+}

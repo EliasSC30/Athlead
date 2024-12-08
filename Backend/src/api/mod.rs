@@ -10,3 +10,4 @@ mod contestresult;
 mod metric;
 mod ctemplate;
 mod encryption;
+mod logon;

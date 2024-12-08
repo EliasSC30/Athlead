@@ -289,7 +289,7 @@ pub mod encryption
     }
 
     // For now, we only have 128bit and the algorithm needs to be able to square the value.., ie 8 u8-characters
-    pub fn crypt_str(string: &[u8; 8], d_or_e : u128, n: u128) -> [u8;8]
+    pub fn crypt_arr(string: &[u8; 8], d_or_e : u128, n: u128) -> [u8;8]
     {
         assert!(string.len() <= 8, "Before we have a bigint lib we are limited to 16 character");
 
@@ -300,6 +300,16 @@ pub mod encryption
         (encrypted as u64).to_be_bytes()
     }
 
+    // For now, we only have 128bit and the algorithm needs to be able to square the value.., ie 8 u8-characters
+    pub fn crypt_str(string: &String, d_or_e : u128, n: u128) -> [u8;8]
+    {
+        assert_eq!(string.len(), 8, "Before we have a bigint lib we are limited to 8 character");
+
+        let converted: [u8;8] = string.clone().as_bytes().try_into().unwrap();
+
+        crypt_arr(&converted, d_or_e, n)
+    }
+
     fn highest_bit_pos(n: u128) -> u32 {
         128 - n.leading_zeros() - 1
     }
@@ -308,6 +318,22 @@ pub mod encryption
     {
         (d & (1u128 << n)) == (1u128 << n)
     }
+
+    pub fn hash(to_hash: &[u8;8]) -> u64
+    {
+        let prime = 67108859u64; // Smaller than 2^32 so prime * expanded_byte doesn't overflow
+
+        let mut hash_value = 0u64;
+
+        for byte in to_hash
+        {
+            let expanded_byte = *byte as u64;
+            hash_value ^= expanded_byte * prime;
+        }
+
+        hash_value
+    }
+
 }
 
 
