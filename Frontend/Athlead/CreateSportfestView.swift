@@ -12,11 +12,11 @@ struct CreateSportfestView: View {
     // Form State
     @State private var sportfestName: String = ""
     @State private var selectedLocation: Location? = nil
-    @State private var selectedContact: PersonDisplay? = nil
+    @State private var selectedContact: Person? = nil
     @State private var startDate = Date()
     @State private var endDate = Date()
     @State private var locations: [Location] = []
-    @State private var contacts: [PersonDisplay] = []
+    @State private var contactPersons: [Person] = []
     
     @State private var isSubmitting: Bool = false
     @State private var isSuccesful: Bool = false
@@ -58,8 +58,8 @@ struct CreateSportfestView: View {
                     // Contact Person Picker
                     Section(header: Text("Contact Person")) {
                         Picker("Select Contact", selection: $selectedContact) {
-                            ForEach(contacts) { contact in
-                                Text("\(contact.CONTACT.FIRSTNAME) \(contact.CONTACT.LASTNAME)".truncated(to: truncateLimit)).tag(contact as PersonDisplay)
+                            ForEach(contactPersons) { contact in
+                                Text("\(contact.FIRSTNAME) \(contact.LASTNAME)".truncated(to: truncateLimit)).tag(contact as Person)
                             }
                         }
                     }
@@ -183,15 +183,10 @@ struct CreateSportfestView: View {
                 
                 let dispatchGroup = DispatchGroup()
                 
-                var contacts: [PersonDisplay] = []
+                var contacts: [Person] = []
                 let contactLock = NSLock()
                 
                 for person in persons {
-                    
-                    let contactInfoID = person.CONTACTINFO_ID
-                    guard !contactInfoID.isEmpty else {
-                        continue
-                    }
                     
                     guard person.ROLE.lowercased() == "admin" else {
                         continue
@@ -199,51 +194,13 @@ struct CreateSportfestView: View {
                     
                     dispatchGroup.enter()
                     
-                    let contactInfoURL = URL(string: "\(apiURL)/contactinfos/\(contactInfoID)")!
-                    var contactInfoRequest = URLRequest(url: contactInfoURL)
-                    contactInfoRequest.httpMethod = "GET"
-                    contactInfoRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                    
-                    URLSession.shared.dataTask(with: contactInfoRequest) { data, response, error in
-                        defer { dispatchGroup.leave() }
-                        
-                        if let error = error {
-                            print("Error fetching contact info for person \(person.ID): \(error)")
-                            DispatchQueue.main.async {
-                                self.isLoading[1] = false
-                                self.errorMessageLoad = "Error fetching administrators"
-                            }
-                            return
-                        }
-                        
-                        guard let data = data else {
-                            return
-                        }
-                        
-                        do {
-                            let contactInfoResponse = try JSONDecoder().decode(ContactInfoResponse.self, from: data)
-                            let contact = contactInfoResponse.data
-                            
-                            let personDisplay = PersonDisplay(ID: person.ID, PERSON: person, CONTACTINFO_ID: contact.ID, CONTACT: contact)
-                            
-                            contactLock.lock()
-                            contacts.append(personDisplay)
-                            contactLock.unlock()
-                        
-                            
-                        } catch {
-                            print("Error decoding contact info for person \(person.ID): \(error)")
-                            DispatchQueue.main.async {
-                                self.isLoading[1] = false
-                                self.errorMessageLoad = "Error fetching administrators"
-                            }
-                        }
-                        
-                    }.resume()
+                    contactLock.lock()
+                    contacts.append(person)
+                    contactLock.unlock()
                 }
                 
                 dispatchGroup.notify(queue: DispatchQueue.main) {
-                    self.contacts = contacts
+                    self.contactPersons = contacts
                     self.selectedContact = contacts.first
                     self.isLoading[1] = false
                     self.errorMessageLoad = nil
@@ -269,7 +226,7 @@ struct CreateSportfestView: View {
         let details = SportfestDetailsCreate(
             NAME: sportfestName,
             LOCATION_ID: selectedLocation.ID,
-            CONTACTPERSON_ID: selectedContact.PERSON.ID,
+            CONTACTPERSON_ID: selectedContact.ID,
             START: String(startDate.ISO8601Format().dropLast()),
             END: String(endDate.ISO8601Format().dropLast())
         )

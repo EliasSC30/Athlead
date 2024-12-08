@@ -13,12 +13,12 @@ struct PersonManagementView: View {
     let apiURL = "http://localhost:8000"
     
     
-    @State private var personsContestants: [PersonDisplay] = []
-    @State private var personsJudges: [PersonDisplay] = []
-    @State private var personsAdmins: [PersonDisplay] = []
+    @State private var personsContestants: [Person] = []
+    @State private var personsJudges: [Person] = []
+    @State private var personsAdmins: [Person] = []
     
     @State private var showAddPersonSheet = false
-    @State private var personToEdit: PersonDisplay? = nil
+    @State private var personToEdit: Person? = nil
     
     @State private var isLoading: Bool = true
     @State private var errorMessageLoad: String?
@@ -39,21 +39,21 @@ struct PersonManagementView: View {
                                 .foregroundColor(.gray)
                                 .multilineTextAlignment(.center)
                         } else {
-                            ForEach(personsAdmins) { personDisplay in
+                            ForEach(personsAdmins) { Person in
                                 HStack {
                                     VStack(alignment: .leading) {
-                                        Text("\(personDisplay.CONTACT.FIRSTNAME) \(personDisplay.CONTACT.LASTNAME)")
+                                        Text("\(Person.FIRSTNAME) \(Person.LASTNAME)")
                                             .font(.headline)
-                                        Text(personDisplay.CONTACT.EMAIL)
+                                        Text(Person.EMAIL)
                                             .font(.subheadline)
                                             .foregroundColor(.gray)
-                                        Text("Role: \(personDisplay.PERSON.ROLE)")
+                                        Text("Role: \(Person.ROLE)")
                                             .font(.footnote)
                                             .foregroundColor(.blue)
                                     }
                                     Spacer()
                                     Button(action: {
-                                        personToEdit = personDisplay
+                                        personToEdit = Person
                                     }) {
                                         Text("Edit")
                                             .font(.caption)
@@ -72,21 +72,21 @@ struct PersonManagementView: View {
                                 .foregroundColor(.gray)
                                 .multilineTextAlignment(.center)
                         } else {
-                            ForEach(personsJudges) { personDisplay in
+                            ForEach(personsJudges) { Person in
                                 HStack {
                                     VStack(alignment: .leading) {
-                                        Text("\(personDisplay.CONTACT.FIRSTNAME) \(personDisplay.CONTACT.LASTNAME)")
+                                        Text("\(Person.FIRSTNAME) \(Person.LASTNAME)")
                                             .font(.headline)
-                                        Text(personDisplay.CONTACT.EMAIL)
+                                        Text(Person.EMAIL)
                                             .font(.subheadline)
                                             .foregroundColor(.gray)
-                                        Text("Role: \(personDisplay.PERSON.ROLE)")
+                                        Text("Role: \(Person.ROLE)")
                                             .font(.footnote)
                                             .foregroundColor(.blue)
                                     }
                                     Spacer()
                                     Button(action: {
-                                        personToEdit = personDisplay
+                                        personToEdit = Person
                                     }) {
                                         Text("Edit")
                                             .font(.caption)
@@ -105,21 +105,21 @@ struct PersonManagementView: View {
                                 .foregroundColor(.gray)
                                 .multilineTextAlignment(.center)
                         } else {
-                            ForEach(personsContestants) { personDisplay in
+                            ForEach(personsContestants) { Person in
                                 HStack {
                                     VStack(alignment: .leading) {
-                                        Text("\(personDisplay.CONTACT.FIRSTNAME) \(personDisplay.CONTACT.LASTNAME)")
+                                        Text("\(Person.FIRSTNAME) \(Person.LASTNAME)")
                                             .font(.headline)
-                                        Text(personDisplay.CONTACT.EMAIL)
+                                        Text(Person.EMAIL)
                                             .font(.subheadline)
                                             .foregroundColor(.gray)
-                                        Text("Role: \(personDisplay.PERSON.ROLE)")
+                                        Text("Role: \(Person.ROLE)")
                                             .font(.footnote)
                                             .foregroundColor(.blue)
                                     }
                                     Spacer()
                                     Button(action: {
-                                        personToEdit = personDisplay
+                                        personToEdit = Person
                                     }) {
                                         Text("Edit")
                                             .font(.caption)
@@ -143,8 +143,8 @@ struct PersonManagementView: View {
                         }
                     }
                 }
-                .sheet(item: $personToEdit, onDismiss: clearEditPerson) { personDisplay in
-                    //PersonEditView(personDisplay: personDisplay, onSave: updatePerson)
+                .sheet(item: $personToEdit, onDismiss: clearEditPerson) { Person in
+                    //PersonEditView(Person: Person, onSave: updatePerson)
                 }
                 .sheet(isPresented: $showAddPersonSheet) {
                     PersonAddView(onAddVoid: addPerson)
@@ -177,7 +177,7 @@ struct PersonManagementView: View {
                 return
             }
             guard let data = data, let personResponse = try? JSONDecoder().decode(PersonsResponse.self, from: data) else {
-                print("Coulnd decode")
+                print("Couldn't decode")
                 DispatchQueue.main.async {
                     self.isLoading = false
                     self.errorMessageLoad = "Failed to fetch persons"
@@ -188,59 +188,25 @@ struct PersonManagementView: View {
             let personData = personResponse.data;
             
             for person in personData {
-                let contactInfoId = person.CONTACTINFO_ID
-                let contactInfoUrl = URL(string: "\(apiURL)/contactinfos/\(contactInfoId)")!
-                var request = URLRequest(url: contactInfoUrl)
-                request.httpMethod = "GET"
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                
-                URLSession.shared.dataTask(with: request) { data, response, error in
-                    if let error = error {
-                        print("Error \(error)")
-                        DispatchQueue.main.async {
-                            self.isLoading = false
-                            self.errorMessageLoad = "Failed to fetch persons"
+                DispatchQueue.main.async {
+                    if person.ROLE.uppercased() == "ADMIN" {
+                        if !personsAdmins.contains(person) {
+                            personsAdmins.append(person)
                         }
-                        return
-                    }
-                    guard let data = data, let contactInfoResponse = try? JSONDecoder().decode(ContactInfoResponse.self, from: data) else {
-                        print("Coulnd decode")
-                        DispatchQueue.main.async {
-                            self.isLoading = false
-                            self.errorMessageLoad = "Failed to fetch persons"
+                    } else if person.ROLE.uppercased() == "JUDGE" {
+                        if !personsJudges.contains(person) {
+                            personsJudges.append(person)
                         }
-                        return
-                    }
-                    
-                    let person = PersonDisplay(ID: person.ID, PERSON: person, CONTACTINFO_ID: contactInfoId, CONTACT: contactInfoResponse.data)
-                    
-                    DispatchQueue.main.async {
-                        if person.PERSON.ROLE.uppercased() == "ADMIN" {
-                            if !personsAdmins.contains(person) {
-                                personsAdmins.append(person)
-                            }
-                        } else if person.PERSON.ROLE.uppercased() == "JUDGE" {
-                            if !personsJudges.contains(person) {
-                                personsJudges.append(person)
-                            }
-                        } else {
-                            if !personsContestants.contains(person) {
-                                personsContestants.append(person)
-                            }
+                    } else {
+                        if !personsContestants.contains(person) {
+                            personsContestants.append(person)
                         }
-                        self.isLoading = false
-                        self.errorMessageLoad = nil
-                        
                     }
-                }.resume()
-            }
-            
-            DispatchQueue.main.async {
-                self.isLoading = false
-                self.errorMessageLoad = nil
+                    self.isLoading = false
+                    self.errorMessageLoad = nil
+                }
             }
         }.resume()
-        
     }
     
     private func deletePerson(at offsets: IndexSet) {
@@ -253,13 +219,13 @@ struct PersonManagementView: View {
         }
     }
     
-    private func addPerson(person: PersonDisplay) {
+    private func addPerson(person: Person) {
         print(person)
-        if person.PERSON.ROLE.uppercased() == "ADMIN" {
+        if person.ROLE.uppercased() == "ADMIN" {
             if !personsAdmins.contains(person) {
                 personsAdmins.append(person)
             }
-        } else if person.PERSON.ROLE.uppercased() == "JUDGE" {
+        } else if person.ROLE.uppercased() == "JUDGE" {
             if !personsJudges.contains(person) {
                 personsJudges.append(person)
             }
@@ -270,7 +236,7 @@ struct PersonManagementView: View {
         }
     }
     
-    private func updatePerson(person: PersonDisplay, role: String) {
+    private func updatePerson(person: Person, role: String) {
         /*if let index = persons.firstIndex(where: { $0.ID == person.ID }) {
          persons[index] = person
          }*/
@@ -295,18 +261,24 @@ struct PersonAddView: View {
     
     private let possibleRoles: [String] = ["Admin", "Judge", "Contestant"]
     
-    var onAddVoid: (PersonDisplay) -> Void
+    var onAddVoid: (Person) -> Void
     
-    private func onAdd(personDisplay: PersonDisplay) {
-        let url = URL(string: "http://localhost:8000/contactinfos")!
+    private func onAdd(person: Person) {
+        let url = URL(string: "http://localhost:8000/persons")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    
+        let personToCreate = PersonCreate(first_name: person.FIRSTNAME,
+                                          last_name: person.LASTNAME,
+                                          email: person.EMAIL,
+                                          phone: person.PHONE,
+                                          birth_year: person.BIRTH_YEAR,
+                                          grade: person.GRADE,
+                                          role: person.ROLE.uppercased());
         
-        let contactInfo = ContactInfoCreate(FIRSTNAME: personDisplay.CONTACT.FIRSTNAME, LASTNAME: personDisplay.CONTACT.LASTNAME, EMAIL: personDisplay.CONTACT.EMAIL, PHONE: personDisplay.CONTACT.PHONE, BIRTH_YEAR: personDisplay.CONTACT.BIRTH_YEAR, GRADE: personDisplay.CONTACT.GRADE)
-        
-        guard let encoded = try? JSONEncoder().encode(contactInfo) else {
-            print("Failed to encode contact info")
+        guard let encoded = try? JSONEncoder().encode(personToCreate) else {
+            print("Couldn't decode by contactinfo")
             return
         }
         
@@ -318,47 +290,15 @@ struct PersonAddView: View {
                 return
             }
             
-            guard let data = data, let contactInfoResponse = try? JSONDecoder().decode(ContactInfoResponse.self, from: data) else {
-                print("Coulnd decode by contactinfo")
-                return
-            }
-            
-            let person = PersonCreate(CONTACTINFO_ID: contactInfoResponse.data.ID, ROLE: personDisplay.PERSON.ROLE.uppercased())
-            
-            let url = URL(string: "http://localhost:8000/persons")!
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            
-            guard let encoded = try? JSONEncoder().encode(person) else {
-                print("Failed to encode person")
-                return
-            }
-            
-            request.httpBody = encoded
-            
-            if let string = String(data: encoded, encoding: .utf8) {
-                print(string)
-            }
-            
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                if let error = error {
-                    print("Error \(error)")
-                    return
-                }
-                
-                guard let data = data, let _ = try? JSONDecoder().decode(PersonResponse.self, from: data) else {
-                    print("Coulnd decode by personResponse")
-                    return
-                }
-                
+            guard let data = data, let response = try? JSONDecoder().decode(PersonCreateResponse.self, from: data) else {
+                print("Couldn't decode")
                 DispatchQueue.main.async {
                     print("Person added")
-                    onAddVoid(personDisplay)
+                    onAddVoid(person)
                 }
-                
-                
-            }.resume()
+                return
+            }
+
         }.resume()
         
     }
@@ -401,25 +341,17 @@ struct PersonAddView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        let newPersonDisplay = PersonDisplay(
-                            ID: UUID().uuidString,
-                            PERSON: Person(
-                                ID: UUID().uuidString,
-                                CONTACTINFO_ID: UUID().uuidString,
-                                ROLE: selectedRole
-                            ),
-                            CONTACTINFO_ID: UUID().uuidString,
-                            CONTACT: Contact(
+                        let newPerson = Person(
                                 ID: UUID().uuidString,
                                 FIRSTNAME: firstName,
                                 LASTNAME: lastName,
                                 EMAIL: email,
                                 PHONE: phone,
                                 BIRTH_YEAR: birthyear,
-                                GRADE: grade
-                            )
-                        )
-                        onAdd(personDisplay: newPersonDisplay)
+                                GRADE: grade,
+                                ROLE: selectedRole
+                        );
+                        onAdd(person: newPerson)
                         dismiss()
                     }
                     .disabled(firstName.isEmpty || lastName.isEmpty || email.isEmpty || selectedRole.isEmpty)
@@ -433,8 +365,8 @@ struct PersonAddView: View {
 // Edit Person View
 struct PersonEditView: View {
     @Environment(\.dismiss) var dismiss
-    @State var personDisplay: PersonDisplay
-    var onSave: (PersonDisplay) -> Void
+    @State var Person: Person
+    var onSave: (Person) -> Void
     
     var body: some View {
         NavigationView {
@@ -454,7 +386,7 @@ struct PersonEditView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        onSave(personDisplay)
+                        onSave(Person)
                         dismiss()
                     }
                 }

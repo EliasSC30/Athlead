@@ -95,51 +95,32 @@ struct PersonResponse: Decodable {
 }
 
 struct PersonCreate: Encodable {
-    let CONTACTINFO_ID: String
-    let ROLE: String
+    let first_name: String
+    let last_name: String
+    let email: String
+    let phone: String
+    let birth_year: String?
+    let grade: String?
+    let role: String
+}
+
+struct PersonCreateResponse: Decodable {
+    let data: [Person]
+    let results: Int
+    let status: String
 }
 
 struct Person: Identifiable, Hashable, Decodable {
     let ID : String
-    let CONTACTINFO_ID : String
+    let FIRSTNAME: String
+    let LASTNAME: String
+    let EMAIL: String
+    let PHONE: String
+    let BIRTH_YEAR: String?
+    let GRADE: String?
     let ROLE: String
     
     var id: String { return self.ID }
-}
-
-
-struct PersonDisplay: Identifiable, Hashable, Decodable {
-    let ID : String
-    let PERSON: Person
-    let CONTACTINFO_ID : String
-    let CONTACT: Contact
-    
-    var id: String { return self.ID }
-}
-
-struct Contact: Identifiable, Hashable, Decodable {
-    let ID: String
-    let FIRSTNAME: String
-    let LASTNAME: String
-    let EMAIL: String
-    let PHONE: String
-    let BIRTH_YEAR: String?
-    let GRADE: String?
-    
-    var id: String { return self.ID }
-}
-struct ContactInfoResponse: Decodable {
-    let data: Contact
-    let status: String
-}
-
-struct ContactInfoCreate: Encodable {
-    let FIRSTNAME: String
-    let LASTNAME: String
-    let EMAIL: String
-    let PHONE: String
-    let BIRTH_YEAR: String?
-    let GRADE: String?
 }
 
 struct SportfestDetails: Identifiable, Decodable {
