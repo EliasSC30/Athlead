@@ -31,7 +31,16 @@ pub struct Auth {
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
+pub struct Authentication {
+    pub AUTH: String,
+    pub PERSON_ID: String,
+    pub LAST_LOGIN: u64
+}
+
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
 pub struct Login {
     pub email: String,
-    pub password: String,
+    pub password: Option<String>,
+    pub token: Option<String>,
 }

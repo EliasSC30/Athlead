@@ -30,12 +30,12 @@ pub async fn contest_get_results_by_id_handler(path: web::Path<String>, data: we
 
             p.ID AS p_id,
             p.ROLE AS p_role,
-            p_ci.FIRSTNAME AS p_firstname,
-            p_ci.LASTNAME AS p_lastname,
-            p_ci.EMAIL AS p_email,
-            p_ci.PHONE AS p_phone,
-            p_ci.GRADE AS p_grade,
-            p_ci.BIRTH_YEAR AS p_birth_year,
+            p.FIRSTNAME AS p_firstname,
+            p.LASTNAME AS p_lastname,
+            p.EMAIL AS p_email,
+            p.PHONE AS p_phone,
+            p.GRADE AS p_grade,
+            p.BIRTH_YEAR AS p_birth_year,
 
             m.TIME AS time,
             m.TIMEUNIT AS time_unit,
@@ -48,7 +48,6 @@ pub async fn contest_get_results_by_id_handler(path: web::Path<String>, data: we
                 JOIN CONTESTRESULT as cr ON cr.CONTEST_ID = ?
                 JOIN METRIC as m ON m.ID = cr.METRIC_ID
                 JOIN PERSON as p ON p.ID = cr.PERSON_ID
-                JOIN CONTACTINFO as p_ci ON p_ci.ID = p.CONTACTINFO_ID
             "#,
         contest_id.clone()
     )
@@ -176,21 +175,21 @@ pub async fn contests_get_master_view_handler(path: web::Path<String>, data: web
                 ctd.START AS ct_details_start,
                 ctd.END AS ct_details_end,
 
-                sfp_ci.ID AS sf_cp_id,
-                sfp_ci.FIRSTNAME AS sf_cp_firstname,
-                sfp_ci.LASTNAME AS sf_cp_lastname,
-                sfp_ci.EMAIL AS sf_cp_email,
-                sfp_ci.PHONE AS sf_cp_phone,
-                sfp_ci.GRADE AS sf_cp_grade,
-                sfp_ci.BIRTH_YEAR AS sf_cp_birth_year,
+                sfp.ID AS sf_cp_id,
+                sfp.FIRSTNAME AS sf_cp_firstname,
+                sfp.LASTNAME AS sf_cp_lastname,
+                sfp.EMAIL AS sf_cp_email,
+                sfp.PHONE AS sf_cp_phone,
+                sfp.GRADE AS sf_cp_grade,
+                sfp.BIRTH_YEAR AS sf_cp_birth_year,
 
-                ctp_ci.ID AS ct_cp_id,
-                ctp_ci.FIRSTNAME AS ct_cp_firstname,
-                ctp_ci.LASTNAME AS ct_cp_lastname,
-                ctp_ci.EMAIL AS ct_cp_email,
-                ctp_ci.PHONE AS ct_cp_phone,
-                ctp_ci.GRADE AS ct_cp_grade,
-                ctp_ci.BIRTH_YEAR AS ct_cp_birth_year,
+                ctp.ID AS ct_cp_id,
+                ctp.FIRSTNAME AS ct_cp_firstname,
+                ctp.LASTNAME AS ct_cp_lastname,
+                ctp.EMAIL AS ct_cp_email,
+                ctp.PHONE AS ct_cp_phone,
+                ctp.GRADE AS ct_cp_grade,
+                ctp.BIRTH_YEAR AS ct_cp_birth_year,
 
                 sfl.CITY AS sf_city,
                 sfL.ZIPCODE AS sf_zipcode,
@@ -218,10 +217,6 @@ pub async fn contests_get_master_view_handler(path: web::Path<String>, data: web
                      PERSON as sfp ON sfp.ID = sfd.CONTACTPERSON_ID
                      JOIN
                      PERSON as ctp ON ctp.ID = ctd.CONTACTPERSON_ID
-                     JOIN
-                     CONTACTINFO as sfp_ci ON sfp_ci.ID = sfp.CONTACTINFO_ID
-                     JOIN
-                     CONTACTINFO as ctp_ci ON ctp_ci.ID = ctp.CONTACTINFO_ID
                      JOIN
                      LOCATION as sfl ON sfl.ID = sfd.LOCATION_ID
                      JOIN

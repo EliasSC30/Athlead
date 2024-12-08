@@ -57,10 +57,8 @@ pub struct SportfestMaster {
     pub location_street : String,
     pub location_street_number : String,
 
-    pub person_id : String,
-    pub person_role : String,
-
     pub cp_id : String,
+    pub cp_role : String,
     pub cp_firstname : String,
     pub cp_lastname : String,
     pub cp_email : String,

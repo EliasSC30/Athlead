@@ -2,7 +2,7 @@ POST http://localhost:8000/contestresults
 Content-Type: application/json
 
 {
-  "PERSON_ID": "8bfb54c5-7bda-4c63-9dc7-3c124905ca1e",
-  "CONTEST_ID": "f888fb77-7d67-4351-a316-70b9f382df36",
+  "PERSON_ID": "8f85672a-558b-4a07-bc10-e9908f968392",
+  "CONTEST_ID": "da7081db-0dfc-48d7-b018-577064379941",
   "time" : 10.0
 }

@@ -5,6 +5,7 @@ use serde_json::json;
 use uuid::{Uuid};
 
 
+/*
 #[patch("/persons/{id}")]
 pub async fn persons_update_handler(body: web::Json<UpdatePerson>,
                                    data: web::Data<AppState>,
@@ -70,7 +71,7 @@ pub async fn persons_update_handler(body: web::Json<UpdatePerson>,
     }
 
 }
-
+*/
 
 #[get("/persons")]
 pub async fn persons_get_all_handler(data: web::Data<AppState>) -> impl Responder {
@@ -124,35 +125,30 @@ pub async fn persons_get_by_id_handler(
 }
 
 pub async fn create_person(body: CreatePerson, data: &web::Data<AppState>) -> Result<Person, String> {
-    let new_ci_id = Uuid::new_v4();
     let new_person_id = Uuid::new_v4();
 
-    let ci_query = sqlx::query(
-        "INSERT INTO CONTACTINFO (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR) VALUES (?, ?, ?, ?, ?, ?, ?)")
-        .bind(&new_ci_id.to_string())
+    let query = sqlx::query(
+        "INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+        .bind(&new_person_id.to_string())
         .bind(body.first_name.clone())
         .bind(body.last_name.clone())
         .bind(body.email.clone())
         .bind(body.phone.clone())
         .bind(body.grade.clone())
         .bind(body.birth_year.clone())
-        .execute(&data.db)
-        .await;
-
-    if ci_query.is_err() { return Err(ci_query.err().unwrap().to_string()); };
-
-    let person_query = sqlx::query(
-        "INSERT INTO PERSON (ID, CONTACTINFO_ID, ROLE) VALUES (?, ?, ?)")
-        .bind(&new_person_id.to_string())
-        .bind(new_ci_id.to_string())
         .bind(body.role.clone())
         .execute(&data.db)
         .await;
 
-    match person_query {
+    match query {
         Ok(_) => Ok( Person {
             ID: new_person_id.to_string(),
-            CONTACTINFO_ID: new_ci_id.to_string(),
+            FIRSTNAME: body.first_name,
+            LASTNAME: body.last_name,
+            EMAIL: body.email,
+            PHONE: body.phone,
+            GRADE: body.grade,
+            BIRTH_YEAR: body.birth_year,
             ROLE: body.role.clone()
         }),
         Err(e) => Err(e.to_string())
@@ -168,7 +164,7 @@ pub async fn persons_create_handler(body: web::Json<CreatePerson>, data:web::Dat
             "data": serde_json::to_value(&person).unwrap(),
         })),
         Err(e) => HttpResponse::InternalServerError().json(json!({
-            "status": "error",
+            "status": "Create Person Error",
             "message": format!("Failed to create person: {}", e),
         }))
     }

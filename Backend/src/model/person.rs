@@ -5,7 +5,12 @@ use serde::{Deserialize, Serialize};
 #[allow(non_snake_case)]
 pub struct Person {
     pub ID: String,
-    pub CONTACTINFO_ID: String,
+    pub FIRSTNAME: String,
+    pub LASTNAME: String,
+    pub EMAIL: String,
+    pub PHONE: String,
+    pub GRADE: Option<String>,
+    pub BIRTH_YEAR: Option<String>,
     pub ROLE: String,
 }
 
@@ -17,12 +22,10 @@ pub struct CreatePerson {
     pub phone: String,
     pub grade: Option<String>,
     pub birth_year: Option<String>,
-    // Person Fields
     pub role: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdatePerson {
-    pub CONTACTINFO_ID: Option<String>,
     pub ROLE: Option<String>
 }

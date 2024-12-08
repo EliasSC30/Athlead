@@ -1,9 +1,9 @@
-POST http://localhost:8000/sportfests/cedc73e5-f470-40a5-88eb-9e8788caf16e/contests
+POST http://localhost:8000/sportfests/51e64f86-e63b-4bc5-9ba7-5bb84de09ee2/contests
 Content-Type: application/json
 
 {
   "LOCATION_ID": "a3314749-baf2-485c-ba90-7673d7755062",
-  "CONTACTPERSON_ID": "127228d9-77e2-478a-abc7-afcf7ef7699c",
+  "CONTACTPERSON_ID": "8f85672a-558b-4a07-bc10-e9908f968392",
   "C_TEMPLATE_ID" : "8e461179-a6b9-4053-b333-2a11eee26f5d",
   "NAME": "100m Lauf",
   "START": "2025-12-02T15:30:00",

@@ -77,16 +77,14 @@ pub async fn sportfests_get_masterview_handler(
                 LOCATION.STREET AS location_street,
                 LOCATION.STREETNUMBER AS location_street_number,
 
-                PERSON.ID AS person_id,
-                PERSON.ROLE as person_role,
-
-                CONTACTINFO.ID AS cp_id,
-                CONTACTINFO.FIRSTNAME AS cp_firstname,
-                CONTACTINFO.LASTNAME AS cp_lastname,
-                CONTACTINFO.EMAIL AS cp_email,
-                CONTACTINFO.PHONE AS cp_phone,
-                CONTACTINFO.GRADE AS cp_grade,
-                CONTACTINFO.BIRTH_YEAR AS cp_birth_year
+                PERSON.ID AS cp_id,
+                PERSON.ROLE as cp_role,
+                PERSON.FIRSTNAME AS cp_firstname,
+                PERSON.LASTNAME AS cp_lastname,
+                PERSON.EMAIL AS cp_email,
+                PERSON.PHONE AS cp_phone,
+                PERSON.GRADE AS cp_grade,
+                PERSON.BIRTH_YEAR AS cp_birth_year
 
                    FROM
                     SPORTFEST JOIN
@@ -94,9 +92,7 @@ pub async fn sportfests_get_masterview_handler(
                      JOIN
                      LOCATION ON DETAILS.LOCATION_ID = LOCATION.ID
                      JOIN
-                     PERSON ON PERSON.ID = DETAILS.CONTACTPERSON_ID
-                     JOIN
-                     CONTACTINFO ON CONTACTINFO.ID = PERSON.CONTACTINFO_ID"#,
+                     PERSON ON PERSON.ID = DETAILS.CONTACTPERSON_ID"#,
             details_id_query.unwrap().DETAILS_ID.clone()
         )
         .fetch_one(&data.db)
