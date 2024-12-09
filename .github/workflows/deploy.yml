@@ -17,6 +17,10 @@ jobs:
       - name: Create .env file
         run: echo "${{ vars.ENV_FILE_CONTENT }}" > ./Backend/.env
 
+      # Print .env file
+      - name: Print .env file
+        run: cat ./Backend/.env
+
       # Set up QEMU for cross-platform builds
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
