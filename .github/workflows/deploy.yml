@@ -3,7 +3,11 @@ name: CD Pipeline
 on:
   push:
     branches:
-      - "main"
+      - "main" # Trigger only on push events to the main branch
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true # Cancels any previous run of the same workflow
 
 jobs:
   docker-build:
