@@ -15,11 +15,7 @@ jobs:
 
       # Create .env file
       - name: Create .env file
-        run: echo "${{ secrets.ENV_FILE_CONTENT }}" > ./Backend/.env
-
-      # print .env file
-      - name: Print .env file
-        run: cat ./Backend/.env
+        run: echo "${{ vars.ENV_FILE_CONTENT }}" > ./Backend/.env
 
       # Set up QEMU for cross-platform builds
       - name: Set up QEMU

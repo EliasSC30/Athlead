@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 COPY . .
 
 # Build the project (the default Rust build target is assumed here; adjust if needed)
-RUN cargo build
+RUN cargo build --release
 
 # Use a smaller image for the final runtime environment
 FROM debian:buster-slim
