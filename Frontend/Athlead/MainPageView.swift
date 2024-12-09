@@ -14,10 +14,7 @@ struct MainPageView: View {
     
     
     @State private var isLoading: Bool = true
-    @State private var errorMessage: String?
-    
-    private let apiURL = "http://localhost:8000";
-    
+    @State private var errorMessage: String?    
     
     
     var body: some View {

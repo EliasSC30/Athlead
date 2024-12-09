@@ -10,8 +10,6 @@ import SwiftUI
 
 struct PersonManagementView: View {
     
-    let apiURL = "http://localhost:8000"
-    
     
     @State private var personsContestants: [Person] = []
     @State private var personsJudges: [Person] = []

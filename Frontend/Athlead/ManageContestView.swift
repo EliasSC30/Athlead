@@ -10,8 +10,6 @@ import SwiftUI
 
 struct ManageContestView: View {
     
-    let apiURL = "http://localhost:8000"
-    
     
     @State private var contests: [CTemplate] = []
     @State private var isLoading: Bool = true
@@ -100,9 +98,6 @@ struct ManageContestView: View {
 }
 
 struct AdminContestDetailView: View {
-    
-    let apiURL = "http://localhost:8000"
-    
     
     @Binding var contest: CTemplate
     @State private var isEditing: Bool = false

@@ -7,8 +7,6 @@
 import SwiftUI
 
 struct ManageSportfests: View {
-
-    let apiURL = "http://localhost:8000"
     
     @State var oldSportFests: [SportFestDisplay] = []
     @State var currentSportFests: [SportFestDisplay] = []

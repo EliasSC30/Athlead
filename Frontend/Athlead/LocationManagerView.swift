@@ -8,8 +8,6 @@ import SwiftUI
 
 struct LocationManagerView: View {
 
-    let apiURL = "http://localhost:8000"
-
     @State private var allLocations: [Location] = []
     @State private var showAddLocation = false
 

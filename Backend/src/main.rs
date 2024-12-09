@@ -22,7 +22,16 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::init();
 
-    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_name = std::env::var("DATABASE_NAME").expect("DATABASE_NAME must be set");
+    let database_user = std::env::var("DATABASE_USER").expect("DATABASE_USER must be set");
+    let database_password = std::env::var("DATABASE_PASSWORD").expect("DATABASE_PASSWORD must be set");
+    let database_ip = std::env::var("DATABASE_IP").expect("DATABASE_IP must be set");
+
+    let database_url = format!(
+        "mysql://{}:{}@{}/{}",
+        database_user, database_password, database_ip, database_name
+    );
+
     let pool = match MySqlPoolOptions::new()
         .max_connections(10)
         .connect(&database_url)

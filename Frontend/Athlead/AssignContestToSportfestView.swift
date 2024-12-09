@@ -7,7 +7,6 @@
 import SwiftUI
 
 struct AssignContestToSportfestView: View {
-    let apiURL = "http://localhost:8000"
     
     @State private var contests: [CTemplate] = []
     @State private var selectedContest: CTemplate?
@@ -92,8 +91,6 @@ struct AssignContestToSportfestView: View {
     }
 }
 struct LocationPickerView: View {
-    
-    let apiURL = "http://localhost:8000"
     
     @State private var isLoading: Bool = true
     @State private var errorMessage: String?

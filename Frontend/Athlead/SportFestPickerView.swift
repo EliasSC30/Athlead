@@ -10,9 +10,6 @@ import SwiftUI
 
 struct SportFestPickerView: View {
     
-    let apiURL = "http://localhost:8000"
-    
-    
     @Binding var selectedContest: CTemplate?
     @Binding var selectedLocation: Location?
     @State private var sportfests: [SportFestDisplay] = []

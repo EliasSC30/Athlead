@@ -25,9 +25,6 @@ struct CreateSportfestView: View {
     
     private let truncateLimit: Int = 21;
     
-    
-    private let apiURL = "http://localhost:8000";
-    
     @State private var isLoading: [Bool] = [true, true]
     @State private var errorMessageLoad: String?
     

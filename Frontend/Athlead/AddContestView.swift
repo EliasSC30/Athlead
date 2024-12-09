@@ -8,8 +8,6 @@ import SwiftUI
 
 struct AddContestView: View {
     
-    let apiURL = "http://localhost:8000"
-    
     struct DummyContestant: Identifiable, Equatable {
         let id = UUID()
         let name: String

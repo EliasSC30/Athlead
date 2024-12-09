@@ -25,8 +25,6 @@ struct EventDetailView: View {
     let detailsID: String
     let contests: [Contest] = []
     
-    private let apiURL = "http://localhost:8000";
-    
     
     @State private var eventStore = EKEventStore()
     @State private var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194), span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))

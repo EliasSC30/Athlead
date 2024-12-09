@@ -7,6 +7,12 @@
 
 import Foundation
 
+#if targetEnvironment(simulator)
+    let apiURL = "http://localhost:8000"
+#else
+    let apiURL = "http://45.81.234.175:8000"
+#endif
+
 struct ResultInfo {
     let name: String
     let metric: Metric
