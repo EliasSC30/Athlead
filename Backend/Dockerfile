@@ -1,28 +1,25 @@
 # Use an official Rust image as the base for building
 FROM rust:latest AS builder
 
-# Set the working directory inside the container
+# Set the working directory for the Rust build
 WORKDIR /usr/src/app
 
-# Copy the Backend source code into the container
-COPY . ./Backend
+# Copy the entire project directory into the container
+COPY . .
 
-# Navigate to the Backend directory
-WORKDIR /usr/src/app/Backend
-
-# Build the Rust project in release mode
+# Build the project (the default Rust build target is assumed here; adjust if needed)
 RUN cargo build --release
 
-# Use a lightweight image for the final stage
+# Use a smaller image for the final runtime environment
 FROM debian:buster-slim
 
 # Set the working directory for the runtime container
 WORKDIR /usr/src/app
 
-# Copy the built binary from the builder stage
-COPY --from=builder /usr/src/app/Backend/target/release/Athlead /usr/local/bin/backend
+# Copy only the necessary files from the builder stage
+COPY --from=builder /usr/src/app/target/release/Athlead /usr/local/bin/backend
 
-# Expose the port your application runs on (update as needed)
+# Expose the port your application runs on (adjust as necessary)
 EXPOSE 8080
 
 # Run the backend binary
