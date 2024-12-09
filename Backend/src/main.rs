@@ -40,6 +40,12 @@ async fn main() -> std::io::Result<()> {
 
     println!("Server started successfully under http://localhost:8000");
 
+    #[cfg(debug_assertions)]
+    let mut bindAddress = "127.0.0.1";
+
+    #[cfg(not(debug_assertions))]
+    bindAddress = "45.81.234.175";
+
     HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_methods(vec!["GET", "POST", "PATCH", "DELETE"])
@@ -55,7 +61,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .wrap(Logger::default())
     })
-        .bind(("0.0.0.0", 8000))?
+        .bind((bindAddress, 8000))?
         .run()
         .await
 }
