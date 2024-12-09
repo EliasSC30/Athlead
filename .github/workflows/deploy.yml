@@ -17,7 +17,7 @@ jobs:
       uses: docker/setup-buildx-action@v2
 
     - name: Build Docker Image
-      run: docker build -t AthleadBackend .
+      run: docker build -t athlead-backend .
 
     - name: Deploy to Server
       env:
@@ -28,8 +28,8 @@ jobs:
         eval "$(ssh-agent -a /tmp/ssh_agent.sock)"
         ssh-add deploy_key
         ssh -o StrictHostKeyChecking=no user@your-server-ip << 'EOF'
-          docker pull AthleadBackend
+          docker pull athlead-backend
           docker stop rust_app || true
           docker rm rust_app || true
-          docker run -d --name backend -p 8080:8080 AthleadBackend
+          docker run -d --name backend -p 8080:8080 athlead-backend
         EOF
