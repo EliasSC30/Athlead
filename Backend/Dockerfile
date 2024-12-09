@@ -1,5 +1,5 @@
 # Rust as the base image
-FROM rust:1.49
+FROM rust:latest
 
 # 1. Create a new empty shell project
 RUN USER=root cargo new --bin Athlead
