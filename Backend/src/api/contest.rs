@@ -192,7 +192,7 @@ pub async fn contests_get_master_view_handler(path: web::Path<String>, data: web
                 ctp.BIRTH_YEAR AS ct_cp_birth_year,
 
                 sfl.CITY AS sf_city,
-                sfL.ZIPCODE AS sf_zipcode,
+                sfl.ZIPCODE AS sf_zipcode,
                 sfl.STREET AS sf_street,
                 sfl.STREETNUMBER AS sf_streetnumber,
                 sfl.NAME AS sf_location_name,
