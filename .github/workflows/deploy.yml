@@ -68,5 +68,5 @@ jobs:
             # Run the updated container
             sudo docker run -d \
               --name athlead-backend \
-              -p 8080:8080 \
+              -p 8000:8000 \
               ${{ secrets.DOCKER_HUB_USERNAME }}/athlead-backend:latest

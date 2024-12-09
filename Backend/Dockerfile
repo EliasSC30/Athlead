@@ -8,4 +8,4 @@ COPY ./ ./
 RUN cargo build
 
 # Run the binary
-CMD ["./target/debug/athlead"]
+CMD ["./target/debug/Athlead"]
