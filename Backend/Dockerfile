@@ -1,14 +1,23 @@
-# Use an official Rust image as the base for building
-FROM rust:latest AS builder
+# Rust as the base image
+FROM rust:1.49
 
-# Copy the entire project directory into the container
-COPY ./ ./
+# 1. Create a new empty shell project
+RUN USER=root cargo new --bin Athlead
+WORKDIR /Athlead
 
-# Build the project in release mode
-RUN cargo build
+# 2. Copy our manifests
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
 
-# Expose the port your application runs on
-EXPOSE 8080
+# 3. Build only the dependencies to cache them
+RUN cargo build --release
+RUN rm src/*.rs
 
-# Run the backend binary
-CMD ["./target/debug/Athlead"]
+# 4. Now that the dependency is built, copy your source code
+COPY ./src ./src
+
+# 5. Build for release.
+RUN rm ./target/release/deps/Athlead*
+RUN cargo install --path .
+
+CMD ["Athlead"]
