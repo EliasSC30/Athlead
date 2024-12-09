@@ -17,7 +17,6 @@ RUN rm src/*.rs
 COPY ./src ./src
 
 # 5. Build for release.
-RUN rm ./target/release/deps/athlead*
 RUN cargo install --path .
 
 CMD ["athlead"]
