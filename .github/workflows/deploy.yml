@@ -27,7 +27,7 @@ jobs:
         chmod 600 deploy_key
         eval "$(ssh-agent -a /tmp/ssh_agent.sock)"
         ssh-add deploy_key
-        ssh -o StrictHostKeyChecking=no ${{ vars.user }}@${{ vars.host }} << 'EOF'
+        ssh -o StrictHostKeyChecking=no ${{ vars.USER }}@${{ vars.HOST }} << 'EOF'
           docker pull athlead-backend
           docker stop athlead_backend || true
           docker rm athlead_backend || true
