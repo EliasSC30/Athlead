@@ -56,7 +56,7 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
             # Navigate to the deployment directory
-            cd /home/${{ secrets.USER }}/athlead-backend
+            cd /home/${{ vars.USER }}/athlead-backend
 
             # Pull the latest Docker image
             sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/athlead-backend:latest
