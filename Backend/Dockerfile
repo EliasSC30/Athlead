@@ -2,8 +2,8 @@
 FROM rust:latest
 
 # 1. Create a new empty shell project
-RUN USER=root cargo new --bin Athlead
-WORKDIR /Athlead
+RUN USER=root cargo new --bin athlead
+WORKDIR /athlead
 
 # 2. Copy our manifests
 COPY ./Cargo.lock ./Cargo.lock
@@ -17,7 +17,7 @@ RUN rm src/*.rs
 COPY ./src ./src
 
 # 5. Build for release.
-RUN rm ./target/release/deps/Athlead*
+RUN rm ./target/release/deps/athlead*
 RUN cargo install --path .
 
-CMD ["Athlead"]
+CMD ["athlead"]
