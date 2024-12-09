@@ -2,7 +2,7 @@
 FROM rust:latest
 
 # Set the working directory
-WORKDIR /Backend
+WORKDIR ./Backend
 
 # Copy the project files
 COPY . .
