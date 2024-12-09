@@ -17,7 +17,7 @@ FROM debian:buster-slim
 WORKDIR /usr/src/app
 
 # Copy only the necessary files from the builder stage
-COPY --from=builder /usr/src/app/target/release/Athlead /usr/local/bin/backend
+COPY --from=builder /usr/src/app/target/debug/Athlead /usr/local/bin/backend
 
 # Expose the port your application runs on (adjust as necessary)
 EXPOSE 8080
