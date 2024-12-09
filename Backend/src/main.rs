@@ -40,11 +40,12 @@ async fn main() -> std::io::Result<()> {
 
     println!("Server started successfully under http://localhost:8000");
 
-    #[cfg(debug_assertions)]
-    let mut bindAddress = "127.0.0.1";
 
-    #[cfg(not(debug_assertions))]
-    bindAddress = "45.81.234.175";
+    let bindAddress = if cfg!(debug_assertions) {
+        "127.0.0.1"
+    } else {
+        "45.81.234.175"
+    };
 
     HttpServer::new(move || {
         let cors = Cors::default()
