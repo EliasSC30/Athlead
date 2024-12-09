@@ -51,8 +51,8 @@ jobs:
       - name: Deploy backend on remote server
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
+          host: ${{ vars.HOST }}
+          username: ${{ vars.USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
             # Navigate to the deployment directory
