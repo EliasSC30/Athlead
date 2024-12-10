@@ -44,7 +44,7 @@ async fn main() -> std::io::Result<()> {
     let bindAddress = if cfg!(debug_assertions) {
         "127.0.0.1"
     } else {
-        "45.81.234.175"
+        "0.0.0.0"
     };
 
     HttpServer::new(move || {

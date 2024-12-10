@@ -7,5 +7,8 @@ COPY ./ ./
 # Build your program for release
 RUN cargo build --release
 
+# Expose the port that your app runs on
+EXPOSE 8000
+
 # Run the binary
 CMD ["./target/release/Athlead"]
