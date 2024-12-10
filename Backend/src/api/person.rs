@@ -125,6 +125,13 @@ pub async fn persons_get_by_id_handler(
 }
 
 pub async fn create_person(body: CreatePerson, data: &web::Data<AppState>) -> Result<Person, String> {
+    let check_if_valid_entry_query = sqlx::query("SELECT * FROM PERSON WHERE EMAIL = ?")
+        .bind(body.email.clone())
+        .fetch_optional(&data.db)
+        .await;
+    if check_if_valid_entry_query.is_err() { return Err(check_if_valid_entry_query.unwrap_err().to_string());  };
+    if check_if_valid_entry_query.unwrap().is_some() { return Err("Email already exists but has to be unique".to_string()); };
+
     let new_person_id = Uuid::new_v4();
 
     let query = sqlx::query(

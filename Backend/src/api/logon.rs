@@ -60,15 +60,23 @@ pub async fn register_handler(body: web::Json<Register>, data: web::Data<AppStat
         "message": create_person.unwrap_err().to_string()
     }))}
 
-    let auth_query = sqlx::query("INSERT INTO AUTHENTICATION (AUTH, PERSON_ID, LAST_LOGIN) VALUES (?, ?, ?)")
-        .bind(&hashed_password)
+    let auth_query = sqlx::query("INSERT INTO AUTHENTICATION (PERSON_ID, AUTH, LAST_LOGIN) VALUES (?, ?, ?)")
         .bind(&create_person.unwrap().ID)
+        .bind(&hashed_password)
         .bind(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs().to_string())
         .execute(&data.db)
         .await;
 
-    let keys = generate_key();
-    let new_token = String::from_utf8_lossy(&crypt_str(&body.email.clone(), keys.1, keys.2)).to_string();
+    let keys = generate_key(); let d = crypt_str(&body.email.clone(), keys.1, keys.2); println!("{:?}", d);
+
+    let new_token_ar = crypt_str(&body.email.clone(), keys.1, keys.2);
+    let mut new_token = String::from("");
+    for index in 0..8
+    {
+        new_token.push(new_token_ar[index] as char);
+    }
+
+    println!("New token length: {:?}", new_token.len());
 
     match auth_query {
         Ok(_) => HttpResponse::Ok().json(json!({
@@ -77,7 +85,7 @@ pub async fn register_handler(body: web::Json<Register>, data: web::Data<AppStat
             }))
         ,
         Err(e) => HttpResponse::InternalServerError().json(json!({
-            "status": "Insert person id error",
+            "status": "Insert Auth error",
             "message": e.to_string()
         }))
     }
@@ -124,7 +132,7 @@ pub async fn login_with_token(token: Option<String>, data: &web::Data<AppState>)
     }
 }
 
-#[get("/login")]
+#[post("/login")]
 pub async fn login_handler(body: web::Json<Login>, data: web::Data<AppState>) -> impl Responder
 {
     if body.email.len() != 8 {
@@ -178,6 +186,8 @@ pub async fn login_handler(body: web::Json<Login>, data: web::Data<AppState>) ->
         .bind(&hashed_password)
         .fetch_one(&data.db)
         .await;
+
+
 
     let keys = generate_key();
     match password_query {

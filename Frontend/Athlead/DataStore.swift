@@ -7,11 +7,43 @@
 
 import Foundation
 
+let apiURL = "http://localhost:8000"
+
 #if targetEnvironment(simulator)
     let apiURL = "http://localhost:8000"
 #else
     let apiURL = "http://45.81.234.175:8000"
 #endif
+
+struct RegisterData: Encodable {
+    let email: String
+    let password: String
+    
+    let first_name: String
+    let last_name: String
+    let phone: String
+    let grade: String?
+    let birth_year: String?
+    let role: String
+}
+
+struct RegisterResponse: Decodable {
+    let data: String
+    let status: String
+}
+
+struct LoginData: Encodable {
+    let email: String
+    let password: String?
+    let token: String?
+}
+
+struct LoginResponse: Decodable {
+    let data: String
+    let status: String
+}
+
+
 
 struct ResultInfo {
     let name: String
@@ -216,3 +248,8 @@ struct AssignContestSportFestCreate: Encodable {
     let END: Date
 }
 var STORE : [String:[ResultInfo]] = [:];
+
+var SessionToken: String?
+
+
+
