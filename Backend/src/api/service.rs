@@ -8,7 +8,7 @@ use crate::api::details::{details_create_handler, details_get_by_id_handler, det
 use crate::api::location::{locations_create_handler, locations_get_by_id_handler, locations_get_all_handler, locations_update_handler};
 use crate::api::logon::{login_handler, register_handler};
 use crate::api::person::{persons_create_handler, persons_get_by_id_handler, persons_get_all_handler};
-use crate::api::sportfest::{create_contest_for_sf_handler, sportfests_create_handler, sportfests_get_masterview_handler, sportfests_list_handler, sportfests_update_handler};
+use crate::api::sportfest::{create_contest_for_sf_handler, sportfests_create_handler, sportfests_create_with_location_handler, sportfests_get_masterview_handler, sportfests_list_handler, sportfests_update_handler};
 
 pub fn config(conf: &mut web::ServiceConfig) {
     let scope = web::scope("")
@@ -18,6 +18,7 @@ pub fn config(conf: &mut web::ServiceConfig) {
         // Sportfest
         .service(sportfests_list_handler) // for now simply queries db content of sf table
         .service(sportfests_create_handler)
+        .service(sportfests_create_with_location_handler)
         .service(sportfests_get_masterview_handler)
         .service(sportfests_update_handler) // wip, takes id's not attributes
         .service(create_contest_for_sf_handler)

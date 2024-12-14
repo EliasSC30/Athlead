@@ -2,11 +2,11 @@ POST http://localhost:8000/register
 Content-Type: application/json
 
 {
-  "password": "Elias123",
+  "email": "elias.rw2@gmail.penny",
+  "password": "Elias ist der Beste",
 
   "first_name": "String",
   "last_name": "String",
-  "email": "1ap28!py",
   "phone": "String",
   "grade": "Option<String>",
   "birth_year": "Option<String>",

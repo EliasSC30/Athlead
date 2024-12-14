@@ -1,7 +1,9 @@
+use num_bigint::BigInt;
 use std::time::{SystemTime, UNIX_EPOCH};
 use actix_web::{get, post, web, HttpResponse, Responder};
 use serde_json::json;
-use crate::api::encryption::encryption::{crypt_str, generate_key, hash};
+use crate::api::encryption::encryption;
+use crate::api::encryption::encryption::{crypt_str, crypt, generate_key, hash};
 use crate::api::person::create_person;
 use crate::AppState;
 use crate::model::logon::{Person_ID_Wrapper, Login, Register, Authentication};
@@ -10,24 +12,11 @@ use crate::model::person::{CreatePerson, Person};
 #[post("/register")]
 pub async fn register_handler(body: web::Json<Register>, data: web::Data<AppState>) -> impl Responder
 {
-    if body.email.len() != 8 || body.password.len() != 8 {
-        return HttpResponse::BadRequest().json(json!({
-            "status": "Invalid login error",
-            "message": "Email and password have to be exactly 8 character"
-        }))
-    }
-
     let password = body.password.clone();
 
-    let pw_as_utf7 = password.chars().into_iter().map(|c| c as u8).collect::<Vec<u8>>();
-    let mut chars = [0u8;8];
+    let pw_as_u32 = password.chars().into_iter().map(|c| c as u32).collect::<Vec<u32>>();
 
-    for i in 0..8
-    {
-        chars[i] = pw_as_utf7[i];
-    }
-
-    let hashed_password = hash(&chars);
+    let hashed_password = hash(&pw_as_u32);
 
     let email_query = sqlx::query("SELECT * FROM PERSON WHERE EMAIL = ?")
         .bind(&body.email)
@@ -61,23 +50,15 @@ pub async fn register_handler(body: web::Json<Register>, data: web::Data<AppStat
     }))}
 
     let auth_query = sqlx::query("INSERT INTO AUTHENTICATION (PERSON_ID, AUTH, LAST_LOGIN) VALUES (?, ?, ?)")
-        .bind(&create_person.unwrap().ID)
+        .bind(&create_person.as_ref().clone().unwrap().ID)
         .bind(&hashed_password)
         .bind(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs().to_string())
         .execute(&data.db)
         .await;
 
-    let keys = generate_key(); let d = crypt_str(&body.email.clone(), keys.1, keys.2); println!("{:?}", d);
-
-    let new_token_ar = crypt_str(&body.email.clone(), keys.1, keys.2);
-    let mut new_token = String::from("");
-    for index in 0..8
-    {
-        new_token.push(new_token_ar[index] as char);
-    }
-
-    println!("New token length: {:?}", new_token.len());
-
+    let keys = generate_key();
+    let new_token = crypt_str(&create_person.unwrap().ID.clone(), &keys.1, &keys.2);
+    let new_token = encryption::BigInt::non_a7_u32_vec_to_exp_string(&new_token.parts);
     match auth_query {
         Ok(_) => HttpResponse::Ok().json(json!({
                 "status": "success",
@@ -96,17 +77,13 @@ pub async fn login_with_token(token: Option<String>, data: &web::Data<AppState>)
     if token.is_none() { return Err(String::from("No valid login data was send")); };
 
     let token = token.unwrap();
+    let token_to_decrypt = encryption::BigInt { parts: encryption::BigInt::exp_str_to_u32_vec(&token) };
     let keys = generate_key();
-    let decrypted_token = crypt_str(&token, keys.0, keys.2);
-    let email = String::from_utf8_lossy(&decrypted_token).to_string();
-
-    let person_query = sqlx::query_as!(Person, "SELECT * FROM PERSON WHERE EMAIL = ?",email.clone())
-        .fetch_one(&data.db)
-        .await;
-    if person_query.is_err() { return Err(person_query.unwrap_err().to_string()); };
+    let decrypted_token = crypt(&token_to_decrypt,&keys.0,&keys.2);
+    let decrypted_token = encryption::BigInt::a7_u32_vec_to_string(&decrypted_token.parts);println!("Decrypted lwt: {}", decrypted_token.clone());
 
     let auth_query =
-        sqlx::query_as!(Authentication, "SELECT * FROM AUTHENTICATION WHERE PERSON_ID = ?", person_query.unwrap().ID)
+        sqlx::query_as!(Authentication, "SELECT * FROM AUTHENTICATION WHERE PERSON_ID = ?", decrypted_token)
             .fetch_one(&data.db)
             .await;
 
@@ -116,7 +93,7 @@ pub async fn login_with_token(token: Option<String>, data: &web::Data<AppState>)
     let seconds_since_last_login = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() - last_login;
 
     let refresh_time_in_minutes = 15;
-    if seconds_since_last_login * 60 > refresh_time_in_minutes {
+    if seconds_since_last_login / 60 > refresh_time_in_minutes {
         return Err("Token timed out".to_string());
     }
 
@@ -135,12 +112,6 @@ pub async fn login_with_token(token: Option<String>, data: &web::Data<AppState>)
 #[post("/login")]
 pub async fn login_handler(body: web::Json<Login>, data: web::Data<AppState>) -> impl Responder
 {
-    if body.email.len() != 8 {
-        return HttpResponse::BadRequest().json(json!({
-            "status": "Invalid login error",
-            "message": "Email and password have to be exactly 8 character"
-        }))
-    }
 
     if body.password.is_none() {
         return match login_with_token(body.token.clone(), &data).await {
@@ -148,21 +119,14 @@ pub async fn login_handler(body: web::Json<Login>, data: web::Data<AppState>) ->
                 "status": "success",
                 "New Token": token
             })),
-            Err(_) => HttpResponse::BadRequest().json(json!({
-                "status": "Unauthorized",
-                "message": "Bad token and no password provided to create new one"
+            Err(e) => HttpResponse::BadRequest().json(json!({
+                "status": "Unauthorized with token",
+                "message": e
             }))
         }
     }
 
     let password = body.password.as_ref().clone().unwrap();
-
-    if password.len() != 8 {
-        return HttpResponse::BadRequest().json(json!({
-            "status": "Invalid login error",
-            "message": "Email and password have to be exactly 8 character"
-        }))
-    }
 
     let email_query = sqlx::query("SELECT * FROM PERSON WHERE EMAIL = ?")
         .bind(&body.email)
@@ -173,27 +137,21 @@ pub async fn login_handler(body: web::Json<Login>, data: web::Data<AppState>) ->
         "message": email_query.unwrap_err().to_string()
     }))}
 
-    let pw_as_utf7 = password.chars().into_iter().map(|c| c as u8).collect::<Vec<u8>>();
-    let mut chars = [0u8;8];
-    for i in 0..8
-    {
-        chars[i] = pw_as_utf7[i];
-    }
+    let pw_as_u32 = password.chars().into_iter().map(|c| c as u32).collect::<Vec<u32>>();
 
-    let hashed_password = hash(&chars);
+    let hashed_password = hash(&pw_as_u32);
 
-    let password_query = sqlx::query("SELECT * FROM AUTHENTICATION WHERE AUTH = ?")
-        .bind(&hashed_password)
+    let password_query = sqlx::query_as!(Authentication, "SELECT * FROM AUTHENTICATION WHERE AUTH = ?",hashed_password)
         .fetch_one(&data.db)
         .await;
 
-
-
     let keys = generate_key();
+    let new_token = crypt_str(&password_query.as_ref().clone().unwrap().PERSON_ID.clone(),&keys.1,&keys.2);
+    let new_token = encryption::BigInt::non_a7_u32_vec_to_exp_string(&new_token.parts);
     match password_query {
         Ok(_) => HttpResponse::Ok().json(json!({
             "status": "success",
-            "New_Token": String::from_utf8_lossy(&crypt_str(&body.email.clone(), keys.1, keys.2)).to_string()
+            "New_Token": new_token
         })),
         Err(_) => HttpResponse::InternalServerError().json(json!({
             "status": "Fetch login error",

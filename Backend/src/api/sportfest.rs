@@ -165,7 +165,47 @@ pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, data: w
             "message": format!("Failed to insert SPORTFEST: {}", e),
         }))
     }
+}
 
+#[post("/sportfests_with_location")]
+pub async fn sportfests_create_with_location_handler(body: web::Json<CreateSportfestWithLocation>, data: web::Data<AppState>) -> impl Responder {
+    let new_sportfest_id: Uuid = Uuid::new_v4();
+
+
+    let details_for_create = CreateDetails {
+        LOCATION_ID: body.location_id.clone(),
+        CONTACTPERSON_ID: body.CONTACTPERSON_ID.clone(),
+        NAME: body.fest_name.clone(),
+        START: body.fest_start.clone(),
+        END: body.fest_end.clone(),
+    };
+
+    let create_details = create_details(&details_for_create, &data).await;
+    if create_details.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "error",
+        "message": create_details.unwrap_err()
+    }))}
+
+    let sf_query = sqlx::query(
+        "INSERT INTO SPORTFEST (ID, DETAILS_ID) VALUES (?, ?)")
+        .bind(new_sportfest_id.to_string())
+        .bind(create_details.as_ref().clone().unwrap().ID.to_string())
+        .execute(&data.db)
+        .await;
+
+    match sf_query {
+        Ok(_) => HttpResponse::Ok().json(json!({
+            "status": "success",
+            "data": json!({
+                "ID": new_sportfest_id.to_string(),
+                "DETAILS_ID": create_details.unwrap().ID,
+            }),
+        })),
+        Err(e) => HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": format!("Failed to insert SPORTFEST: {}", e),
+        }))
+    }
 }
 
 #[patch("/sportfests/{id}")]

@@ -25,6 +25,18 @@ pub struct CreateSportfest {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct CreateSportfestWithLocation {
+    // Detail Fields
+    pub CONTACTPERSON_ID: String,
+    pub fest_name: Option<String>,
+    pub fest_start: NaiveDateTime,
+    pub fest_end: NaiveDateTime,
+
+    // Location Fields
+    pub location_id: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateSportfest {
     pub DETAILS_ID: Option<String>,
 }
