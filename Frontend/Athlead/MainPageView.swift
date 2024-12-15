@@ -43,9 +43,7 @@ struct MainPageView: View {
                                         }
                                         
                                         ForEach(upcoming_sportsfests, id: \.self) { sportfest in
-                                            NavigationLink(destination: EventDetailView(id: sportfest.ID, name: sportfest.NAME, start: sportfest.START, end: sportfest.END, locationID: sportfest.LOCATION_ID, contactPersonID: sportfest.CONTACTPERSON_ID, detailsID: sportfest.DETAILS_ID)) {
-                                                EventCard(eventName: sportfest.NAME, date: sportfest.START)
-                                            }
+                                            EventCard(eventName: sportfest.NAME, sportfestID: sportfest.ID)
                                         }
                                         
                                     }
@@ -64,9 +62,7 @@ struct MainPageView: View {
                                         }
                                         
                                         ForEach(past_sportfests, id: \.self) { sportfest in
-                                            NavigationLink(destination: EventDetailView(id: sportfest.ID, name: sportfest.NAME, start: sportfest.START, end: sportfest.END, locationID: sportfest.LOCATION_ID, contactPersonID: sportfest.CONTACTPERSON_ID, detailsID: sportfest.DETAILS_ID)) {
-                                                EventCard(eventName: sportfest.NAME, date: sportfest.END)
-                                            }
+                                            EventCard(eventName: sportfest.NAME, sportfestID: sportfest.ID)
                                         }
                                         
                                     }
@@ -190,7 +186,7 @@ enum MedalType {
 }
 
 // Components
-struct EventCard: View {
+struct EventCardOld: View {
     let eventName: String
     let date: Date
 

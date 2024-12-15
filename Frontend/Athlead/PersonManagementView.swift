@@ -32,7 +32,7 @@ struct PersonManagementView: View {
             } else {
                 List {
                     Section("Administrators") {
-                        if personsJudges.isEmpty {
+                        if personsAdmins.isEmpty {
                             Text("No administrators available.")
                                 .foregroundColor(.gray)
                                 .multilineTextAlignment(.center)
@@ -184,9 +184,8 @@ struct PersonManagementView: View {
             }
             
             let personData = personResponse.data;
-            
-            for person in personData {
-                DispatchQueue.main.async {
+            DispatchQueue.main.async {
+                for person in personData {
                     if person.ROLE.uppercased() == "ADMIN" {
                         if !personsAdmins.contains(person) {
                             personsAdmins.append(person)
@@ -200,9 +199,9 @@ struct PersonManagementView: View {
                             personsContestants.append(person)
                         }
                     }
-                    self.isLoading = false
-                    self.errorMessageLoad = nil
                 }
+                self.isLoading = false
+                self.errorMessageLoad = nil
             }
         }.resume()
     }
@@ -218,7 +217,6 @@ struct PersonManagementView: View {
     }
     
     private func addPerson(person: Person) {
-        print(person)
         if person.ROLE.uppercased() == "ADMIN" {
             if !personsAdmins.contains(person) {
                 personsAdmins.append(person)
@@ -262,11 +260,11 @@ struct PersonAddView: View {
     var onAddVoid: (Person) -> Void
     
     private func onAdd(person: Person) {
-        let url = URL(string: "http://localhost:8000/persons")!
+        let url = URL(string: "\(apiURL)/persons")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    
+        
         let personToCreate = PersonCreate(first_name: person.FIRSTNAME,
                                           last_name: person.LASTNAME,
                                           email: person.EMAIL,
@@ -296,7 +294,7 @@ struct PersonAddView: View {
                 }
                 return
             }
-
+            
         }.resume()
         
     }
@@ -340,14 +338,14 @@ struct PersonAddView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
                         let newPerson = Person(
-                                ID: UUID().uuidString,
-                                FIRSTNAME: firstName,
-                                LASTNAME: lastName,
-                                EMAIL: email,
-                                PHONE: phone,
-                                BIRTH_YEAR: birthyear,
-                                GRADE: grade,
-                                ROLE: selectedRole
+                            ID: UUID().uuidString,
+                            FIRSTNAME: firstName,
+                            LASTNAME: lastName,
+                            EMAIL: email,
+                            PHONE: phone,
+                            BIRTH_YEAR: birthyear,
+                            GRADE: grade,
+                            ROLE: selectedRole
                         );
                         onAdd(person: newPerson)
                         dismiss()

@@ -41,6 +41,11 @@ struct CreateSportfestView: View {
                     // Sportfest Name
                     Section(header: Text("Sportfest Details")) {
                         TextField("Sportfest Name", text: $sportfestName)
+                            .autocapitalization(.words)
+                            .autocorrectionDisabled(true)
+                            .background(Color.white.opacity(0.1))
+                            
+                            
                     }
                     
                     // Location Picker
@@ -84,8 +89,7 @@ struct CreateSportfestView: View {
                                 .cornerRadius(10)
                                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
                                 .padding(.horizontal)
-                                
-                            }
+                            }.disabled($sportfestName.wrappedValue.isEmpty || selectedLocation == nil || selectedContact == nil)
                             
                         }
                     }
@@ -170,42 +174,23 @@ struct CreateSportfestView: View {
                 return
             }
             
-            guard let data = data else {
+            guard let data = data, let personsResponse = try? JSONDecoder().decode(PersonsResponse.self, from: data) else {
+                DispatchQueue.main.async {
+                    self.isLoading[1] = false
+                    self.errorMessageLoad = "Failed to fetch administrators"
+                }
                 return
             }
             
-            do {
-                let personResponse = try JSONDecoder().decode(PersonsResponse.self, from: data)
-                let persons = personResponse.data
-                
-                let dispatchGroup = DispatchGroup()
-                
-                var contacts: [Person] = []
-                let contactLock = NSLock()
-                
-                for person in persons {
-                    
-                    guard person.ROLE.lowercased() == "admin" else {
-                        continue
-                    }
-                    
-                    dispatchGroup.enter()
-                    
-                    contactLock.lock()
-                    contacts.append(person)
-                    contactLock.unlock()
-                }
-                
-                dispatchGroup.notify(queue: DispatchQueue.main) {
-                    self.contactPersons = contacts
-                    self.selectedContact = contacts.first
-                    self.isLoading[1] = false
-                    self.errorMessageLoad = nil
-                }
-                
-            } catch {
-                print("Error decoding persons: \(error)")
+            let persons = personsResponse.data.filter { $0.ROLE == "ADMIN" }
+            
+            DispatchQueue.main.async {
+                self.contactPersons = persons
+                self.selectedContact = self.contactPersons.first
+                self.isLoading[1] = false
+                self.errorMessageLoad = nil
             }
+            
             
         }.resume()
     }
@@ -216,87 +201,52 @@ struct CreateSportfestView: View {
             self.errorMessage = "Please select a location and a contact person."
             return
         }
-        
         isSubmitting = true
         errorMessage = nil
         
-        let details = SportfestDetailsCreate(
-            NAME: sportfestName,
-            LOCATION_ID: selectedLocation.ID,
-            CONTACTPERSON_ID: selectedContact.ID,
-            START: String(startDate.ISO8601Format().dropLast()),
-            END: String(endDate.ISO8601Format().dropLast())
-        )
         
+        let url = URL(string: apiURL + "/sportfests")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let detailsURL = URL(string: "\(apiURL)/details")!
+        let details = SportfestLocationCreate(CONTACTPERSON_ID: selectedContact.ID, fest_name: sportfestName, fest_start: String(startDate.ISO8601Format().dropLast()), fest_end:   String(endDate.ISO8601Format().dropLast()), city: selectedLocation.CITY, zip_code: selectedLocation.ZIPCODE, street: selectedLocation.STREET, streetnumber: selectedLocation.STREETNUMBER, location_name: selectedLocation.NAME)
         
-        var detailsRequest = URLRequest(url: detailsURL)
-        detailsRequest.httpMethod = "POST"
-        detailsRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        do {
-            detailsRequest.httpBody = try JSONEncoder().encode(details)
-        } catch (let e){
-            print("Error encoding details: \(e)")
+        guard let encode = try? JSONEncoder().encode(details) else {
+            print("Failed to encode details")
+            errorMessage = "Failed to encode details"
+            isSubmitting = false
+            return
         }
         
+        request.httpBody = encode
         
-        let str = String(data: detailsRequest.httpBody!, encoding: .utf8)
-        print("Details Request: \(str!)")
-        
-        
-        URLSession.shared.dataTask(with: detailsRequest) { data, response, error in
-            if let error = error {
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            
+            if let error {
+                print("Error: \(error)")
                 DispatchQueue.main.async {
-                    self.errorMessage = "Error creating details: \(error.localizedDescription)"
-                    self.isSubmitting = false
-                }
-                return
-            }
-        
-            guard let data = data, let detailsResponse = try? JSONDecoder().decode(SportfestDetailsResponse.self, from: data) else {
-                DispatchQueue.main.async {
-                    self.errorMessage = "Failed to create details. Please try again."
+                    self.errorMessage = "Error: \(error)"
                     self.isSubmitting = false
                 }
                 return
             }
             
-            let detailsID = detailsResponse.result.ID
-            
-            
-            let sportfest = SportFestCreate(DETAILS_ID: detailsID)
-            let sportfestURL = URL(string: "\(apiURL)/sportfests")!
-            
-            var sportfestRequest = URLRequest(url: sportfestURL)
-            sportfestRequest.httpMethod = "POST"
-            sportfestRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            sportfestRequest.httpBody = try? JSONEncoder().encode(sportfest)
-            
-            URLSession.shared.dataTask(with: sportfestRequest) { data, response, error in
+            guard let data = data, let sportfestResponse = try? JSONDecoder().decode(SportfestCreateResponse.self, from: data) else {
                 DispatchQueue.main.async {
+                    self.errorMessage = "Failed to create sportfest. Please try again."
                     self.isSubmitting = false
                 }
                 
-                if let error = error {
-                    DispatchQueue.main.async {
-                        self.errorMessage = "Error creating sportfest: \(error.localizedDescription)"
-                    }
-                    return
-                }
-                
-                DispatchQueue.main.async {
-                    
-                    guard let data = data, let sportfestResponse = try? JSONDecoder().decode(SportFestResponse.self, from: data) else {
-                        self.errorMessage = "Failed to create sportfest. Please try again."
-                        return
-                    }
-                    self.newSportfestID = sportfestResponse.data.id
-                    self.errorMessage = nil
-                    self.isSuccesful = true
-                }
-            }.resume()
+                return
+            }
             
+            DispatchQueue.main.async {
+                
+                self.newSportfestID = sportfestResponse.data.id
+                self.errorMessage = nil
+                self.isSuccesful = true
+            }
         }.resume()
     }
     

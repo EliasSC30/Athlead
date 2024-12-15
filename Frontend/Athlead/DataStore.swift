@@ -7,13 +7,19 @@
 
 import Foundation
 
-let apiURL = "http://localhost:8000"
 
+var apiURL: String {
+    get {
 #if targetEnvironment(simulator)
-    let apiURL = "http://localhost:8000"
+        print("Simulator")
+        return "http://localhost:8000"
 #else
-    let apiURL = "http://45.81.234.175:8000"
+        print("Device")
+        return "http://45.81.234.175:8000"
 #endif
+    }
+}
+
 
 struct RegisterData: Encodable {
     let email: String
@@ -143,8 +149,7 @@ struct PersonCreate: Encodable {
 }
 
 struct PersonCreateResponse: Decodable {
-    let data: [Person]
-    let results: Int
+    let data: Person
     let status: String
 }
 
@@ -180,13 +185,85 @@ struct SportfestDetailsCreate: Encodable {
     let END: String
 }
 
+struct SportfestLocationCreate: Encodable {
+    let CONTACTPERSON_ID: String
+    let fest_name: String
+    let fest_start: String
+    let fest_end: String
+    let city: String
+    let zip_code: String
+    let street: String
+    let streetnumber: String
+    let location_name: String
+}
+
 struct SportFestResponse: Decodable {
     let data: SportFest
     let message: String
     let status: String
 }
-struct SportFestCreate: Encodable {
+struct SportfestCreateResponse: Decodable {
+    let data: SportfestCreateData
+    let status: String
+    
+}
+
+struct SportFestSingleResponse: Decodable {
+    let data: SportfestData
+    let status: String
+    
+}
+
+
+/*
+ "cp_birth_year": "2003",
+ "cp_email": "jan.wichmann23@icloud.com",
+ "cp_firstname": "Jan",
+ "cp_grade": "4",
+ "cp_id": "d0c09d12-2fe5-41d7-ae5c-223bf7e7ef1c",
+ "cp_lastname": "Wichmann ",
+ "cp_phone": "+49 173 6609293",
+ "cp_role": "ADMIN",
+ "details_end": "2024-12-12T22:40:53",
+ "details_id": "8998d965-5dff-4a65-ab6a-07240888eef1",
+ "details_start": "2024-12-12T22:40:53",
+ "location_city": "Wielsoch",
+ "location_id": "01fa6e46-2871-4342-b117-8dc6e521e4f4",
+ "location_name": "Die Messis",
+ "location_street": "Meßplatzstraße",
+ "location_street_number": "25",
+ "location_zipcode": "69168",
+ "sportfest_id": "52d644c8-782e-413c-a9e8-9a973f5e09b1"
+ */
+
+struct SportfestData: Identifiable, Hashable, Decodable {
+    let cp_birth_year: String
+    let cp_email: String
+    let cp_firstname: String
+    let cp_grade: String
+    let cp_id: String
+    let cp_lastname: String
+    let cp_phone: String
+    let cp_role: String
+    let details_end: String
+    let details_id: String
+    let details_start: String
+    let location_city: String
+    let location_id: String
+    let location_name: String
+    let location_street: String
+    let location_street_number: String
+    let location_zipcode: String
+    let sportfest_id: String
+    
+    var id: String { return self.sportfest_id }
+}
+
+struct SportfestCreateData: Decodable, Identifiable {
+    let ID: String
     let DETAILS_ID: String
+    
+    var id: String { return self.ID }
 }
 
 struct LocationData: Encodable {
