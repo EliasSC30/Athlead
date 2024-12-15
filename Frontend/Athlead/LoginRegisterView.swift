@@ -55,8 +55,6 @@ struct LoginRegisterView: View {
     
     func authenticateUser()
     {
-        print(isLoginMode)
-        print(SessionToken)
         if (isLoginMode){
             if loginWithToken() {
                 return;
@@ -90,9 +88,6 @@ struct LoginRegisterView: View {
             return false;
         }
         
-        print("email: ", email, "password", password)
-        print(encode)
-        
         request.httpBody = encode
         
         var loginWasSuccessfull = false;
@@ -107,15 +102,17 @@ struct LoginRegisterView: View {
                 return
             }
             
-            print(data)
-            print(loginResponse)
-            SessionToken = loginResponse.data
+            SessionToken = loginResponse.data;
+            UserId = loginResponse.id;
             loginWasSuccessfull = true;
+            isLoggedIn = true;
             
         }.resume()
         
         if !loginWasSuccessfull {
             SessionToken = nil;
+            UserId = nil;
+            isLoggedIn = false;
         }
         
         

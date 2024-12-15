@@ -59,7 +59,7 @@ pub async fn register_handler(body: web::Json<Register>, data: web::Data<AppStat
         .await;
 
     let keys = generate_key();
-    let mut to_crypt = create_person.unwrap().ID.clone();
+    let mut to_crypt = create_person.as_ref().unwrap().ID.clone();
     to_crypt.push_str(encryption::u32_to_parsable_chars(current_time).as_str());
     println!("I will crypt: {}", to_crypt);
     let new_token = crypt_str(&to_crypt, &keys.1, &keys.2);
@@ -67,7 +67,8 @@ pub async fn register_handler(body: web::Json<Register>, data: web::Data<AppStat
     match auth_query {
         Ok(_) => HttpResponse::Ok().json(json!({
                 "status": "success",
-                "data": new_token
+                "data": new_token,
+                "id": create_person.unwrap().ID
             }))
         ,
         Err(e) => HttpResponse::InternalServerError().json(json!({
@@ -77,7 +78,7 @@ pub async fn register_handler(body: web::Json<Register>, data: web::Data<AppStat
     }
 }
 
-pub async fn login_with_token(token: Option<String>, data: &web::Data<AppState>) -> Result<String, String>
+pub async fn login_with_token(token: Option<String>, data: &web::Data<AppState>) -> Result<(String, String), String>
 {
     if token.is_none() { return Err(String::from("No valid login data was send")); };
 
@@ -114,7 +115,7 @@ pub async fn login_with_token(token: Option<String>, data: &web::Data<AppState>)
     let mut new_token = person_id.to_string();
     new_token.push_str(encryption::u32_to_parsable_chars(now).as_str());
     let encrypted = encryption::BigInt::non_a7_u32_vec_to_exp_string(&crypt_str(&new_token, &keys.1, &keys.2).parts);
-    Ok(encrypted)
+    Ok((encrypted, person_id.to_string()))
 }
 
 #[post("/login")]
@@ -122,9 +123,10 @@ pub async fn login_handler(body: web::Json<Login>, data: web::Data<AppState>) ->
 {
     if body.password.is_none() {
         return match login_with_token(body.token.clone(), &data).await {
-            Ok(new_token) => HttpResponse::Ok().json(json!({
+            Ok((new_token, person_id)) => HttpResponse::Ok().json(json!({
                 "status": "success",
-                "New Token": new_token
+                "data": new_token,
+                "id": person_id
             })),
             Err(e) => HttpResponse::BadRequest().json(json!({
                 "status": "Unauthorized with token",
@@ -161,7 +163,8 @@ pub async fn login_handler(body: web::Json<Login>, data: web::Data<AppState>) ->
     match password_query {
         Ok(_) => HttpResponse::Ok().json(json!({
             "status": "success",
-            "New_Token": new_token
+            "data": new_token,
+            "id": password_query.as_ref().clone().unwrap().PERSON_ID
         })),
         Err(_) => HttpResponse::InternalServerError().json(json!({
             "status": "Fetch login error",

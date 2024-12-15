@@ -36,6 +36,7 @@ struct RegisterData: Encodable {
 struct RegisterResponse: Decodable {
     let data: String
     let status: String
+    let id: String
 }
 
 struct LoginData: Encodable {
@@ -46,6 +47,7 @@ struct LoginData: Encodable {
 
 struct LoginResponse: Decodable {
     let data: String
+    let id: String
     let status: String
 }
 
@@ -327,6 +329,7 @@ struct AssignContestSportFestCreate: Encodable {
 var STORE : [String:[ResultInfo]] = [:];
 
 var SessionToken: String?
+var UserId: String?
 
 
 

@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct LockedTabView: View {
+struct LockedTabViewLockedTabView: View {
     var body: some View {
         VStack {
             Image(systemName: "lock.fill")

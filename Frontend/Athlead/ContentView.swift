@@ -12,7 +12,7 @@ struct ContentView: View {
         case Judge
         case Admin
     }
-    @State private var isLoggedIn = true // Status für Authentifizierung
+    @State private var isLoggedIn = false // Status für Authentifizierung
     @State private var role : Role = .Admin // Status für Authentifizierung
 
 
