@@ -37,6 +37,32 @@ pub mod encryption
         // This is a+b = Max + carry <=> carry = a - (Max - b) to get the carry, if there is any
         if (u32::MAX - b) > a { (a+b,0) } else { (a.wrapping_add(b), 1) }
     }
+    pub fn u32_to_parsable_chars(number: u32) -> String
+    {
+        let fst_char = (number & 0xF) as u8 +97;
+        let snd_char = ((number & (0xF << 4)) >> 4)   as u8 +97;
+        let thd_char = ((number & (0xF << 8)) >> 8)   as u8 +97;
+        let fth_char = ((number & (0xF << 12)) >> 12) as u8 +97;
+        let fft_char = ((number & (0xF << 16)) >> 16) as u8 +97;
+        let sth_char = ((number & (0xF << 20)) >> 20) as u8 +97;
+        let svt_char = ((number & (0xF << 24)) >> 24) as u8 +97;
+        let eth_char = ((number & (0xF << 28)) >> 28) as u8 +97;
+
+        vec![fst_char as char,snd_char as char,thd_char as char,
+            fth_char as char,fft_char as char,sth_char as char,
+            svt_char as char, eth_char as char].into_iter().collect::<String>()
+    }
+
+    pub fn chars_to_u32(numbers: &String) -> u32
+    {
+        let mut ret = 0u32;
+        for (index, number) in numbers.chars().enumerate()
+        {
+            ret |= (number as u32 -97) << index*4;
+        }
+
+        ret
+    }
 
     impl BigInt {
         pub fn new(parts_to_take_over: Vec<u32>) -> BigInt { BigInt { parts: parts_to_take_over } }
@@ -63,16 +89,6 @@ pub mod encryption
             let mut return_value = BigInt { parts: return_value };
             return_value.shrink_to_highest_power();
             return_value
-        }
-
-        pub fn parse(s: &String) -> BigInt
-        {
-            let mut parts =
-                s.chars().into_iter().map(|c| c.to_digit(10).unwrap()).collect::<Vec<u32>>();
-
-
-
-            BigInt { parts }
         }
 
         pub fn a7_u32_vec_to_string(vec: &Vec<u32>) -> String
@@ -114,14 +130,14 @@ pub mod encryption
                 let svh_char = (((val & (0xF<<24)) >> 24) + 97) as u8;
                 let eth_char = (((val & (0xF<<28)) >> 28) + 97) as u8;
 
-                ret.push(fst_char as char); println!("{}", fst_char);
-                ret.push(snd_char as char); println!("{}", snd_char);
-                ret.push(thd_char as char); println!("{}", thd_char);
-                ret.push(fth_char as char); println!("{}", fth_char);
-                ret.push(ffh_char as char); println!("{}", ffh_char);
-                ret.push(sth_char as char); println!("{}", sth_char);
-                ret.push(svh_char as char); println!("{}", svh_char);
-                ret.push(eth_char as char); println!("{}", eth_char);
+                ret.push(fst_char as char);
+                ret.push(snd_char as char);
+                ret.push(thd_char as char);
+                ret.push(fth_char as char);
+                ret.push(ffh_char as char);
+                ret.push(sth_char as char);
+                ret.push(svh_char as char);
+                ret.push(eth_char as char);
             }
 
             while ret.chars().last().unwrap() == '\0' { ret.pop(); }
@@ -289,8 +305,6 @@ pub mod encryption
 
         pub fn compare(&self, other: &BigInt) -> i32 {
             let power_difference = Self::power_difference(&self, &other);
-            let a = self.parts[0];
-            let b = other.parts[0];
 
             if power_difference == 0 {
                 let mut power_index_to_compare = Self::find_highest_power(&self.parts);
@@ -432,13 +446,11 @@ pub mod encryption
             if next_guess.mul(&other).compare(&this) > 0 { next_guess = next_guess.sub(&BigInt::one()).unwrap() };
             //println!("before calculating remainder: {}", next_guess);
             let remainder = Self::calculate_remainder(&next_guess, &other, &this);
-            let y = remainder.parts[0];
             (next_guess, remainder)
         }
 
         pub fn add(&self, other: &BigInt) -> BigInt
         {
-
             let smaller: &Self = if self.compare(&other) < 0 { self } else { other };
             let bigger: &Self = if self.compare(&other) >= 0 { self } else { other };
             let bigger_highest_power = Self::find_highest_power(&bigger.parts);
