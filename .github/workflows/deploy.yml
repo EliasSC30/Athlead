@@ -13,26 +13,21 @@ jobs:
   docker-build:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Create .env file
       - name: Create .env file
         run: echo "${{ vars.ENV_FILE_CONTENT }}" > ./Backend/.env
 
-      # Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      # Build and push Docker images to Docker Hub
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -46,15 +41,11 @@ jobs:
   deploy-db-script:
     runs-on: ubuntu-latest
     needs: docker-build
-    if: contains(github.event.head_commit.modified, 'sql/table_create.sql')
-    outputs:
-      db_updated: "true"
+    if: ${{ contains(github.event.head_commit.modified, 'Backend/sql/table_create.sql') }}
     steps:
-      # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Execute remote SSH commands to deploy DB changes
       - name: Deploy database script on remote server
         uses: appleboy/ssh-action@master
         with:
@@ -63,19 +54,13 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
             echo "Deploying database changes..."
-
-            # Copy the database script to the server
             scp -o StrictHostKeyChecking=no ./Backend/sql/table_create.sql ${{ vars.USER }}@${{ vars.HOST }}:/home/${{ vars.USER }}/athlead-backend/table_create.sql
-            
-            # Run the database script
             mysql -u root -p${{ vars.DB_PASSWORD }} < /home/${{ vars.USER }}/athlead-backend/table_create.sql
 
   start-service:
     runs-on: ubuntu-latest
     needs: [docker-build, deploy-db-script]
-    if: always()
     steps:
-      # Conditional wait message if DB was updated
       - name: Check if database script ran
         run: |
           if [[ "${{ needs.deploy-db-script.result }}" == "success" ]]; then
@@ -84,7 +69,6 @@ jobs:
             echo "No database script changes. Proceeding to deploy backend..."
           fi
 
-      # Execute remote SSH commands to deploy the backend service
       - name: Deploy backend on remote server
         uses: appleboy/ssh-action@master
         with:
@@ -93,18 +77,10 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
             echo "Deploying backend service..."
-
-            # Navigate to the deployment directory
             cd /home/${{ vars.USER }}/athlead-backend
-
-            # Pull the latest Docker image
             sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/athlead-backend:latest
-
-            # Stop and remove the old container
             sudo docker stop athlead-backend || true
             sudo docker rm athlead-backend || true
-
-            # Run the updated container
             sudo docker run -d \
               --name athlead-backend \
               -p 8000:8000 \
