@@ -43,11 +43,36 @@ jobs:
             ${{ secrets.DOCKER_HUB_USERNAME }}/athlead-backend:${{ github.sha }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/athlead-backend:latest
 
-  start-service:
+  deploy-db-script:
     runs-on: ubuntu-latest
     needs: docker-build
+    if: contains(github.event.head_commit.modified, 'sql/table_create.sql')
     steps:
-      # Execute remote SSH commands
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Execute remote SSH commands to deploy DB changes
+      - name: Deploy database script on remote server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ vars.HOST }}
+          username: ${{ vars.USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            echo "Deploying database changes..."
+            
+            # Copy the database script to the server
+            scp -o StrictHostKeyChecking=no ./Backend/sql/table_create.sql ${{ vars.USER }}@${{ vars.HOST }}:/home/${{ vars.USER }}/athlead-backend/table_create.sql
+            
+            # Run the database script
+            mysql -u root -p${{ vars.DB_PASSWORD }} < /home/${{ vars.USER }}/athlead-backend/table_create.sql
+
+  start-service:
+    runs-on: ubuntu-latest
+    needs: [docker-build, deploy-db-script]
+    steps:
+      # Execute remote SSH commands to deploy the backend service
       - name: Deploy backend on remote server
         uses: appleboy/ssh-action@master
         with:
@@ -55,6 +80,8 @@ jobs:
           username: ${{ vars.USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
+            echo "Deploying backend service..."
+
             # Navigate to the deployment directory
             cd /home/${{ vars.USER }}/athlead-backend
 
