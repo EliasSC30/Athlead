@@ -170,8 +170,6 @@ pub async fn sportfests_get_masterview_handler(
         "message": "Should not happen..",
     }))};
 
-    println!("User: {:?}", user.unwrap());
-
     let user_class = user.unwrap().GRADE.clone().unwrap_or("".to_string());
     let participating_classes_with_flags = participating_classes.into_iter().map(|class|{
         (class == user_class, class)
