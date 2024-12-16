@@ -163,6 +163,15 @@ pub async fn sportfests_get_masterview_handler(
         }));
     };
 
+    let contest_query = sqlx::query_as!(Contest, "SELECT * FROM CONTEST WHERE SPORTFEST_ID = ?", sf_id.clone())
+        .fetch_all(db.as_ref())
+        .await;
+    if contest_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Contest query error",
+        "message": contest_query.unwrap_err().to_string(),
+    }))};
+    let contests_of_sf = contest_query.unwrap();
+
     let container = req.extensions();
     let user = container.get::<Person>();
     if user.is_none() { return HttpResponse::InternalServerError().json(json!({
@@ -175,11 +184,41 @@ pub async fn sportfests_get_masterview_handler(
         (class == user_class, class)
     }).collect::<Vec<(bool,String)>>();
 
+    let contests_with_flags: Vec<(bool,String)> = if contests_of_sf.len() > 0 {
+        let mut contestresult_query = String::from("SELECT * FROM CONTESTRESULT WHERE CONTEST_ID IN (\"");
+        for contest in &contests_of_sf {
+            contestresult_query.push_str(&contest.ID.as_str());
+            contestresult_query.push_str("\", \"");
+        }
+        contestresult_query = contestresult_query[..contestresult_query.len()-3].to_string();
+        contestresult_query.push_str(")");
+
+        let contestresult_query = sqlx::query(contestresult_query.as_str())
+            .fetch_all(db.as_ref())
+            .await;
+        if contestresult_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+            "status": "Contest Result error",
+            "message": contestresult_query.unwrap_err().to_string(),
+        }))};
+
+        let all_participating_people = contestresult_query.unwrap().into_iter().map(|row|{
+            (row.try_get("PERSON_ID").unwrap(), row.try_get("CONTEST_ID").unwrap())
+        }).collect::<Vec<(String,String)>>();
+        let contests_of_user = all_participating_people.iter().filter(|(p_id, ct_id)|{
+            *p_id == user.unwrap().ID.clone()
+        }).map(|(p_id,ct_id)| ct_id.clone()).collect::<Vec<String>>();
+
+        contests_of_sf.into_iter().map(|ct| {
+            (contests_of_user.iter().any( |user_ct| *user_ct == ct.ID ), ct.ID)
+        }).collect::<Vec<(bool,String)>>()
+    } else {vec![]};
+
     let master_query_result = result.unwrap();
     HttpResponse::Ok().json(json!({
         "status": "success",
         "data": serde_json::to_value(master_query_result).unwrap(),
-        "participating_classes_with_flags": serde_json::to_value(participating_classes_with_flags).unwrap()
+        "participating_classes_with_flags": serde_json::to_value(participating_classes_with_flags).unwrap(),
+        "contests_with_flags": serde_json::to_value(contests_with_flags).unwrap()
     }))
 }
 
@@ -290,7 +329,7 @@ pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
 
     let nr_of_updates : u8 =
         [updates_details as u8].iter().sum();
-    println!("Updates details: {}", nr_of_updates);
+
     if nr_of_updates == 0 { return HttpResponse::BadRequest().json(json!({"status": "Invalid Body Error"})); }
 
     let mut build_update_query = String::from("SET ");

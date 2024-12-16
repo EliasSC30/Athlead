@@ -3,9 +3,9 @@ POST http://localhost:8000/contests
 Content-Type: application/json
 
 {
-  "SPORTFEST_ID": "51e64f86-e63b-4bc5-9ba7-5bb84de09ee2",
-  "DETAILS_ID": "9a2a20fd-c970-4d76-8e77-a173b690432d",
-  "NAME": "100m Lauf",
+  "SPORTFEST_ID": "1f47a414-2401-499d-82ba-e95d98bcfcfa",
+  "DETAILS_ID": "60f7c17f-5997-4f1f-afb4-30dddad20977",
+  "NAME": "Weitsprung",
   "ct_name": "Nice template",
   "ct_description": "A nice contest",
   "ct_graderange": "1-4",
