@@ -12,7 +12,7 @@ pub struct Sportfest {
 pub struct CreateSportfest {
     // Detail Fields
     pub CONTACTPERSON_ID: String,
-    pub fest_name: Option<String>,
+    pub fest_name: String,
     pub fest_start: NaiveDateTime,
     pub fest_end: NaiveDateTime,
 
@@ -21,14 +21,14 @@ pub struct CreateSportfest {
     pub zip_code: String,
     pub street: String,
     pub streetnumber: String,
-    pub location_name: Option<String>
+    pub location_name: String
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateSportfestWithLocation {
     // Detail Fields
     pub CONTACTPERSON_ID: String,
-    pub fest_name: Option<String>,
+    pub fest_name: String,
     pub fest_start: NaiveDateTime,
     pub fest_end: NaiveDateTime,
 
@@ -48,7 +48,7 @@ pub struct CreateContestForFest {
     //Details fields
     pub LOCATION_ID: String,
     pub CONTACTPERSON_ID: String,
-    pub NAME: Option<String>,
+    pub NAME: String,
     pub START: NaiveDateTime,
     pub END: NaiveDateTime,
 }
@@ -59,12 +59,12 @@ pub struct SportfestMaster {
     pub sportfest_id : String,
 
     pub details_id : String,
-    pub details_name: Option<String>,
+    pub details_name: String,
     pub details_start : NaiveDateTime,
     pub details_end : NaiveDateTime,
 
     pub location_id : String,
-    pub location_name : Option<String>,
+    pub location_name : String,
     pub location_city : String,
     pub location_zipcode : String,
     pub location_street : String,

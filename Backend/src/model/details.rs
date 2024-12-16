@@ -7,7 +7,7 @@ pub struct Details {
     pub ID: String,
     pub LOCATION_ID: String,
     pub CONTACTPERSON_ID: String,
-    pub NAME: Option<String>,
+    pub NAME: String,
     pub START: NaiveDateTime,
     pub END: NaiveDateTime,
 }
@@ -17,7 +17,7 @@ pub struct Details {
 pub struct CreateDetails {
     pub LOCATION_ID: String,
     pub CONTACTPERSON_ID: String,
-    pub NAME: Option<String>,
+    pub NAME: String,
     pub START: NaiveDateTime,
     pub END: NaiveDateTime
 }
@@ -26,7 +26,7 @@ impl CreateDetails {
     pub fn from(
                 loc_id : String,
                 contact_id : String,
-                name : Option<String>,
+                name : String,
                 start : NaiveDateTime,
                 end : NaiveDateTime)
      -> Self

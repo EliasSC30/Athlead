@@ -8,7 +8,7 @@ pub struct Location {
     pub ZIPCODE: String,
     pub STREET: String,
     pub STREETNUMBER: String,
-    pub NAME: Option<String>,
+    pub NAME: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -17,7 +17,7 @@ pub struct CreateLocation {
     pub ZIPCODE: String,
     pub STREET: String,
     pub STREETNUMBER: String,
-    pub NAME: Option<String>,
+    pub NAME: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

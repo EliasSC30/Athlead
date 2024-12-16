@@ -8,6 +8,7 @@ use crate::api::person::create_person;
 use crate::model::logon::{Login, Register, Authentication};
 use crate::model::person::{CreatePerson, Person};
 
+const DEV: bool = true;
 const TIME_OFFSET: u64 = 1734269586u64;
 const TIMESTAMP_LENGTH: usize = 8;
 const ID_LENGTH: usize = 36;
@@ -70,7 +71,6 @@ pub async fn register_handler(body: web::Json<Register>, db: web::Data<MySqlPool
     let keys = generate_key();
     let mut to_crypt = create_person.as_ref().unwrap().ID.clone();
     to_crypt.push_str(encryption::u32_to_parsable_chars(current_time).as_str());
-    println!("I will crypt: {}", to_crypt);
     let new_token = crypt_str(&to_crypt, &keys.1, &keys.2);
     let mut new_token = encryption::BigInt::non_a7_u32_vec_to_exp_string(&new_token.parts);
     match auth_query {
@@ -106,7 +106,7 @@ pub async fn check_token(mut token: String, db: &web::Data<MySqlPool>) -> Result
     if now < last_login { return Err(String::from("Invalid token create time")); };
     let seconds_since_last_login = now-last_login;
 
-    let refresh_time_in_minutes = 15;
+    let refresh_time_in_minutes = if DEV {9999999} else {15};
     if seconds_since_last_login / 60 > refresh_time_in_minutes {
         return Err("Token timed out".to_string());
     }
