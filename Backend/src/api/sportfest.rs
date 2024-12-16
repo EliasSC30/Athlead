@@ -1,5 +1,5 @@
 use crate::model::sportfest::*;
-use actix_web::{get, post, patch, web, HttpResponse, Responder};
+use actix_web::{get, post, patch, web, HttpResponse, Responder, HttpRequest, HttpMessage};
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
@@ -10,6 +10,7 @@ use crate::model::contestresult::ContestResult;
 use crate::model::sportfest::CreateContestForFest;
 use crate::model::details::{CreateDetails};
 use crate::model::location::CreateLocation;
+use crate::model::person::Person;
 
 #[get("/sportfests")]
 pub async fn sportfests_list_handler(db: web::Data<MySqlPool>) -> impl Responder {
@@ -48,7 +49,8 @@ pub async fn sportfests_list_handler(db: web::Data<MySqlPool>) -> impl Responder
 #[get("/sportfests/{id}")]
 pub async fn sportfests_get_masterview_handler(
     db: web::Data<MySqlPool>,
-    path: web::Path<String>
+    path: web::Path<String>,
+    req: HttpRequest
 ) -> impl Responder {
     let sf_id = path.into_inner();
 
@@ -73,14 +75,14 @@ pub async fn sportfests_get_masterview_handler(
     }))};
 
     let participating_classes: Vec<String> = if contests_query.as_ref().unwrap().len() == 0 { vec![] } else {
-        let mut ct_query = String::from("SELECT * FROM CONTESTRESULT WHERE ");
+        let mut ct_query = String::from("SELECT * FROM CONTESTRESULT WHERE CONTEST_ID IN (\"");
         for contest in contests_query.unwrap() {
-            ct_query.push_str("CONTEST_ID = ");
             ct_query.push_str(&contest.ID.as_str());
-            ct_query.push_str(" OR ");
+            ct_query.push_str("\", \"");
         }
         // Remove excessive " OR "
-        ct_query = ct_query[..ct_query.len()-5].to_string(); println!("cq: {}", ct_query);
+        ct_query = ct_query[..ct_query.len()-3].to_string();
+        ct_query.push_str(")");
 
         let ct_results_query = sqlx::query(ct_query.as_str()).fetch_all(db.as_ref()).await;
         if ct_results_query.is_err() { return HttpResponse::InternalServerError().json(json!({
@@ -97,15 +99,14 @@ pub async fn sportfests_get_masterview_handler(
             }
         }).collect::<Vec<ContestResult>>();
 
-        let mut person_query = String::from("SELECT GRADE FROM PERSON WHERE ");
+        let mut person_query = String::from("SELECT GRADE FROM PERSON WHERE ID IN (\"");
         for ct_result in ct_results {
-            person_query.push_str("ID = ");
             person_query.push_str(&ct_result.PERSON_ID.as_str());
-            person_query.push_str(" OR ");
+            person_query.push_str("\", \"");
         }
         // Remove excessive " OR "
-        person_query = person_query[..person_query.len()-5].to_string(); println!("pq: {}", person_query);
-        person_query.push_str(" GROUP BY GRADE");
+        person_query = person_query[..person_query.len()-3].to_string();
+        person_query.push_str(") GROUP BY GRADE");
 
         let person_query_result = sqlx::query(person_query.as_str()).fetch_all(db.as_ref()).await;
         if person_query_result.is_err() { return HttpResponse::InternalServerError().json(json!({
@@ -156,21 +157,32 @@ pub async fn sportfests_get_masterview_handler(
         .fetch_one(db.as_ref())
         .await;
 
-    match result {
-        Ok(values) => {
-            HttpResponse::Ok().json(json!({
-                "status": "success",
-                "data": serde_json::to_value(values).unwrap(),
-                "participating_classes": serde_json::to_value(participating_classes).unwrap(),
-            }))
-        }
-        Err(e) => {
-            HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": format!("Failed to fetch Sportfests: {}", e),
-            }))
-        }
-    }
+    if result.is_err() { return HttpResponse::InternalServerError().json(json!({
+            "status": "Master query error",
+            "message": result.unwrap_err().to_string(),
+        }));
+    };
+
+    let container = req.extensions();
+    let user = container.get::<Person>();
+    if user.is_none() { return HttpResponse::InternalServerError().json(json!({
+        "status": "User was none error",
+        "message": "Should not happen..",
+    }))};
+
+    println!("User: {:?}", user.unwrap());
+
+    let user_class = user.unwrap().GRADE.clone().unwrap_or("".to_string());
+    let participating_classes_with_flags = participating_classes.into_iter().map(|class|{
+        (class == user_class, class)
+    }).collect::<Vec<(bool,String)>>();
+
+    let master_query_result = result.unwrap();
+    HttpResponse::Ok().json(json!({
+        "status": "success",
+        "data": serde_json::to_value(master_query_result).unwrap(),
+        "participating_classes_with_flags": serde_json::to_value(participating_classes_with_flags).unwrap()
+    }))
 }
 
 #[post("/sportfests")]

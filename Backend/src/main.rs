@@ -4,7 +4,7 @@ mod model;
 
 use actix_cors::Cors;
 use actix_web::middleware::Logger;
-use actix_web::{http::header, web, App, HttpServer};
+use actix_web::{http::header, web, App, HttpMessage, HttpServer};
 use dotenv::dotenv;
 use sqlx::mysql::{MySqlPool, MySqlPoolOptions};
 use actix_web::middleware::{self, Next};
@@ -12,6 +12,7 @@ use actix_web::{dev::{ServiceRequest, ServiceResponse},web::Path, Error, cookie:
 use actix_web::error::{ErrorBadGateway, ErrorBadRequest};
 use actix_web::http::Method;
 use crate::api::logon::check_token;
+use crate::model::person::Person;
 
 const ADMIN_REQUESTS: [(&'static str, &'static str);1] = [("GET", "/details")];
 const JUDGE_REQUESTS: [(&'static str, &'static str);1] = [("GET", "/sportfests")];
@@ -49,6 +50,8 @@ async fn authorization_check(req: ServiceRequest, next: Next<impl MessageBody>) 
         .ok_or_else(|| ErrorBadRequest("Database pool not found"))?;
     let cookie = req.cookie("Token");
     let mut token_to_send_back = String::from("");
+    let mut request_sender: Option<Person> = None;
+
     if req.method() != Method::POST || (req.path() != "/login" && req.path() != "/register") {
         if cookie.is_none() {
             return Err(ErrorBadGateway("No Token send"));
@@ -63,9 +66,13 @@ async fn authorization_check(req: ServiceRequest, next: Next<impl MessageBody>) 
             if min_auth_level > user_auth_level { return Err(ErrorBadRequest("No access to this path")); };
 
             token_to_send_back = new_token;
+            request_sender = Some(user);
         };
     }
 
+    if let Some(request_sender) = request_sender {
+        req.extensions_mut().insert(request_sender);
+    }
 
     // invoke the wrapped middleware or service
     let mut res = next.call(req).await?;
