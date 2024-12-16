@@ -1,12 +1,12 @@
 ### POST request to create person
 POST http://localhost:8000/persons
 Content-Type: application/json
-Cookie: Token=ooekdcalnaeklcoeomdegggnkhjbicdlldackejphbmjefcmifimalblkgphobifkgmaelnbkbljganbllfjglgjpjdinbipikmcaaddjehcodimiabnejljgkhjhnogeojeaaaa;
 
 {
-  "first_name": "Baba",
+  "first_name": "Mama",
   "last_name": "AdminG",
-  "email": "john.doe@web.de",
+  "email": "johd.doe@web.com",
   "phone": "123456789",
-  "role": "ADMIN"
+  "role": "ADMIN",
+  "grade": "2c"
 }

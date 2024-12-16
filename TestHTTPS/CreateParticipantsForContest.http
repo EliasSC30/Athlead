@@ -1,0 +1,8 @@
+POST http://localhost:8000/contests/8eb3a023-edb5-45fe-b9de-51a17b7428f7/participants
+Cookie: Token=cohofelaejbhpmikblfljkhabhajkhagpgmkekgojjmdccgmeccgdinkcfddebhnjbnkmmameahaiajglpaiplomgkpcimdfjebfhfkfdkbdljmbibncdcbechmimnjjgabmaaaa;
+Content-Type: application/json
+
+{
+  "classes": ["2c"],
+  "participant_ids": ["5342bf36-9be1-432c-977c-49e9b31b6b9"]
+}

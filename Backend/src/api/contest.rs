@@ -1,7 +1,7 @@
 use crate::model::contest::*;
 use actix_web::{get, post, web, HttpResponse, Responder};
 use serde_json::json;
-use sqlx::MySqlPool;
+use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
 use crate::model::contestresult::{ContestResultContestView, CreateContestResultContestView};
 
@@ -316,5 +316,136 @@ pub async fn contests_create_handler(body: web::Json<CreateContest>, db: web::Da
                 "message":  e
             }))
     }
+}
+
+#[post("/contests/{id}/participants")]
+pub async fn contests_create_participants_handler(body: web::Json<CreateParticipantsForContest>,
+                                                  db: web::Data<MySqlPool>,
+                                                  path: web::Path<String>
+)
+-> impl Responder {
+    let contest_id = path.into_inner();
+    let contest_query = sqlx::query_as!(Contest, "SELECT * FROM CONTEST WHERE ID = ?", contest_id)
+        .fetch_one(db.as_ref())
+        .await;
+    if contest_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Contest id error",
+        "message": contest_query.unwrap_err().to_string()
+    }))};
+
+    if body.participant_ids.as_ref().is_none() && body.classes.as_ref().is_none() {
+        return HttpResponse::BadRequest().json(json!({
+            "status": "No participants or classes error",
+            "message": "Classes and Participants can not both be none"
+        }));
+    };
+
+    let mut participants_ids_to_insert: Vec<String> = vec![];
+
+    if body.participant_ids.as_ref().is_some() {
+        let participant_ids = body.participant_ids.clone().unwrap();
+        if participant_ids.is_empty() {
+            return HttpResponse::InternalServerError().json(json!({
+            "status": "Participant in body error",
+            "message": "You didn't send any participant ids."
+        }))
+        };
+
+        let mut list_of_ids = String::from("(\"");
+        for participant_id in &participant_ids {
+            list_of_ids.push_str(participant_id.as_str());
+            list_of_ids.push_str("\", \"");
+        }
+        list_of_ids = list_of_ids[..list_of_ids.len() - 3].to_string();
+        list_of_ids.push_str(")");
+
+        let mut query = String::from("SELECT ID FROM PERSON WHERE ID IN ");
+        query.push_str(list_of_ids.as_str());
+        let query = sqlx::query(query.as_str())
+            .fetch_all(db.as_ref())
+            .await;
+        if query.is_err() {
+            return HttpResponse::InternalServerError().json(json!({
+            "status": "Person query Db error",
+            "message": query.unwrap_err().to_string()
+        }))
+        };
+
+        if query.unwrap().len() != participant_ids.len() {
+            return HttpResponse::InternalServerError().json(json!({
+            "status": "Ids not all valid error",
+            "message":  "Not all ids were valid"
+        }))
+        };
+
+        participants_ids_to_insert.extend(participant_ids.into_iter());
+    };
+
+    if body.classes.as_ref().is_some() {
+        if body.classes.as_ref().unwrap().is_empty() {
+            return HttpResponse::Ok().json(json!({
+            "status": "No classes found error",
+            "message": "The send classes array is empty"
+        }))
+        };
+        let mut classes_query = String::from("SELECT * FROM PERSON WHERE GRADE IN (\"");
+        for class in body.classes.as_ref().unwrap() {
+            classes_query.push_str(class.as_str());
+            classes_query.push_str("\", \"");
+        }
+        classes_query = classes_query[..classes_query.len() - 3].to_string();
+        classes_query.push_str(")");
+        println!("Final {}", classes_query);
+        let classes_query_result = sqlx::query(classes_query.as_str())
+            .fetch_all(db.as_ref())
+            .await;
+        if classes_query_result.is_err() {
+            return HttpResponse::InternalServerError().json(json!({
+            "status": "Contest result query error",
+            "message": classes_query_result.unwrap_err().to_string()
+        }))
+        };
+
+        let people_of_classes = classes_query_result.unwrap().into_iter().map(
+            |row| row.try_get("ID").unwrap()).collect::<Vec<String>>();
+        if people_of_classes.is_empty() {
+            return HttpResponse::BadRequest().json(json!({
+            "status": "Bad classes error",
+            "message": "There are no people in the send classes"
+        }))};
+
+        participants_ids_to_insert.extend(people_of_classes.into_iter());
+    }
+
+    if participants_ids_to_insert.is_empty() {
+        return HttpResponse::InternalServerError().json(json!({
+            "status": "Bad participants or classes error",
+            "message": "Something went wrong.."
+        }));
+    };
+
+    let mut contest_result_query = String::from("INSERT INTO CONTESTRESULT (ID, PERSON_ID, CONTEST_ID, METRIC_ID) VALUES ");
+    for participant_id in &participants_ids_to_insert {
+        let new_id = Uuid::new_v4();
+        contest_result_query.push_str("(\"");
+        contest_result_query.push_str(new_id.to_string().as_str());
+        contest_result_query.push_str("\", \"");
+        contest_result_query.push_str(&participant_id);
+        contest_result_query.push_str("\", \"");
+        contest_result_query.push_str(&contest_id.clone());
+        contest_result_query.push_str("\", NULL), ");
+    }
+    contest_result_query = contest_result_query[..contest_result_query.len() - 2].to_string();
+    match sqlx::query(contest_result_query.as_str()).execute(db.as_ref()).await {
+        Ok(_) => HttpResponse::Ok().json(json!({
+            "status": "Success",
+            "added_persons": participants_ids_to_insert.len(),
+        })),
+        Err(e) => HttpResponse::InternalServerError().json(json!({
+            "status": "Insert contest result error",
+            "message": e.to_string()
+        }))
+    }
+
 }
 

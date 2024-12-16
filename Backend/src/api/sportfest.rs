@@ -1,10 +1,12 @@
 use crate::model::sportfest::*;
 use actix_web::{get, post, patch, web, HttpResponse, Responder};
 use serde_json::json;
-use sqlx::MySqlPool;
+use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
 use crate::api::details::create_details;
 use crate::api::location::create_location;
+use crate::model::contest::Contest;
+use crate::model::contestresult::ContestResult;
 use crate::model::sportfest::CreateContestForFest;
 use crate::model::details::{CreateDetails};
 use crate::model::location::CreateLocation;
@@ -48,18 +50,71 @@ pub async fn sportfests_get_masterview_handler(
     db: web::Data<MySqlPool>,
     path: web::Path<String>
 ) -> impl Responder {
-    let sportfest_id = path.into_inner();
+    let sf_id = path.into_inner();
 
     let details_id_query =
-        sqlx::query_as!(
-            Sportfest,
-            "SELECT * FROM SPORTFEST WHERE ID = ?",
-            sportfest_id.clone()).fetch_one(db.as_ref()).await;
+        sqlx::query_as!(Sportfest,"SELECT * FROM SPORTFEST WHERE ID = ?",sf_id.clone())
+            .fetch_one(db.as_ref())
+            .await;
 
     if details_id_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "error",
         "message": details_id_query.unwrap_err().to_string(),
-    }))}
+    }))};
+
+    let contests_query = sqlx::query_as!(Contest,
+        "SELECT * FROM CONTEST as ct WHERE SPORTFEST_ID = ?",
+        sf_id)
+        .fetch_all(db.as_ref())
+        .await;
+    if contests_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "error",
+        "message": contests_query.unwrap_err().to_string(),
+    }))};
+
+    let participating_classes: Vec<String> = if contests_query.as_ref().unwrap().len() == 0 { vec![] } else {
+        let mut ct_query = String::from("SELECT * FROM CONTESTRESULT WHERE ");
+        for contest in contests_query.unwrap() {
+            ct_query.push_str("CONTEST_ID = ");
+            ct_query.push_str(&contest.ID.as_str());
+            ct_query.push_str(" OR ");
+        }
+        // Remove excessive " OR "
+        ct_query = ct_query[..ct_query.len()-5].to_string(); println!("cq: {}", ct_query);
+
+        let ct_results_query = sqlx::query(ct_query.as_str()).fetch_all(db.as_ref()).await;
+        if ct_results_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": ct_results_query.unwrap_err().to_string(),
+        }))};
+
+        let ct_results = ct_results_query.unwrap().into_iter().map(|row|{
+            ContestResult {
+                ID: row.try_get("ID").unwrap(),
+                PERSON_ID: row.try_get("PERSON_ID").unwrap(),
+                CONTEST_ID: row.try_get("CONTEST_ID").unwrap(),
+                METRIC_ID: row.try_get("METRIC_ID").unwrap(),
+            }
+        }).collect::<Vec<ContestResult>>();
+
+        let mut person_query = String::from("SELECT GRADE FROM PERSON WHERE ");
+        for ct_result in ct_results {
+            person_query.push_str("ID = ");
+            person_query.push_str(&ct_result.PERSON_ID.as_str());
+            person_query.push_str(" OR ");
+        }
+        // Remove excessive " OR "
+        person_query = person_query[..person_query.len()-5].to_string(); println!("pq: {}", person_query);
+        person_query.push_str(" GROUP BY GRADE");
+
+        let person_query_result = sqlx::query(person_query.as_str()).fetch_all(db.as_ref()).await;
+        if person_query_result.is_err() { return HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": person_query_result.unwrap_err().to_string(),
+        }))};
+
+        person_query_result.unwrap().into_iter().map(|row| row.try_get("GRADE").unwrap()).collect()
+    };
 
 
     // all participant classes with flag if user in it, user is in it-flag, all contests with flag if user in it
@@ -106,6 +161,7 @@ pub async fn sportfests_get_masterview_handler(
             HttpResponse::Ok().json(json!({
                 "status": "success",
                 "data": serde_json::to_value(values).unwrap(),
+                "participating_classes": serde_json::to_value(participating_classes).unwrap(),
             }))
         }
         Err(e) => {

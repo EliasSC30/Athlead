@@ -77,5 +77,5 @@ pub struct SportfestMaster {
     pub cp_email : String,
     pub cp_phone : String,
     pub cp_grade : Option<String>,
-    pub cp_birth_year : Option<String>
+    pub cp_birth_year : Option<String>,
 }

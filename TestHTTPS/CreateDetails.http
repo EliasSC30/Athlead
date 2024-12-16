@@ -3,10 +3,10 @@ POST http://localhost:8000/details
 Content-Type: application/json
 
 {
-  "LOCATION_ID": "6f5a5def-0a3f-4dc2-8bfd-2e9b59be586b",
-  "CONTACTPERSON_ID": "9b12c536-1bd9-4b2b-b5da-21a40af73e7f",
-  "NAME" : "100m Lauf",
-  "START": "2024-12-02T15:30:00",
-  "END": "2024-12-02T15:30:00"
+  "LOCATION_ID": "ecfc9f82-cf56-42b8-aa09-60eac58aa4c4",
+  "CONTACTPERSON_ID": "0f3f032f-1ec3-4dc4-9bf4-c33c0b5b9211",
+  "NAME" : "Super Sportfest",
+  "START": "2025-12-02T15:30:00",
+  "END": "2025-12-02T15:30:00"
 }
 

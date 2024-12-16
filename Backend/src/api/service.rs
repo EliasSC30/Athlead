@@ -1,7 +1,7 @@
 use crate::api::health::health_checker_handler;
 use actix_web::{web};
 use actix_web::web::service;
-use crate::api::contest::{contests_create_results, contest_get_results_by_id_handler, contests_get_master_view_handler, contests_create_handler};
+use crate::api::contest::{contests_create_results, contest_get_results_by_id_handler, contests_get_master_view_handler, contests_create_handler, contests_create_participants_handler};
 use crate::api::contestresult::contestresult_create_handler;
 use crate::api::ctemplate::{ctemplate_create_handler, ctemplates_get_by_id_handler, ctemplates_get_all_handler};
 use crate::api::details::{details_create_handler, details_get_by_id_handler, details_get_all_handler, details_update_handler};
@@ -52,6 +52,7 @@ pub fn config(conf: &mut web::ServiceConfig) {
         .service(contests_create_results)
         .service(contests_create_handler)
         .service(contests_get_master_view_handler)
+        .service(contests_create_participants_handler)
 
         // ContestResults
         .service(contestresult_create_handler)

@@ -99,6 +99,13 @@ pub struct CreateContest {
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
+pub struct CreateParticipantsForContest {
+    pub participant_ids: Option<Vec<String>>,
+    pub classes: Option<Vec<String>>
+}
+
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
 pub struct UpdateContest {
     pub SPORTFEST_ID: Option<String>,
     pub DETAILS_ID: Option<String>,

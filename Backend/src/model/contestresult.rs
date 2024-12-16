@@ -6,7 +6,7 @@ pub struct ContestResult {
     pub ID: String,
     pub PERSON_ID: String,
     pub CONTEST_ID: String,
-    pub METRIC_ID: String,
+    pub METRIC_ID: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]

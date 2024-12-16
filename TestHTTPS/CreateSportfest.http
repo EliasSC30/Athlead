@@ -3,7 +3,7 @@ POST http://localhost:8000/sportfests
 Content-Type: application/json
 
 {
-  "CONTACTPERSON_ID": "33cbf73b-c81f-4b0a-bc75-903009ac9a3b",
+  "CONTACTPERSON_ID": "0f3f032f-1ec3-4dc4-9bf4-c33c0b5b9211",
   "fest_name": "Sportfest",
   "fest_start": "2024-12-02T15:30:00",
   "fest_end": "2025-12-02T15:30:00",

@@ -46,7 +46,7 @@ pub async fn create_contest_result(contest_id: &String, person_id: &String, metr
             ID: cr_id.to_string(),
             PERSON_ID: person_id.clone(),
             CONTEST_ID: contest_id.clone(),
-            METRIC_ID: metric_id.clone()
+            METRIC_ID: Some(metric_id.clone())
         }),
         Err(e) => Err(e.to_string())
     }

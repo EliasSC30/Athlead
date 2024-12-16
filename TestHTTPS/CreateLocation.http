@@ -1,6 +1,7 @@
 ### POST request to create details
 POST http://localhost:8000/locations
 Content-Type: application/json
+Cookie: Token=cohofelaejbhpmikblfljkhabhajkhagpgmkekgojjmdccgmeccgdinkcfddebhnjbnkmmameahaiajglpaiplomgkpcimdfjebfhfkfdkbdljmbibncdcbechmimnjjgabmaaaa;
 
 {
   "CITY": "Gau-Algesheim",
