@@ -8,7 +8,7 @@ use actix_web::{http::header, web, App, HttpServer};
 use dotenv::dotenv;
 use sqlx::mysql::{MySqlPool, MySqlPoolOptions};
 use actix_web::middleware::{self, Next};
-use actix_web::{dev::{ServiceRequest, ServiceResponse},web::Path, Error, body::MessageBody};
+use actix_web::{dev::{ServiceRequest, ServiceResponse},web::Path, Error, cookie::Cookie, body::MessageBody};
 use actix_web::error::ErrorBadRequest;
 use actix_web::http::Method;
 use crate::api::logon::check_token;
@@ -67,9 +67,13 @@ async fn authorization_check(req: ServiceRequest, next: Next<impl MessageBody>) 
 
 
     // invoke the wrapped middleware or service
-    let res = next.call(req).await?;
+    let mut res = next.call(req).await?;
 
-    // post-processing
+    let cookie = Cookie::build("Token", token_to_send_back)
+        .path("/") // Set the path for the cookie
+        .http_only(true) // Ensure the cookie is HTTP-only
+        .finish();
+    res.response_mut().add_cookie(&cookie).map_err(Error::from)?;
 
     Ok(res)
 }
