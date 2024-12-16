@@ -1,16 +1,16 @@
 use crate::model::location::*;
-use crate::AppState;
 use actix_web::{get, post, patch, web, HttpResponse, Responder};
 use serde_json::json;
+use sqlx::MySqlPool;
 use uuid::{Uuid};
 
 #[get("/locations")]
-pub async fn locations_get_all_handler(data: web::Data<AppState>) -> impl Responder {
+pub async fn locations_get_all_handler(db: web::Data<MySqlPool>) -> impl Responder {
     let result = sqlx::query_as!(
         Location,
         "SELECT * FROM LOCATION"
     )
-        .fetch_all(&data.db)
+        .fetch_all(db.as_ref())
         .await;
 
     match result {
@@ -29,7 +29,7 @@ pub async fn locations_get_all_handler(data: web::Data<AppState>) -> impl Respon
 
 #[get("/locations/{id}")]
 pub async fn locations_get_by_id_handler(
-    data: web::Data<AppState>,
+    db: web::Data<MySqlPool>,
     path: web::Path<String>
 ) -> impl Responder {
     let location_id = path.into_inner();
@@ -39,7 +39,7 @@ pub async fn locations_get_by_id_handler(
         "SELECT * FROM LOCATION WHERE ID = ?",
         location_id
     )
-        .fetch_one(&data.db)
+        .fetch_one(db.as_ref())
         .await;
 
     match result {
@@ -54,7 +54,7 @@ pub async fn locations_get_by_id_handler(
     }
 }
 
-pub async fn create_location(loc: &CreateLocation, data: &web::Data<AppState>) -> Result<Location, String>
+pub async fn create_location(loc: &CreateLocation, db: &web::Data<MySqlPool>) -> Result<Location, String>
 {
     let new_location_id: Uuid = Uuid::new_v4();
     let query = sqlx::query(
@@ -66,7 +66,7 @@ pub async fn create_location(loc: &CreateLocation, data: &web::Data<AppState>) -
         .bind(loc.STREET.clone())
         .bind(loc.STREETNUMBER.clone())
         .bind(loc.NAME.clone())
-        .execute(&data.db)
+        .execute(db.as_ref())
         .await;
 
     match query {
@@ -84,8 +84,8 @@ pub async fn create_location(loc: &CreateLocation, data: &web::Data<AppState>) -
 }
 
 #[post("/locations")]
-pub async fn locations_create_handler(body: web::Json<CreateLocation>, data:web::Data<AppState>) -> impl Responder {
-    match create_location(&body.0, &data).await {
+pub async fn locations_create_handler(body: web::Json<CreateLocation>, db: web::Data<MySqlPool>) -> impl Responder {
+    match create_location(&body.0, &db).await {
 
         Ok(location) => HttpResponse::Ok().json(json!({
             "status": "success",
@@ -99,7 +99,7 @@ pub async fn locations_create_handler(body: web::Json<CreateLocation>, data:web:
 
 #[patch("/locations/{id}")]
 pub async fn locations_update_handler(body: web::Json<UpdateLocation>,
-                                      data:web::Data<AppState>,
+                                      db: web::Data<MySqlPool>,
                                       path: web::Path<String>)
                                       -> impl Responder {
     let location_id = path.into_inner();
@@ -138,7 +138,7 @@ pub async fn locations_update_handler(body: web::Json<UpdateLocation>,
 
     let result = format!("UPDATE LOCATION {} WHERE ID = '{}'", build_update_query, location_id);
 
-    match sqlx::query(result.as_str()).execute(&data.db).await {
+    match sqlx::query(result.as_str()).execute(db.as_ref()).await {
         Ok(_) => HttpResponse::Ok().json(json!(
                                 {
                                     "status": "success",

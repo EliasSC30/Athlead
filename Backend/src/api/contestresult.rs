@@ -1,18 +1,18 @@
 use crate::model::contestresult::*;
-use crate::{AppState};
 use actix_web::{post, get, web, HttpResponse, Responder};
 use serde_json::json;
+use sqlx::MySqlPool;
 use uuid::Uuid;
 use crate::api::metric::create_metric;
 use crate::model::metric::CreateMetric;
 
 #[get("/contestresults")]
-pub async fn get_contest_results_handler(data: web::Data<AppState>) -> impl Responder {
+pub async fn get_contest_results_handler(db: web::Data<MySqlPool>) -> impl Responder {
     let result = sqlx::query_as!(
         ContestResult,
         "SELECT * FROM CONTESTRESULT"
         )
-        .fetch_all(&data.db).await;
+        .fetch_all(db.as_ref()).await;
 
 
     match result {
@@ -30,7 +30,7 @@ pub async fn get_contest_results_handler(data: web::Data<AppState>) -> impl Resp
     }
 }
 
-pub async fn create_contest_result(contest_id: &String, person_id: &String, metric_id: &String, data: &web::Data<AppState>)
+pub async fn create_contest_result(contest_id: &String, person_id: &String, metric_id: &String, db: &web::Data<MySqlPool>)
     -> Result<ContestResult, String> {
     let cr_id = Uuid::new_v4();
 
@@ -39,7 +39,7 @@ pub async fn create_contest_result(contest_id: &String, person_id: &String, metr
         .bind(person_id.clone())
         .bind(contest_id.clone())
         .bind(metric_id.clone())
-        .execute(&data.db)
+        .execute(db.as_ref())
         .await;
     match query {
         Ok(_) => Ok(ContestResult {
@@ -54,7 +54,7 @@ pub async fn create_contest_result(contest_id: &String, person_id: &String, metr
 
 #[post("/contestresults")]
 pub async fn contestresult_create_handler(body: web::Json<CreateContestResult>,
-                                          data: web::Data<AppState>)
+                                          db: web::Data<MySqlPool>)
                                           -> impl Responder
 {
     let metric_for_create = CreateMetric {
@@ -67,13 +67,13 @@ pub async fn contestresult_create_handler(body: web::Json<CreateContestResult>,
         AMOUNT: body.amount.clone(),
     };
 
-    let metric_query = create_metric(metric_for_create, &data).await;
+    let metric_query = create_metric(metric_for_create, &db).await;
     if metric_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "error",
         "message": metric_query.err().unwrap().to_string()
     }))};
 
-    match create_contest_result(&body.CONTEST_ID, &body.PERSON_ID, &metric_query.unwrap().ID, &data).await {
+    match create_contest_result(&body.CONTEST_ID, &body.PERSON_ID, &metric_query.unwrap().ID, &db).await {
         Ok(result) => HttpResponse::Ok().json(json!({
             "status": "success",
             "data": serde_json::to_value(result).unwrap()

@@ -1,7 +1,7 @@
 use crate::model::person::*;
-use crate::AppState;
 use actix_web::{get, post,patch, web, HttpResponse, Responder};
 use serde_json::json;
+use sqlx::MySqlPool;
 use uuid::{Uuid};
 
 
@@ -74,12 +74,12 @@ pub async fn persons_update_handler(body: web::Json<UpdatePerson>,
 */
 
 #[get("/persons")]
-pub async fn persons_get_all_handler(data: web::Data<AppState>) -> impl Responder {
+pub async fn persons_get_all_handler(db: web::Data<MySqlPool>) -> impl Responder {
     let query = sqlx::query_as!(
         Person,
         "SELECT * FROM PERSON"
     )
-        .fetch_all(&data.db)
+        .fetch_all(db.as_ref())
         .await;
 
     match query {
@@ -98,7 +98,7 @@ pub async fn persons_get_all_handler(data: web::Data<AppState>) -> impl Responde
 
 #[get("/persons/{id}")]
 pub async fn persons_get_by_id_handler(
-    data: web::Data<AppState>,
+    db: web::Data<MySqlPool>,
     path: web::Path<String>
 ) -> impl Responder {
     let person_id = path.into_inner();
@@ -108,7 +108,7 @@ pub async fn persons_get_by_id_handler(
         "SELECT * FROM PERSON WHERE ID = ?",
         person_id
     )
-        .fetch_one(&data.db)
+        .fetch_one(db.as_ref())
         .await;
 
     match query {
@@ -124,10 +124,10 @@ pub async fn persons_get_by_id_handler(
     }
 }
 
-pub async fn create_person(body: CreatePerson, data: &web::Data<AppState>) -> Result<Person, String> {
+pub async fn create_person(body: CreatePerson, db: &web::Data<MySqlPool>) -> Result<Person, String> {
     let check_if_valid_entry_query = sqlx::query("SELECT * FROM PERSON WHERE EMAIL = ?")
         .bind(body.email.clone())
-        .fetch_optional(&data.db)
+        .fetch_optional(db.as_ref())
         .await;
     if check_if_valid_entry_query.is_err() { return Err(check_if_valid_entry_query.unwrap_err().to_string());  };
     if check_if_valid_entry_query.unwrap().is_some() { return Err("Email already exists but has to be unique".to_string()); };
@@ -144,7 +144,7 @@ pub async fn create_person(body: CreatePerson, data: &web::Data<AppState>) -> Re
         .bind(body.grade.clone())
         .bind(body.birth_year.clone())
         .bind(body.role.clone())
-        .execute(&data.db)
+        .execute(db.as_ref())
         .await;
 
     match query {
@@ -163,8 +163,8 @@ pub async fn create_person(body: CreatePerson, data: &web::Data<AppState>) -> Re
 }
 
 #[post("/persons")]
-pub async fn persons_create_handler(body: web::Json<CreatePerson>, data:web::Data<AppState>) -> impl Responder {
-    let res = create_person(body.0, &data).await;
+pub async fn persons_create_handler(body: web::Json<CreatePerson>, db: web::Data<MySqlPool>) -> impl Responder {
+    let res = create_person(body.0, &db).await;
     match res {
         Ok(person) => HttpResponse::Ok().json(json!({
             "status": "success",

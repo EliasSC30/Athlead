@@ -1,7 +1,7 @@
 use crate::model::sportfest::*;
-use crate::{AppState};
 use actix_web::{get, post, patch, web, HttpResponse, Responder};
 use serde_json::json;
+use sqlx::MySqlPool;
 use uuid::{Uuid};
 use crate::api::details::create_details;
 use crate::api::location::create_location;
@@ -10,12 +10,12 @@ use crate::model::details::{CreateDetails};
 use crate::model::location::CreateLocation;
 
 #[get("/sportfests")]
-pub async fn sportfests_list_handler(data: web::Data<AppState>) -> impl Responder {
+pub async fn sportfests_list_handler(db: web::Data<MySqlPool>) -> impl Responder {
     let result = sqlx::query_as!(
         Sportfest,
         "SELECT * FROM SPORTFEST"
     )
-        .fetch_all(&data.db)
+        .fetch_all(db.as_ref())
         .await;
 
     match result {
@@ -45,7 +45,7 @@ pub async fn sportfests_list_handler(data: web::Data<AppState>) -> impl Responde
 
 #[get("/sportfests/{id}")]
 pub async fn sportfests_get_masterview_handler(
-    data: web::Data<AppState>,
+    db: web::Data<MySqlPool>,
     path: web::Path<String>
 ) -> impl Responder {
     let sportfest_id = path.into_inner();
@@ -54,19 +54,22 @@ pub async fn sportfests_get_masterview_handler(
         sqlx::query_as!(
             Sportfest,
             "SELECT * FROM SPORTFEST WHERE ID = ?",
-            sportfest_id.clone()).fetch_one(&data.db).await;
+            sportfest_id.clone()).fetch_one(db.as_ref()).await;
 
     if details_id_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "error",
         "message": details_id_query.unwrap_err().to_string(),
     }))}
 
+
+    // all participant classes with flag if user in it, user is in it-flag, all contests with flag if user in it
     let result = sqlx::query_as!(
             SportfestMaster,
             r#"SELECT
                 SPORTFEST.ID AS sportfest_id,
 
                 DETAILS.ID AS details_id,
+                DETAILS.NAME AS details_name,
                 DETAILS.START AS details_start,
                 DETAILS.END AS details_end,
 
@@ -95,7 +98,7 @@ pub async fn sportfests_get_masterview_handler(
                      PERSON ON PERSON.ID = DETAILS.CONTACTPERSON_ID"#,
             details_id_query.unwrap().DETAILS_ID.clone()
         )
-        .fetch_one(&data.db)
+        .fetch_one(db.as_ref())
         .await;
 
     match result {
@@ -115,7 +118,7 @@ pub async fn sportfests_get_masterview_handler(
 }
 
 #[post("/sportfests")]
-pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, data: web::Data<AppState>) -> impl Responder {
+pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, db: web::Data<MySqlPool>) -> impl Responder {
     let new_sportfest_id: Uuid = Uuid::new_v4();
 
     let location_for_create = CreateLocation {
@@ -125,7 +128,7 @@ pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, data: w
         STREETNUMBER: body.streetnumber.clone(),
         NAME: body.location_name.clone(),
     };
-    let create_location = create_location(&location_for_create, &data).await;
+    let create_location = create_location(&location_for_create, &db).await;
     if create_location.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "error",
         "message": create_location.unwrap_err().to_string(),
@@ -139,7 +142,7 @@ pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, data: w
         END: body.fest_end.clone(),
     };
 
-    let create_details = create_details(&details_for_create, &data).await;
+    let create_details = create_details(&details_for_create, &db).await;
     if create_details.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "error",
         "message": create_details.unwrap_err()
@@ -149,7 +152,7 @@ pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, data: w
         "INSERT INTO SPORTFEST (ID, DETAILS_ID) VALUES (?, ?)")
         .bind(new_sportfest_id.to_string())
         .bind(create_details.as_ref().clone().unwrap().ID.to_string())
-        .execute(&data.db)
+        .execute(db.as_ref())
         .await;
 
     match sf_query {
@@ -168,7 +171,8 @@ pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, data: w
 }
 
 #[post("/sportfests_with_location")]
-pub async fn sportfests_create_with_location_handler(body: web::Json<CreateSportfestWithLocation>, data: web::Data<AppState>) -> impl Responder {
+pub async fn sportfests_create_with_location_handler(body: web::Json<CreateSportfestWithLocation>, db: web::Data<MySqlPool>)
+    -> impl Responder {
     let new_sportfest_id: Uuid = Uuid::new_v4();
 
 
@@ -180,7 +184,7 @@ pub async fn sportfests_create_with_location_handler(body: web::Json<CreateSport
         END: body.fest_end.clone(),
     };
 
-    let create_details = create_details(&details_for_create, &data).await;
+    let create_details = create_details(&details_for_create, &db).await;
     if create_details.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "error",
         "message": create_details.unwrap_err()
@@ -190,7 +194,7 @@ pub async fn sportfests_create_with_location_handler(body: web::Json<CreateSport
         "INSERT INTO SPORTFEST (ID, DETAILS_ID) VALUES (?, ?)")
         .bind(new_sportfest_id.to_string())
         .bind(create_details.as_ref().clone().unwrap().ID.to_string())
-        .execute(&data.db)
+        .execute(db.as_ref())
         .await;
 
     match sf_query {
@@ -210,7 +214,7 @@ pub async fn sportfests_create_with_location_handler(body: web::Json<CreateSport
 
 #[patch("/sportfests/{id}")]
 pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
-                                       data: web::Data<AppState>,
+                                       db: web::Data<MySqlPool>,
                                        path: web::Path<String>)
     -> impl Responder
 {
@@ -234,7 +238,7 @@ pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
 
     let result = format!("UPDATE SPORTFEST {} WHERE ID = '{}'", build_update_query, sportfest_id);
 
-    match sqlx::query(result.as_str()).execute(&data.db).await {
+    match sqlx::query(result.as_str()).execute(db.as_ref()).await {
         Ok(_) => {
             HttpResponse::Ok().json(
                 json!(
@@ -258,7 +262,7 @@ pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
 }
 
 #[get("/sportfests/{sf_id}/contests")]
-pub async fn get_contest_of_sf_handler(path: web::Path<String>, data: web::Data<AppState>)
+pub async fn get_contest_of_sf_handler(path: web::Path<String>, db: web::Data<MySqlPool>)
     -> impl Responder {
     let sf_id = path.into_inner();
 
@@ -267,7 +271,7 @@ pub async fn get_contest_of_sf_handler(path: web::Path<String>, data: web::Data<
         "SELECT * FROM SPORTFEST WHERE ID = ?",
         sf_id.clone()
     )
-        .fetch_one(&data.db)
+        .fetch_one(db.as_ref())
         .await;
 
     if sf_query.is_err() { return HttpResponse::InternalServerError().json(json!({
@@ -281,7 +285,7 @@ pub async fn get_contest_of_sf_handler(path: web::Path<String>, data: web::Data<
 
 #[post("/sportfests/{id}/contests")]
 pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>,
-                                    data: web::Data<AppState>,
+                                    db: web::Data<MySqlPool>,
                                     path :web::Path<String>
 ) -> impl Responder {
     let sf_id = path.into_inner();
@@ -290,7 +294,7 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
         Sportfest,
         "SELECT * FROM SPORTFEST WHERE ID = ?",
         sf_id)
-        .fetch_one(&data.db)
+        .fetch_one(db.as_ref())
         .await;
 
     if let Err(e) = query {
@@ -306,7 +310,7 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
                                                         body.START.clone(),
                                                         body.END.clone());
 
-    let details_res = create_details(&detail_values, &data).await;
+    let details_res = create_details(&detail_values, &db).await;
 
     if details_res.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "error",
@@ -321,7 +325,7 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
         .bind(&sf_id.clone())
         .bind(&details_res.as_ref().clone().unwrap().ID)
         .bind(&body.C_TEMPLATE_ID.clone())
-        .execute(&data.db)
+        .execute(db.as_ref())
         .await.map_err(|e: sqlx::Error| e.to_string());
     match contest_query {
         Ok(_) => {

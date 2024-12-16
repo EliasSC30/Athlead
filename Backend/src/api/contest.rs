@@ -1,22 +1,22 @@
 use crate::model::contest::*;
-use crate::AppState;
 use actix_web::{get, post, web, HttpResponse, Responder};
 use serde_json::json;
+use sqlx::MySqlPool;
 use uuid::{Uuid};
 use crate::model::contestresult::{ContestResultContestView, CreateContestResultContestView};
 
-pub async fn get_contest(id: String, db: &web::Data<AppState>) -> Result<Contest, String>
+pub async fn get_contest(id: String, db: &web::Data<MySqlPool>) -> Result<Contest, String>
 {
     sqlx::query_as!(Contest, "SELECT * FROM CONTEST WHERE ID = ?", id.clone())
-        .fetch_one(&db.db)
+        .fetch_one(db.as_ref())
         .await.map_err(|e| e.to_string())
 }
 
 #[get("/contests/{id}/contestresults")]
-pub async fn contest_get_results_by_id_handler(path: web::Path<String>, data: web::Data<AppState>)
+pub async fn contest_get_results_by_id_handler(path: web::Path<String>, db: web::Data<MySqlPool>)
                                                -> impl Responder {
     let contest_id = path.into_inner();
-    let contest_res = get_contest(contest_id.clone(), &data).await;
+    let contest_res = get_contest(contest_id.clone(), &db).await;
 
     if contest_res.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "error",
@@ -51,7 +51,7 @@ pub async fn contest_get_results_by_id_handler(path: web::Path<String>, data: we
             "#,
         contest_id.clone()
     )
-        .fetch_all(&data.db)
+        .fetch_all(db.as_ref())
         .await;
 
     match master_query {
@@ -70,11 +70,11 @@ pub async fn contest_get_results_by_id_handler(path: web::Path<String>, data: we
 #[post("/contests/{id}/contestresults")]
 pub async fn contests_create_results(body: web::Json<Vec<CreateContestResultContestView>>,
                                         path: web::Path<String>,
-                                        data: web::Data<AppState>)
+                                        db: web::Data<MySqlPool>)
                                              -> impl Responder
 {
     let contest_id = path.into_inner();
-    let find_contest_query = get_contest(contest_id.clone(), &data).await;
+    let find_contest_query = get_contest(contest_id.clone(), &db).await;
 
     if find_contest_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Find Contest Error",
@@ -129,8 +129,8 @@ pub async fn contests_create_results(body: web::Json<Vec<CreateContestResultCont
         cr_query_builder = cr_query_builder.bind(cr_id).bind(p_id).bind(cont_id).bind(m_id);
     }
 
-    let metrics_res = metrics_query_builder.execute(&data.db).await;
-    let cr_res = cr_query_builder.execute(&data.db).await;
+    let metrics_res = metrics_query_builder.execute(db.as_ref()).await;
+    let cr_res = cr_query_builder.execute(db.as_ref()).await;
 
     if metrics_res.is_err() {return HttpResponse::InternalServerError().json(json!({
         "status": "Metrics Error",
@@ -150,11 +150,11 @@ pub async fn contests_create_results(body: web::Json<Vec<CreateContestResultCont
 }
 
 #[get("/contests/{id}")]
-pub async fn contests_get_master_view_handler(path: web::Path<String>, data: web::Data<AppState>)
+pub async fn contests_get_master_view_handler(path: web::Path<String>, db: web::Data<MySqlPool>)
                                               -> impl Responder {
     let contest_id = path.into_inner();
 
-    let contest_res = get_contest(contest_id.clone(), &data).await;
+    let contest_res = get_contest(contest_id.clone(), &db).await;
     if contest_res.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "error",
         "message": contest_res.unwrap_err().to_string()
@@ -225,7 +225,7 @@ pub async fn contests_get_master_view_handler(path: web::Path<String>, data: web
         contest_res.as_ref().unwrap().SPORTFEST_ID.clone(),
         contest_id.clone(),
     )
-        .fetch_one(&data.db)
+        .fetch_one(db.as_ref())
         .await;
 
     match master_query {
@@ -241,9 +241,9 @@ pub async fn contests_get_master_view_handler(path: web::Path<String>, data: web
 }
 
 #[get("/contests")]
-pub async fn contests_get_handler(data: web::Data<AppState>) -> impl Responder {
+pub async fn contests_get_handler(db: web::Data<MySqlPool>) -> impl Responder {
     let result = sqlx::query_as!(Contest, "SELECT * FROM CONTEST")
-        .fetch_all(&data.db)
+        .fetch_all(db.as_ref())
         .await;
 
     match result {
@@ -262,7 +262,7 @@ pub async fn contests_get_handler(data: web::Data<AppState>) -> impl Responder {
     }
 }
 
-pub async fn create_contest(contest: CreateContest, data: &web::Data<AppState>) -> Result<Contest, String> {
+pub async fn create_contest(contest: CreateContest, db: &web::Data<MySqlPool>) -> Result<Contest, String> {
     let contest_id = Uuid::new_v4();
     let new_template_id = Uuid::new_v4();
 
@@ -276,7 +276,7 @@ pub async fn create_contest(contest: CreateContest, data: &web::Data<AppState>) 
             .bind(contest.ct_graderange.clone())
             .bind(contest.ct_evaluation.clone())
             .bind(contest.ct_unit.clone())
-            .execute(&data.db)
+            .execute(db.as_ref())
             .await;
 
     if template_query.is_err() { return Err(template_query.unwrap_err().to_string() + " in template query"); }
@@ -287,7 +287,7 @@ pub async fn create_contest(contest: CreateContest, data: &web::Data<AppState>) 
         .bind(contest.SPORTFEST_ID.clone())
         .bind(contest.DETAILS_ID.clone())
         .bind(new_template_id.to_string())
-        .execute(&data.db)
+        .execute(db.as_ref())
         .await;
 
     match contest_query {
@@ -302,9 +302,9 @@ pub async fn create_contest(contest: CreateContest, data: &web::Data<AppState>) 
 }
 
 #[post("/contests")]
-pub async fn contests_create_handler(body: web::Json<CreateContest>, data:web::Data<AppState>)
+pub async fn contests_create_handler(body: web::Json<CreateContest>, db: web::Data<MySqlPool>)
                                     -> impl Responder {
-    let query = create_contest(body.0, &data).await;
+    let query = create_contest(body.0, &db).await;
     match query {
         Ok(result) => HttpResponse::Created().json(json!({
                 "status": "success",

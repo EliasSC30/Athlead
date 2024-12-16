@@ -1,16 +1,16 @@
 use crate::model::details::*;
-use crate::AppState;
 use actix_web::{get, post, patch, web, HttpResponse, Responder};
 use serde_json::json;
+use sqlx::MySqlPool;
 use uuid::{Uuid};
 
 #[get("/details")]
-pub async fn details_get_all_handler(data: web::Data<AppState>) -> impl Responder {
+pub async fn details_get_all_handler(db: web::Data<MySqlPool>) -> impl Responder {
     let query = sqlx::query_as!(
         Details,
         "SELECT * FROM DETAILS"
     )
-        .fetch_all(&data.db)
+        .fetch_all(db.as_ref())
         .await;
 
     match query {
@@ -31,7 +31,7 @@ pub async fn details_get_all_handler(data: web::Data<AppState>) -> impl Responde
 
 #[get("/details/{id}")]
 pub async fn details_get_by_id_handler(
-    data: web::Data<AppState>,
+    db: web::Data<MySqlPool>,
     path: web::Path<String>
 ) -> impl Responder {
     let details_id = path.into_inner();
@@ -41,7 +41,7 @@ pub async fn details_get_by_id_handler(
         "SELECT * FROM DETAILS WHERE ID = ?",
         details_id
     )
-        .fetch_one(&data.db)
+        .fetch_one(db.as_ref())
         .await;
 
     match result {
@@ -58,7 +58,7 @@ pub async fn details_get_by_id_handler(
     }
 }
 
-pub async fn create_details(details : &CreateDetails, db : &web::Data<AppState>)
+pub async fn create_details(details : &CreateDetails, db : &web::Data<MySqlPool>)
     -> Result<Details,String> {
     let new_details_id: Uuid = Uuid::new_v4();
 
@@ -70,7 +70,7 @@ pub async fn create_details(details : &CreateDetails, db : &web::Data<AppState>)
         .bind(details.NAME.clone())
         .bind(details.START)
         .bind(details.END)
-        .execute(&db.db)
+        .execute(db.as_ref())
         .await.map_err(|e: sqlx::Error| e.to_string());
 
     match query {
@@ -88,7 +88,7 @@ pub async fn create_details(details : &CreateDetails, db : &web::Data<AppState>)
 }
 
 #[post("/details")]
-pub async fn details_create_handler(body: web::Json<CreateDetails>, data:web::Data<AppState>) -> impl Responder {
+pub async fn details_create_handler(body: web::Json<CreateDetails>, data:web::Data<MySqlPool>) -> impl Responder {
     match create_details(&body.0, &data).await {
         Ok(values) => {
             HttpResponse::Ok().json(json!(
@@ -104,7 +104,7 @@ pub async fn details_create_handler(body: web::Json<CreateDetails>, data:web::Da
 
 pub async fn update_details(details_id : String,
                       update_details : UpdateDetails,
-                      data:web::Data<AppState>) -> impl Responder {
+                      db: web::Data<MySqlPool>) -> impl Responder {
     let updates_location = update_details.LOCATION_ID.is_some();
     let updates_cp = update_details.CONTACTPERSON_ID.is_some();
     let updates_name = update_details.NAME.is_some();
@@ -143,7 +143,7 @@ pub async fn update_details(details_id : String,
 
     let result = format!("UPDATE DETAILS {} WHERE ID = '{}'", build_update_query, details_id);
 
-    match sqlx::query(result.as_str()).execute(&data.db).await {
+    match sqlx::query(result.as_str()).execute(db.as_ref()).await {
         Ok(_) => {
             HttpResponse::Ok().json(
                 json!(
@@ -177,12 +177,12 @@ pub async fn update_details(details_id : String,
 
 #[patch("/details/{id}")]
 pub async fn details_update_handler(body: web::Json<UpdateDetails>,
-                                   data:web::Data<AppState>,
+                                   db: web::Data<MySqlPool>,
                                    path: web::Path<String>)
     -> impl Responder
 {
     let details_id = path.into_inner();
 
-    update_details(details_id, body.0, data).await
+    update_details(details_id, body.0, db).await
 }
 

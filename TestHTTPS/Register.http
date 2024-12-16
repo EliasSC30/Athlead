@@ -2,7 +2,7 @@ POST http://localhost:8000/register
 Content-Type: application/json
 
 {
-  "email": "elias.rw2@gmail.lol5",
+  "email": "elias.rw2@gmail.lol9",
   "password": "Elias ist der Beste",
 
   "first_name": "String",

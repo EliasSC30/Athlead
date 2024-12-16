@@ -59,6 +59,7 @@ pub struct SportfestMaster {
     pub sportfest_id : String,
 
     pub details_id : String,
+    pub details_name: Option<String>,
     pub details_start : NaiveDateTime,
     pub details_end : NaiveDateTime,
 
