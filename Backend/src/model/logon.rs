@@ -18,12 +18,6 @@ pub struct Register {
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
-pub struct Person_ID_Wrapper {
-    pub person_id: String
-}
-
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
-#[allow(non_snake_case)]
 pub struct Auth {
     pub pwd_encrypted: String,
     pub person_id: String,
@@ -34,7 +28,6 @@ pub struct Auth {
 pub struct Authentication {
     pub AUTH: String,
     pub PERSON_ID: String,
-    pub LAST_LOGIN: u64
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]

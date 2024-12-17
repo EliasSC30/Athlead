@@ -3,8 +3,8 @@ use actix_web::{get, post,patch, web, HttpResponse, Responder};
 use serde_json::json;
 use sqlx::MySqlPool;
 use uuid::{Uuid};
-
-
+use random_string::generate;
+use crate::api::encryption::encryption::hash;
 /*
 #[patch("/persons/{id}")]
 pub async fn persons_update_handler(body: web::Json<UpdatePerson>,
@@ -176,3 +176,164 @@ pub async fn persons_create_handler(body: web::Json<CreatePerson>, db: web::Data
         }))
     }
 }
+
+fn is_email_character(c: char) -> bool { "1234567890.abcdefghijklmnopqrstuvwxyz".contains(c.to_lowercase().nth(0).unwrap()) }
+
+fn find_error_in_csv(csv: &String) -> Option<usize>
+{
+    let csv_length = csv.len();
+    let mut index = 0;
+    let mut nr_of_entries = 0;
+    while index < csv_length
+    {
+        // Firstname
+        while csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; if index >= csv_length { return Some(index); }; };
+        if csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+        // Lastname
+        while csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; if index >= csv_length { return Some(index); }; };
+        if csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+        // Email
+        while is_email_character(csv.chars().nth(index).unwrap()) { index += 1; if index >= csv_length { return Some(index); }; };
+        if csv.chars().nth(index).unwrap() != '@' { return Some(index); } else { index += 1; };
+        while is_email_character(csv.chars().nth(index).unwrap()) { index += 1; if index >= csv_length { return Some(index); }; };
+        if csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+
+        // Phone
+        let nr_of_digits_in_a_phone_nr = 12;
+        let mut nr_of_digits_seen = 0;
+        while csv.chars().nth(index).unwrap().is_ascii_digit() { index += 1; nr_of_digits_seen +=1; if index >= csv_length { return Some(index); }; };
+        if nr_of_digits_in_a_phone_nr != nr_of_digits_seen { return Some(index); };
+        if csv.chars().nth(index).unwrap() != ',' { return Some(index); };
+
+        // Grade
+        if csv.chars().nth(index).unwrap().is_ascii_digit() { index += 1; } else { return Some(index); };
+             // optional second digit
+             if csv.chars().nth(index).unwrap().is_ascii_digit() { index +=1; };
+        if csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; } else { return Some(index); };
+        if csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+
+        // Birth year
+        let digits_of_birth_year = 4;
+        let mut digit_index = 0;
+        while index < csv_length && digit_index < digits_of_birth_year {
+            if csv.chars().nth(index).unwrap().is_ascii_digit() { index += 1; digit_index += 1; } else { return Some(index); };
+        };
+        let mut birth_year = 0u32;
+        for digit_index in (0..digits_of_birth_year).rev() {
+            birth_year += csv.chars().nth( index-digit_index).unwrap().to_digit(10).unwrap() * 10u32.pow(digit_index as u32);
+        }
+        if 2024 < birth_year || birth_year < 1900 { return Some(index-digit_index); };
+
+        // Role
+        let mut nr_of_role_chars_seen = 0;
+        while csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; nr_of_role_chars_seen += 1; if index >= csv_length { return Some(index); }; };
+        if nr_of_role_chars_seen != 10 || nr_of_role_chars_seen != 5 { return Some(index); };
+        let role = &csv[index-nr_of_role_chars_seen..index];
+        if role.to_lowercase() != "admin" && role.to_lowercase() != "judge" && role.to_lowercase() != "contestant" { return Some(index); };
+
+        if csv.chars().nth(index).unwrap() != '\n' { return Some(index); } else { index += 1; };
+        nr_of_entries += 1;
+        if index == csv_length { break; };
+    }
+
+    None
+}
+
+#[post("/persons/batch")]
+pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web::Data<MySqlPool>) -> impl Responder {
+    let error_in_csv = find_error_in_csv(&body.csv);
+    if error_in_csv.is_some() {
+        return HttpResponse::BadRequest().json(json!({
+            "status": "Bad csv error",
+            "message": format!("Error at position: {}", error_in_csv.unwrap())
+        }));
+    };
+
+    let mut person_query = String::from("INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE) VALUES ");
+
+    let mut passwords_and_ids = Vec::<(String,String)>::with_capacity(30);
+    let mut index = 0;
+    while index < body.csv.len() {
+        let parse = |length: usize, index: &mut usize|-> String {
+            let mut value = String::with_capacity(length);
+            while body.csv.chars().nth(*index).unwrap() != ',' {value.push(body.csv.chars().nth(*index).unwrap()); *index += 1};
+            *index += 1; // skip comma
+            value
+        };
+
+        let id = Uuid::new_v4();
+        let first_name = parse(8, &mut index);
+        let last_name = parse(10, &mut index);
+        let email = parse(24, &mut index);
+        let phone = parse(12, &mut index);
+        let grade = parse(4, &mut index);
+        let birth_year = parse(4, &mut index);
+        let role = parse(10, &mut index);
+
+        let mut append = String::with_capacity(8+10+24+12+4+4+10);
+        append.push_str("(\"");
+        append.push_str(id.to_string().as_str());
+        append.push_str("\", \"");
+        append.push_str(first_name.as_str());
+        append.push_str("\", \"");
+        append.push_str(last_name.as_str());
+        append.push_str("\", \"");
+        append.push_str(email.as_str());
+        append.push_str("\", \"");
+        append.push_str(phone.as_str());
+        append.push_str("\", \"");
+        append.push_str(grade.as_str());
+        append.push_str("\", \"");
+        append.push_str(birth_year.as_str());
+        append.push_str("\", \"");
+        append.push_str(role.as_str());
+        append.push_str("\"), ");
+
+        person_query.push_str(append.as_str());
+
+        passwords_and_ids.push((id.to_string(), generate(8, "abcdefghijklmnopqrstuvwxyz1234567890")));
+
+        // skip newline
+        index += 1;
+    }
+    // Remove excessive ", "
+    person_query = person_query[..person_query.len()-2].to_string();
+
+    let query = sqlx::query(&person_query)
+        .execute(db.as_ref())
+        .await;
+    if query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Insert persons error",
+        "message": query.unwrap_err().to_string()
+    }));};
+
+    let mut auth_query = String::from("INSERT INTO AUTHENTICATION (PERSON_ID, AUTH) VALUES ");
+    for (id,password) in &passwords_and_ids {
+        auth_query.push_str("(\"");
+        auth_query.push_str(id.as_str());
+        auth_query.push_str("\", ");
+        auth_query.push_str(hash(&password.chars().into_iter().map(|c| c as u32).collect::<Vec<u32>>()).to_string().as_str());
+        auth_query.push_str("), ");
+    }
+    auth_query = auth_query[..auth_query.len()-2].to_string();
+    let auth_query = sqlx::query(&auth_query).execute(db.as_ref()).await;
+    if auth_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Insert AUTHENTICATION error",
+        "message": auth_query.unwrap_err().to_string()
+    }));};
+
+    HttpResponse::Ok().json(json!({
+        "status": "success",
+        "Created_persons": passwords_and_ids.len()
+    }))
+
+    // Send emails with passwords.
+
+
+}
+
+
+
+
+
+

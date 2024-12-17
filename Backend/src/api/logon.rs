@@ -13,7 +13,6 @@ const TIME_OFFSET: u64 = 1734269586u64;
 const TIMESTAMP_LENGTH: usize = 8;
 const ID_LENGTH: usize = 36;
 const DECRYPT_TOKEN_LENGTH: usize = ID_LENGTH+TIMESTAMP_LENGTH;
-
 const ENCRYPT_TOKEN_PREFIX_LENGTH: usize = 6;
 const ENCRYPT_TOKEN_LENGTH: usize = 136;
 const ENCRYPT_TOKEN_LENGTH_WITH_PREFIX: usize = ENCRYPT_TOKEN_PREFIX_LENGTH + ENCRYPT_TOKEN_LENGTH;
@@ -60,17 +59,15 @@ pub async fn register_handler(body: web::Json<Register>, db: web::Data<MySqlPool
         "message": create_person.unwrap_err().to_string()
     }))}
 
-    let current_time = our_time_now();
-    let auth_query = sqlx::query("INSERT INTO AUTHENTICATION (PERSON_ID, AUTH, LAST_LOGIN) VALUES (?, ?, ?)")
+    let auth_query = sqlx::query("INSERT INTO AUTHENTICATION (PERSON_ID, AUTH) VALUES (?, ?, ?)")
         .bind(&create_person.as_ref().clone().unwrap().ID)
         .bind(&hashed_password)
-        .bind(current_time.to_string())
         .execute(db.as_ref())
         .await;
 
     let keys = generate_key();
     let mut to_crypt = create_person.as_ref().unwrap().ID.clone();
-    to_crypt.push_str(encryption::u32_to_parsable_chars(current_time).as_str());
+    to_crypt.push_str(encryption::u32_to_parsable_chars(our_time_now()).as_str());
     let new_token = crypt_str(&to_crypt, &keys.1, &keys.2);
     let mut new_token = encryption::BigInt::non_a7_u32_vec_to_exp_string(&new_token.parts);
     match auth_query {

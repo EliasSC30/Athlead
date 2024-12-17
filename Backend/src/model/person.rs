@@ -14,6 +14,12 @@ pub struct Person {
     pub ROLE: String,
 }
 
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
+pub struct PersonBatch {
+    pub csv: String,
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CreatePerson {
     pub first_name: String,
