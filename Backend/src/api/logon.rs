@@ -59,7 +59,7 @@ pub async fn register_handler(body: web::Json<Register>, db: web::Data<MySqlPool
         "message": create_person.unwrap_err().to_string()
     }))}
 
-    let auth_query = sqlx::query("INSERT INTO AUTHENTICATION (PERSON_ID, AUTH) VALUES (?, ?, ?)")
+    let auth_query = sqlx::query("INSERT INTO AUTHENTICATION (PERSON_ID, AUTH) VALUES (?, ?)")
         .bind(&create_person.as_ref().clone().unwrap().ID)
         .bind(&hashed_password)
         .execute(db.as_ref())
@@ -113,7 +113,7 @@ pub async fn check_token(mut token: String, db: &web::Data<MySqlPool>) -> Result
             .fetch_one(db.get_ref())
             .await;
 
-    if auth_query.is_err() { return Err(auth_query.unwrap_err().to_string()); };
+    if auth_query.is_err() { return Err("No person with the id of the token\n".to_string() + &auth_query.unwrap_err().to_string()); };
 
     let now = our_time_now();
     let mut new_token = person_id.to_string();

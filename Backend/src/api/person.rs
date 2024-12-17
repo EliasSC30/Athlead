@@ -187,30 +187,40 @@ fn find_error_in_csv(csv: &String) -> Option<usize>
     while index < csv_length
     {
         // Firstname
-        while csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; if index >= csv_length { return Some(index); }; };
-        if csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+        let index_before_first_name = index;
+        while index < csv_length && csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; };
+        if index < (index_before_first_name + 2) { return Some(index); };
+        if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+
         // Lastname
-        while csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; if index >= csv_length { return Some(index); }; };
-        if csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+        let index_before_last_name = index;
+        while index < csv_length && csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; };
+        if index < (index_before_last_name + 2) { return Some(index); };
+        if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+
         // Email
-        while is_email_character(csv.chars().nth(index).unwrap()) { index += 1; if index >= csv_length { return Some(index); }; };
-        if csv.chars().nth(index).unwrap() != '@' { return Some(index); } else { index += 1; };
-        while is_email_character(csv.chars().nth(index).unwrap()) { index += 1; if index >= csv_length { return Some(index); }; };
-        if csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+        let index_before_at = index;
+        while index < csv_length && is_email_character(csv.chars().nth(index).unwrap()) { index += 1;};
+        if index < (index_before_at + 1) { return Some(index); };
+        if index >= csv_length || csv.chars().nth(index).unwrap() != '@' { return Some(index); } else { index += 1; };
+        let index_after_at = index;
+        while index < csv_length && is_email_character(csv.chars().nth(index).unwrap()) { index += 1; };
+        if index < (index_after_at + 3) { return Some(index); };
+        if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
 
         // Phone
         let nr_of_digits_in_a_phone_nr = 12;
         let mut nr_of_digits_seen = 0;
-        while csv.chars().nth(index).unwrap().is_ascii_digit() { index += 1; nr_of_digits_seen +=1; if index >= csv_length { return Some(index); }; };
+        while index < csv_length && csv.chars().nth(index).unwrap().is_ascii_digit() { index += 1; nr_of_digits_seen +=1; };
         if nr_of_digits_in_a_phone_nr != nr_of_digits_seen { return Some(index); };
-        if csv.chars().nth(index).unwrap() != ',' { return Some(index); };
+        if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
 
         // Grade
-        if csv.chars().nth(index).unwrap().is_ascii_digit() { index += 1; } else { return Some(index); };
+        if index < csv_length && csv.chars().nth(index).unwrap().is_ascii_digit() { index += 1; } else { return Some(index); };
              // optional second digit
-             if csv.chars().nth(index).unwrap().is_ascii_digit() { index +=1; };
-        if csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; } else { return Some(index); };
-        if csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+             if index < csv_length && csv.chars().nth(index).unwrap().is_ascii_digit() { index += 1; };
+        if index < csv_length && csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; } else { return Some(index); };
+        if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
 
         // Birth year
         let digits_of_birth_year = 4;
@@ -219,19 +229,20 @@ fn find_error_in_csv(csv: &String) -> Option<usize>
             if csv.chars().nth(index).unwrap().is_ascii_digit() { index += 1; digit_index += 1; } else { return Some(index); };
         };
         let mut birth_year = 0u32;
-        for digit_index in (0..digits_of_birth_year).rev() {
-            birth_year += csv.chars().nth( index-digit_index).unwrap().to_digit(10).unwrap() * 10u32.pow(digit_index as u32);
+        for digit_index in (1..=digits_of_birth_year).rev() {
+            birth_year += csv.chars().nth( index-digit_index).unwrap().to_digit(10).unwrap() * 10u32.pow((digit_index - 1) as u32);
         }
         if 2024 < birth_year || birth_year < 1900 { return Some(index-digit_index); };
+        if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
 
         // Role
         let mut nr_of_role_chars_seen = 0;
-        while csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; nr_of_role_chars_seen += 1; if index >= csv_length { return Some(index); }; };
-        if nr_of_role_chars_seen != 10 || nr_of_role_chars_seen != 5 { return Some(index); };
+        while index < csv_length && csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; nr_of_role_chars_seen += 1;};
+        if nr_of_role_chars_seen != 10 && nr_of_role_chars_seen != 5 { return Some(index); };
         let role = &csv[index-nr_of_role_chars_seen..index];
         if role.to_lowercase() != "admin" && role.to_lowercase() != "judge" && role.to_lowercase() != "contestant" { return Some(index); };
 
-        if csv.chars().nth(index).unwrap() != '\n' { return Some(index); } else { index += 1; };
+        if index >= csv_length || csv.chars().nth(index).unwrap() != '\n' { return Some(index); } else { index += 1; };
         nr_of_entries += 1;
         if index == csv_length { break; };
     }
@@ -254,21 +265,21 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
     let mut passwords_and_ids = Vec::<(String,String)>::with_capacity(30);
     let mut index = 0;
     while index < body.csv.len() {
-        let parse = |length: usize, index: &mut usize|-> String {
+        let parse = |length: usize, index: &mut usize, delimiter: char|-> String {
             let mut value = String::with_capacity(length);
-            while body.csv.chars().nth(*index).unwrap() != ',' {value.push(body.csv.chars().nth(*index).unwrap()); *index += 1};
+            while body.csv.chars().nth(*index).unwrap() != delimiter {value.push(body.csv.chars().nth(*index).unwrap()); *index += 1};
             *index += 1; // skip comma
             value
         };
 
         let id = Uuid::new_v4();
-        let first_name = parse(8, &mut index);
-        let last_name = parse(10, &mut index);
-        let email = parse(24, &mut index);
-        let phone = parse(12, &mut index);
-        let grade = parse(4, &mut index);
-        let birth_year = parse(4, &mut index);
-        let role = parse(10, &mut index);
+        let first_name = parse(8, &mut index, ',');
+        let last_name = parse(10, &mut index, ',');
+        let email = parse(24, &mut index, ',');
+        let phone = parse(12, &mut index, ',');
+        let grade = parse(4, &mut index, ',');
+        let birth_year = parse(4, &mut index, ',');
+        let role = parse(10, &mut index, '\n');
 
         let mut append = String::with_capacity(8+10+24+12+4+4+10);
         append.push_str("(\"");

@@ -7,7 +7,7 @@ use crate::api::ctemplate::{ctemplate_create_handler, ctemplates_get_by_id_handl
 use crate::api::details::{details_create_handler, details_get_by_id_handler, details_get_all_handler, details_update_handler};
 use crate::api::location::{locations_create_handler, locations_get_by_id_handler, locations_get_all_handler, locations_update_handler};
 use crate::api::logon::{login_handler, register_handler};
-use crate::api::person::{persons_create_handler, persons_get_by_id_handler, persons_get_all_handler};
+use crate::api::person::{persons_create_handler, persons_get_by_id_handler, persons_get_all_handler, persons_create_batch_handler};
 use crate::api::sportfest::{create_contest_for_sf_handler, sportfests_create_handler, sportfests_create_with_location_handler, sportfests_get_masterview_handler, sportfests_list_handler, sportfests_update_handler};
 
 pub fn config(conf: &mut web::ServiceConfig) {
@@ -36,9 +36,10 @@ pub fn config(conf: &mut web::ServiceConfig) {
         .service(locations_update_handler)
 
         // Persons
-        .service(persons_get_all_handler) // doesn't work
+        .service(persons_get_all_handler)
         .service(persons_get_by_id_handler)
         .service(persons_create_handler)
+        .service(persons_create_batch_handler)
 
         // C_Templates
         .service(ctemplates_get_all_handler)
