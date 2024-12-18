@@ -8,11 +8,13 @@ pub async fn get_logged_in_handler(req: HttpRequest) -> impl Responder {
     let user = container.get::<Person>();
 
     match user {
-        Some(_) => HttpResponse::Ok().json(json!({
+        Some(person) => HttpResponse::Ok().json(json!({
             "is_logged_in": true,
+            "role": person.ROLE
         })),
         None => HttpResponse::Ok().json(json!({
             "is_logged_in": false,
+            "role": ""
         }))
     }
 }
