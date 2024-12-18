@@ -10,13 +10,11 @@ import Foundation
 
 var apiURL: String {
     get {
-#if targetEnvironment(simulator)
-        print("Simulator")
-        return "http://localhost:8000"
-#else
-        print("Device")
-        return "http://45.81.234.175:8000"
-#endif
+        #if targetEnvironment(simulator)
+                return "http://localhost:8000"
+        #else
+                return "http://45.81.234.175:8000"
+        #endif
     }
 }
 
@@ -46,8 +44,6 @@ struct LoginData: Encodable {
 }
 
 struct LoginResponse: Decodable {
-    let data: String
-    let id: String
     let status: String
 }
 

@@ -82,58 +82,11 @@ struct SportfestOverview: View {
                                     }
                                 }
                             }
-
-                            // Contestant Classes Section
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("🎓 Contestant Classes")
-                                    .font(.system(size: 24, weight: .semibold, design: .rounded))
-
-                                LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 20)]) {
-                                    ForEach(classes, id: \ .self) { className in
-                                        Text(className)
-                                            .font(.system(size: 16, weight: .medium, design: .rounded))
-                                            .padding()
-                                            .frame(maxWidth: .infinity)
-                                            .background(Color.blue.opacity(0.1))
-                                            .cornerRadius(10)
-                                            .shadow(radius: 5)
-                                            .onTapGesture {
-                                                selectedClass = className
-                                                showClassDetails.toggle()
-                                            }
-                                    }
-                                }
-                            }
-                            .padding(.horizontal)
-
-                            // Contest Categories Section
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("🏃‍♂️ Contests")
-                                    .font(.system(size: 24, weight: .semibold, design: .rounded))
-
-                                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 20)]) {
-                                    ForEach(contests, id: \ .self) { contest in
-                                        Text(contest)
-                                            .font(.system(size: 16, weight: .medium, design: .rounded))
-                                            .padding()
-                                            .frame(maxWidth: .infinity)
-                                            .background(Color.green.opacity(0.1))
-                                            .cornerRadius(10)
-                                            .shadow(radius: 5)
-                                    }
-                                }
-                            }
-                            .padding(.horizontal)
                         }
                         .padding()
                     }
                     .navigationTitle("Sportfest Overview")
                     .navigationBarTitleDisplayMode(.inline)
-                    .sheet(isPresented: $showClassDetails) {
-                        if let selectedClass = selectedClass {
-                            ClassDetailView(className: selectedClass)
-                        }
-                    }
                 }
             }.onAppear(perform: loadSportfestData)
         }
@@ -198,54 +151,4 @@ struct SportfestOverview: View {
             }
         }.resume()
     }
-}
-
-struct ClassDetailView: View {
-    let className: String
-
-    let people = ["John Doe", "Jane Smith", "Alice Johnson", "Bob Brown", "Charlie Davis"]
-    @State private var searchText = ""
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Details for \(className)")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-
-            // People Section
-            VStack(alignment: .leading, spacing: 10) {
-                Text("👥 People")
-                    .font(.system(size: 24, weight: .semibold, design: .rounded))
-
-                TextField("Search people", text: $searchText)
-                    .padding(10)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(8)
-                    .padding(.bottom, 10)
-
-                LazyVStack(alignment: .leading, spacing: 10) {
-                    ForEach(people.filter { searchText.isEmpty || $0.localizedCaseInsensitiveContains(searchText) }, id: \ .self) { person in
-                        Text(person)
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.orange.opacity(0.1))
-                            .cornerRadius(10)
-                            .shadow(radius: 5)
-                    }
-                }
-            }
-            .padding(.horizontal)
-
-            Button("Dismiss") {
-                dismiss()
-            }
-            .padding()
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-        }
-        .padding()
-    }
-
-    @Environment(\ .dismiss) var dismiss
 }

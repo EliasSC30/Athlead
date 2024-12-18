@@ -47,7 +47,7 @@ struct ContentView: View {
 
             } else // Is not logged in
             {
-                LoginRegisterView(isLoggedIn: $isLoggedIn)
+                LoginView(isLoggedIn: $isLoggedIn)
                     .tabItem {
                         Image(systemName: "person.fill")
                         Text("Login")
