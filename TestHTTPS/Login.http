@@ -1,7 +1,7 @@
-POST http://localhost:8000/login
+POST http://45.81.234.175:8000/login
 Content-Type: application/json
 
 {
-  "email": "elias.rw2@gmail.edeka",
-  "password": "Elias ist der Beste"
+  "email": "elias.rw2@gmail.de",
+  "password": "password"
 }

@@ -49,7 +49,7 @@ pub fn get_min_auth_level(method: String, path: String) -> AuthLevel {
 
 fn req_needs_cookie(req: &ServiceRequest) -> bool {
     if req.method() == Method::POST {
-        return req.path() != "login" && req.path() != "/register";
+        return req.path() != "/login" && req.path() != "/register";
     };
     if req.method() == Method::GET {
         return req.path() != "/health";
