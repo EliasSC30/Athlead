@@ -1,5 +1,6 @@
+use std::ops::Add;
 use std::time::{SystemTime, UNIX_EPOCH};
-use actix_web::{post, web, Error, HttpResponse, Responder};
+use actix_web::{cookie, post, web, Error, HttpResponse, Responder};
 use actix_web::cookie::{Cookie, Expiration};
 use actix_web::cookie::Expiration::DateTime;
 use actix_web::cookie::time::PrimitiveDateTime;
@@ -166,9 +167,11 @@ pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> 
     let new_token = encryption::BigInt::non_a7_u32_vec_to_exp_string(&new_token.parts);
     match password_query {
         Ok(_) => {
+            let duration = cookie::time::Duration::days(9999);
+            let expire_date = cookie::time::OffsetDateTime::now_utc().add(duration);
             let cookie = Cookie::build("Token", new_token.clone())
                 .path("/")
-                .expires(Expiration::from(None))
+                .expires(expire_date)
                 .http_only(true)
                 .finish();
             let mut res = HttpResponse::Ok().json(json!({

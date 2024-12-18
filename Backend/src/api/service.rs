@@ -6,6 +6,7 @@ use crate::api::contestresult::contestresult_create_handler;
 use crate::api::ctemplate::{ctemplate_create_handler, ctemplates_get_by_id_handler, ctemplates_get_all_handler};
 use crate::api::details::{details_create_handler, details_get_by_id_handler, details_get_all_handler, details_update_handler};
 use crate::api::location::{locations_create_handler, locations_get_by_id_handler, locations_get_all_handler, locations_update_handler};
+use crate::api::loggedin::get_logged_in_handler;
 use crate::api::logon::{login_handler, register_handler};
 use crate::api::person::{persons_create_handler, persons_get_by_id_handler, persons_get_all_handler, persons_create_batch_handler};
 use crate::api::sportfest::{create_contest_for_sf_handler, sportfests_create_handler, sportfests_create_with_location_handler, sportfests_get_masterview_handler, sportfests_list_handler, sportfests_update_handler};
@@ -60,6 +61,9 @@ pub fn config(conf: &mut web::ServiceConfig) {
 
         // Logon
         .service(register_handler)
-        .service(login_handler);
+        .service(login_handler)
+
+        // Logged in
+        .service(get_logged_in_handler);
     conf.service(scope);
 }

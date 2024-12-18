@@ -2,9 +2,11 @@
 mod api;
 mod model;
 
+use std::ops::Add;
+use std::time;
 use actix_cors::Cors;
 use actix_web::middleware::Logger;
-use actix_web::{http::header, web, App, HttpMessage, HttpServer};
+use actix_web::{cookie, http::header, web, App, HttpMessage, HttpRequest, HttpResponse, HttpServer};
 use dotenv::dotenv;
 use sqlx::mysql::{MySqlPool, MySqlPoolOptions};
 use actix_web::middleware::{self, Next};
@@ -45,6 +47,17 @@ pub fn get_min_auth_level(method: String, path: String) -> AuthLevel {
     AuthLevel::Contestant
 }
 
+fn req_needs_cookie(req: &ServiceRequest) -> bool {
+    if req.method() == Method::POST {
+        return req.path() != "login" && req.path() != "/register";
+    };
+    if req.method() == Method::GET {
+        return req.path() != "/health";
+    };
+
+    true
+}
+
 async fn authorization_check(req: ServiceRequest, next: Next<impl MessageBody>) -> Result<ServiceResponse<impl MessageBody>, Error> {
     let pool = req
         .app_data::<web::Data<MySqlPool>>()
@@ -53,21 +66,24 @@ async fn authorization_check(req: ServiceRequest, next: Next<impl MessageBody>) 
     let mut token_to_send_back = String::from("");
     let mut request_sender: Option<Person> = None;
 
-    if req.method() != Method::POST || (req.path() != "/login" && req.path() != "/register") {
+    if req_needs_cookie(&req) {
         if cookie.is_none() {
             return Err(ErrorBadGateway("No Token send"));
         } else {
             let cookie = cookie.unwrap();
             let token_check = check_token(cookie.to_string(), pool).await;
-            if token_check.is_err() { return Err(ErrorBadRequest(token_check.unwrap_err())); };
-            let (new_token, user) = token_check.unwrap();
+            if token_check.is_ok() {
+                let (new_token, user) = token_check.unwrap();
 
-            let min_auth_level = get_min_auth_level(req.method().to_string(), req.path().to_string());
-            let user_auth_level = string_to_auth_level(&user.ROLE)?;
-            if min_auth_level > user_auth_level { return Err(ErrorBadRequest("No access to this path")); };
+                let min_auth_level = get_min_auth_level(req.method().to_string(), req.path().to_string());
+                let user_auth_level = string_to_auth_level(&user.ROLE)?;
+                if min_auth_level > user_auth_level { return Err(ErrorBadRequest("No access to this path")); };
 
-            token_to_send_back = new_token;
-            request_sender = Some(user);
+                token_to_send_back = new_token;
+                request_sender = Some(user);
+            } else {
+                if req.path() != "/loggedin" { return Err(ErrorBadRequest("Invalid Token")); };
+            }
         };
     }
 
@@ -79,10 +95,12 @@ async fn authorization_check(req: ServiceRequest, next: Next<impl MessageBody>) 
     let mut res = next.call(req).await?;
 
     if !token_to_send_back.is_empty() {
+        let duration = cookie::time::Duration::days(9999);
+        let expire_date = cookie::time::OffsetDateTime::now_utc().add(duration);
         let cookie = Cookie::build("Token", token_to_send_back)
-            .path("/") // Set the path for the cookie
-            .http_only(true) // Ensure the cookie is HTTP-only
-            .expires(Expiration::from(None))
+            .path("/")
+            .http_only(true)
+            .expires(expire_date)
             .finish();
         res.response_mut().add_cookie(&cookie).map_err(Error::from)?;
     }

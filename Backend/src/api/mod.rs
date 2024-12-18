@@ -10,3 +10,4 @@ mod metric;
 mod ctemplate;
 mod encryption;
 pub(crate) mod logon;
+mod loggedin;
