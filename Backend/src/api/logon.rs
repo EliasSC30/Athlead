@@ -1,6 +1,8 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 use actix_web::{post, web, Error, HttpResponse, Responder};
-use actix_web::cookie::Cookie;
+use actix_web::cookie::{Cookie, Expiration};
+use actix_web::cookie::Expiration::DateTime;
+use actix_web::cookie::time::PrimitiveDateTime;
 use serde_json::json;
 use sqlx::MySqlPool;
 use crate::api::encryption::encryption;
@@ -166,6 +168,7 @@ pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> 
         Ok(_) => {
             let cookie = Cookie::build("Token", new_token.clone())
                 .path("/")
+                .expires(Expiration::from(None))
                 .http_only(true)
                 .finish();
             let mut res = HttpResponse::Ok().json(json!({
