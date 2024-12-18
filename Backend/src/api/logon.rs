@@ -152,6 +152,9 @@ pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> 
     let password_query = sqlx::query_as!(Authentication, "SELECT * FROM AUTHENTICATION WHERE AUTH = ?",hashed_password)
         .fetch_one(db.as_ref())
         .await;
+    if password_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Password query error",
+    }))}
 
     let keys = generate_key();
     let mut to_crypt = password_query.as_ref().clone().unwrap().PERSON_ID.clone();
