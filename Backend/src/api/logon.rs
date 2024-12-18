@@ -167,14 +167,18 @@ pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> 
             let duration = cookie::time::Duration::days(9999);
             let expire_date = cookie::time::OffsetDateTime::now_utc().add(duration);
             let cookie = Cookie::build("Token", new_token.clone())
-                .path("/")
-                .expires(expire_date)
-                .http_only(true)
+                .path("/")                           // Cookie is valid for all paths
+                .expires(expire_date)               // Long expiration date
+                .same_site(cookie::SameSite::Lax)   // Allow for some cross-site requests
+                .http_only(true)                    // Prevent access from JavaScript
                 .finish();
+
             let mut res = HttpResponse::Ok().json(json!({
-            "status": "success",
-            }));
-            res.add_cookie(&cookie);
+        "status": "success",
+        }));
+
+            res.add_cookie(&cookie);                // Add the cookie to the response
+            println!("Set-Cookie Header: {:?}", res.headers().get("Set-Cookie")); // Debugging
             res
         },
         Err(_) => HttpResponse::InternalServerError().json(json!({
