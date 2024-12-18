@@ -212,28 +212,6 @@ struct SportFestSingleResponse: Decodable {
     
 }
 
-
-/*
- "cp_birth_year": "2003",
- "cp_email": "jan.wichmann23@icloud.com",
- "cp_firstname": "Jan",
- "cp_grade": "4",
- "cp_id": "d0c09d12-2fe5-41d7-ae5c-223bf7e7ef1c",
- "cp_lastname": "Wichmann ",
- "cp_phone": "+49 173 6609293",
- "cp_role": "ADMIN",
- "details_end": "2024-12-12T22:40:53",
- "details_id": "8998d965-5dff-4a65-ab6a-07240888eef1",
- "details_start": "2024-12-12T22:40:53",
- "location_city": "Wielsoch",
- "location_id": "01fa6e46-2871-4342-b117-8dc6e521e4f4",
- "location_name": "Die Messis",
- "location_street": "Meßplatzstraße",
- "location_street_number": "25",
- "location_zipcode": "69168",
- "sportfest_id": "52d644c8-782e-413c-a9e8-9a973f5e09b1"
- */
-
 struct SportfestData: Identifiable, Hashable, Decodable {
     let cp_birth_year: String
     let cp_email: String
@@ -327,5 +305,35 @@ var STORE : [String:[ResultInfo]] = [:];
 var SessionToken: String?
 var UserId: String?
 
+
+
+
+func isUserLoggedIn() -> Bool {
+    let url = URL(string: "\(apiURL)/persons")!
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    
+    var loginWasSuccessfull = false;
+    
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("Error trying to login: \(error)")
+            return
+        }
+        
+        print(response);
+        if let str = String(data: data!, encoding: .utf8) {
+            print(str)
+        }
+            
+        if let response = response as? HTTPURLResponse {
+            if response.statusCode == 200 {
+                loginWasSuccessfull = true;
+            }
+        }
+    }.resume();
+    return loginWasSuccessfull;
+}
 
 
