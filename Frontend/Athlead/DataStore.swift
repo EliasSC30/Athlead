@@ -300,6 +300,12 @@ struct AssignContestSportFestCreate: Encodable {
     let START: Date
     let END: Date
 }
+
+struct IsLoggedIn: Decodable {
+    let is_logged_in: Bool
+    let role: String
+}
+    
 var STORE : [String:[ResultInfo]] = [:];
 
 var SessionToken: String?
@@ -308,32 +314,35 @@ var UserId: String?
 
 
 
-func isUserLoggedIn() -> Bool {
-    let url = URL(string: "\(apiURL)/persons")!
+func isUserLoggedIn() async -> IsLoggedIn? {
+    let url = URL(string: "\(apiURL)/loggedin")!
     var request = URLRequest(url: url)
     request.httpMethod = "GET"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
     
-    var loginWasSuccessfull = false;
+    //print cookies which are send with the request
+    let cookies = HTTPCookieStorage.shared.cookies(for: url)
+    cookies?.forEach { cookie in
+        print("Cookie: \(cookie.name)=\(cookie.value)")
+    }
     
-    URLSession.shared.dataTask(with: request) { data, response, error in
-        if let error = error {
-            print("Error trying to login: \(error)")
-            return
+    do {
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            print("Invalid response status code")
+            return nil
         }
         
-        print(response);
-        if let str = String(data: data!, encoding: .utf8) {
-            print(str)
-        }
-            
-        if let response = response as? HTTPURLResponse {
-            if response.statusCode == 200 {
-                loginWasSuccessfull = true;
-            }
-        }
-    }.resume();
-    return loginWasSuccessfull;
+        let loginResponse = try JSONDecoder().decode(IsLoggedIn.self, from: data)
+        return loginResponse
+    } catch {
+        print("Error trying to login: \(error)")
+        return nil
+    }
 }
+
+
 
 

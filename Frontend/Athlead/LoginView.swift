@@ -170,6 +170,7 @@ struct LoginView: View {
             }
 
             DispatchQueue.main.async {
+                print("Login response: \(loginResponse)")
                 if loginResponse.status == "success" {
                     isLoggedIn = true
                 } else {

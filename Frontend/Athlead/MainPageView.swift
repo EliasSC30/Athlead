@@ -96,6 +96,12 @@ struct MainPageView: View {
                 return
             }
             
+            print(response)
+            
+            if let str = String(data: data!, encoding: .utf8) {
+                print(str)
+            }
+            
             guard let data = data, let sportFestsResponse = try? JSONDecoder().decode(SportFestsResponse.self, from: data) else {
                 print("Failed to decode sportfests")
                 DispatchQueue.main.async {
