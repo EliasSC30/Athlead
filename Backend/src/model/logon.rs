@@ -35,5 +35,4 @@ pub struct Authentication {
 pub struct Login {
     pub email: String,
     pub password: Option<String>,
-    pub token: Option<String>,
 }

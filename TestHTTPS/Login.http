@@ -1,8 +1,7 @@
-# @no-cookie-jar
 POST http://localhost:8000/login
 Content-Type: application/json
 
 {
-  "email": "elias.rw2@gmail.edeka",
+  "email": "elias.rw2@gmail.lol",
   "password": "Elias ist der Beste"
 }

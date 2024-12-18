@@ -77,11 +77,13 @@ async fn authorization_check(req: ServiceRequest, next: Next<impl MessageBody>) 
     // invoke the wrapped middleware or service
     let mut res = next.call(req).await?;
 
-    let cookie = Cookie::build("Token", token_to_send_back)
-        .path("/") // Set the path for the cookie
-        .http_only(true) // Ensure the cookie is HTTP-only
-        .finish();
-    res.response_mut().add_cookie(&cookie).map_err(Error::from)?;
+    if !token_to_send_back.is_empty() {
+        let cookie = Cookie::build("Token", token_to_send_back)
+            .path("/") // Set the path for the cookie
+            .http_only(true) // Ensure the cookie is HTTP-only
+            .finish();
+        res.response_mut().add_cookie(&cookie).map_err(Error::from)?;
+    }
 
     Ok(res)
 }

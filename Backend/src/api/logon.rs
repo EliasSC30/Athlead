@@ -1,5 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
-use actix_web::{post, web, HttpResponse, Responder};
+use actix_web::{post, web, Error, HttpResponse, Responder};
+use actix_web::cookie::Cookie;
 use serde_json::json;
 use sqlx::MySqlPool;
 use crate::api::encryption::encryption;
@@ -133,20 +134,6 @@ pub async fn login_with_token(token: Option<String>, data: &web::Data<MySqlPool>
 #[post("/login")]
 pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> impl Responder
 {
-    if body.password.is_none() {
-        return match login_with_token(body.token.clone(), &db).await {
-            Ok((new_token, person_id, _)) => HttpResponse::Ok().json(json!({
-                "status": "success",
-                "data": new_token,
-                "id": person_id
-            })),
-            Err(e) => HttpResponse::BadRequest().json(json!({
-                "status": "Unauthorized with token",
-                "message": e
-            }))
-        }
-    }
-
     let password = body.password.as_ref().clone().unwrap();
 
     let email_query = sqlx::query("SELECT * FROM PERSON WHERE EMAIL = ?")
@@ -154,7 +141,7 @@ pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> 
         .fetch_one(db.as_ref())
         .await;
     if email_query.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "Fetch email error",
+        "status": "Email not found",
         "message": email_query.unwrap_err().to_string()
     }))}
 
@@ -173,14 +160,19 @@ pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> 
     let new_token = crypt_str(&to_crypt,&keys.1,&keys.2);
     let new_token = encryption::BigInt::non_a7_u32_vec_to_exp_string(&new_token.parts);
     match password_query {
-        Ok(_) => HttpResponse::Ok().json(json!({
+        Ok(_) => {
+            let cookie = Cookie::build("Token", new_token.clone())
+                .path("/")
+                .http_only(true)
+                .finish();
+            let mut res = HttpResponse::Ok().json(json!({
             "status": "success",
-            "data": new_token,
-            "id": password_query.as_ref().clone().unwrap().PERSON_ID
-        })),
+            }));
+            res.add_cookie(&cookie);
+            res
+        },
         Err(_) => HttpResponse::InternalServerError().json(json!({
-            "status": "Fetch login error",
-            "message": "Wrong password"
+            "status": "Wrong password",
         }))
     }
 }
