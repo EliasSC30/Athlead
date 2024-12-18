@@ -26,6 +26,11 @@ struct YourProfileView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
+                    NavigationLink(destination: LogoutView()) {
+                        Label("Log Out", systemImage: "arrowshape.turn.up.backward")
+                            .foregroundColor(.red)
+                            .fontWeight(.bold)
+                    }
                 }
                 
                 // Achievements Section
@@ -83,6 +88,23 @@ struct YourProfileView: View {
             .navigationTitle("Sportfest Overview")
             .listStyle(InsetGroupedListStyle())
         }
+    }
+}
+
+struct LogoutView: View {
+    
+    init() {
+        for key in UserDefaults.standard.dictionaryRepresentation().keys {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+        UserDefaults.standard.synchronize()
+        
+        HTTPCookieStorage.shared.cookies?.forEach(HTTPCookieStorage.shared.deleteCookie)
+    }
+    
+    var body: some View {
+        Text("You have been logged out.")
+            .font(.title)
     }
 }
 

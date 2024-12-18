@@ -83,7 +83,9 @@ struct LoginView: View {
 
                 // Login Button
                 Button(action: {
-                    authenticateUser()
+                    Task {
+                        await authenticateUser()
+                    }
                 }) {
                     Text("Login")
                         .font(.headline)
@@ -109,94 +111,62 @@ struct LoginView: View {
             }
             .padding(20)
             .frame(maxWidth: 400)
+            
+                
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func authenticateUser() {
-        print(
-            "Authenticating user with email: \(email) and password: \(password)"
-        )
+    private func authenticateUser() async {
+        print("Authenticating user with email: \(email) and password: \(password)")
 
-        let url = URL(string: apiURL + "/login")!
+        let url = URL(string: "\(apiURL)/login")!
+
         var request = URLRequest(url: url)
-        request.setValue("keep-alive", forHTTPHeaderField: "Connection")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.timeoutInterval = 60
         request.httpMethod = "POST"
-
+        
         let loginData = LoginData(email: email, password: password, token: nil)
-
         guard let encodedData = try? JSONEncoder().encode(loginData) else {
-            print("Failed to encode login data")
+            loginError = "Failed to prepare login request. Please try again."
             return
         }
-
         request.httpBody = encodedData
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    loginError = "Network error. Please try again."
-                }
-                return
-            }
-
-            if let httpResponse = response as? HTTPURLResponse,
-                let fields = httpResponse.allHeaderFields as? [String: String],
-                let url = response?.url
-            {
-                let cookies = HTTPCookie.cookies(
-                    withResponseHeaderFields: fields, for: url)
-                HTTPCookieStorage.shared.setCookies(
-                    cookies, for: url, mainDocumentURL: nil)
-
-                // Persist cookies to shared storage
-                if let cookieStorage = HTTPCookieStorage.shared.cookies {
-                    saveCookiesToStorage(cookies: cookieStorage)
-                }
-            }
-
-            guard let data = data,
-                let loginResponse = try? JSONDecoder().decode(
-                    LoginResponse.self, from: data)
-            else {
-                print("Failed to decode login response")
-                DispatchQueue.main.async {
-                    loginError = "Invalid server response. Please try again."
-                }
-                return
-            }
-
-            DispatchQueue.main.async {
-                print("Login response: \(loginResponse)")
-                if loginResponse.status == "success" {
-                    isLoggedIn = true
+        
+        do {
+            // Perform the request asynchronously
+            let result = try await executeURLRequestAsync(request: request)
+            
+            switch result {
+            case .success(_, let data):
+                if let loginResponse = try? JSONDecoder().decode(LoginResponse.self, from: data) {
+                    if loginResponse.status == "success" {
+                        DispatchQueue.main.async {
+                            self.isLoggedIn = true
+                            self.loginError = ""
+                        }
+                    } else {
+                        DispatchQueue.main.async {
+                            self.loginError = "Incorrect email or password. Please try again."
+                        }
+                    }
                 } else {
-                    loginError =
-                        "Incorrect email or password. Please try again."
+                    DispatchQueue.main.async {
+                        self.loginError = "Invalid server response. Please contact support."
+                    }
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.loginError = "Network error: \(error.localizedDescription). Please try again."
                 }
             }
-        }.resume()
+        } catch {
+            DispatchQueue.main.async {
+                self.loginError = "Unexpected error: \(error.localizedDescription). Please try again."
+            }
+        }
     }
 
-    private func saveCookiesToStorage(cookies: [HTTPCookie]) {
-        let defaults = UserDefaults.standard
-        let cookieData = cookies.compactMap { cookie -> [String: Any]? in
-            return [
-                HTTPCookiePropertyKey.name.rawValue: cookie.name,
-                HTTPCookiePropertyKey.value.rawValue: cookie.value,
-                HTTPCookiePropertyKey.domain.rawValue: cookie.domain,
-                HTTPCookiePropertyKey.path.rawValue: cookie.path,
-                HTTPCookiePropertyKey.expires.rawValue: cookie.expiresDate ?? Date(),
-                HTTPCookiePropertyKey.secure.rawValue: cookie.isSecure
-            ]
-        }
-        print("Cookie data: \(cookieData)")
-        defaults.set(cookieData, forKey: "cookies")
-        defaults.synchronize()
-    }
 
 }
 struct ForgotPasswordView: View {

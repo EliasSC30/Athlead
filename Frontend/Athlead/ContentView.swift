@@ -57,10 +57,13 @@ struct ContentView: View {
         .onAppear {
             Task {
                 isLoading = true
+            
                 
-                if let isLogged = await isUserLoggedIn() {
+                let isLogged = await isUserLoggedIn();
+                
+                if isLogged.is_logged_in {
                     isLoggedIn = isLogged.is_logged_in
-                    role = isLogged.role
+                    role = "ADMIN"
                 } else {
                     isLoggedIn = false
                     role = "User"

@@ -73,117 +73,36 @@ struct MainPageView: View {
                     .navigationTitle("Athlead")
                 }
             }
-        }.onAppear(perform: loadSportFests)
+        }.onAppear {
+            Task {
+                await loadSportFests()
+            }
+        }
     }
     
     
-    private func loadSportFests() {
-        isLoading = true
+    private func loadSportFests() async {
+        isLoading = false
         errorMessage = nil
         
-        let url = URL(string: apiURL + "/sportfests")!
+        let url = URL(string: "\(apiURL)/sportfests")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error fetching locations: \(error)")
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.errorMessage = "Failed to fetch sportfests"
+        do {
+            let result = try await executeURLRequestAsync(request: request)
+            switch result {
+            case .success(_, let data):
+                if let string = String(data: data, encoding: .utf8) {
+                    print(string)
                 }
-                return
+            default:
+                break
             }
-            
-            print(response)
-            
-            if let str = String(data: data!, encoding: .utf8) {
-                print(str)
-            }
-            
-            guard let data = data, let sportFestsResponse = try? JSONDecoder().decode(SportFestsResponse.self, from: data) else {
-                print("Failed to decode sportfests")
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.errorMessage = "Failed to fetch sportfests"
-                }
-                return
-            }
-            
-            for sportFest in sportFestsResponse.data {
-                let sportFestID = sportFest.id
-                let detailUrl = URL(string: apiURL + "/details/\(sportFest.details_id)")!
-                var detailRequest = URLRequest(url: detailUrl)
-                detailRequest.httpMethod = "GET"
-                detailRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                
-                URLSession.shared.dataTask(with: detailRequest) { detailData, detailResponse, detailError in
-                    if let detailError = detailError {
-                        print("Error fetching locations: \(detailError)")
-                        DispatchQueue.main.async {
-                            self.isLoading = false
-                            self.errorMessage = "Failed to fetch sportfests"
-                        }
-                        return
-                    }
-                    
-                    guard let detailData = detailData, let detailsResponse = try? JSONDecoder().decode(DetailResponse.self, from: detailData) else {
-                        print("Failed to decode details")
-                        DispatchQueue.main.async {
-                            self.isLoading = false
-                            self.errorMessage = "Failed to fetch sportfests"
-                        }
-                        return
-                    }
-                    
-                    if self.past_sportfests.contains(where: { $0.ID == sportFestID }) || self.upcoming_sportsfests.contains(where: { $0.ID == sportFestID }) {
-                        DispatchQueue.main.async {
-                            self.isLoading = false
-                        }
-                        return
-                    }
-                    
-                    
-                    let formatter = DateFormatter()
-                    
-                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-                    formatter.timeZone = TimeZone(abbreviation: "UTC")
-                    
-                    let formattedStartDate = formatter.date(from: detailsResponse.data.START) ?? Date();
-                    let formattedEndDate = formatter.date(from: detailsResponse.data.END) ?? Date();
-                    
-                    
-                    let sportFest = SportFestDisplay(ID: sportFestID, DETAILS_ID: detailsResponse.data.ID, CONTACTPERSON_ID: detailsResponse.data.CONTACTPERSON_ID, NAME: detailsResponse.data.NAME, LOCATION_ID: detailsResponse.data.LOCATION_ID, START: formattedStartDate, END: formattedEndDate)
-                    
-                    if formattedEndDate < Date() {
-                        self.past_sportfests.append(sportFest)
-                    } else {
-                        self.upcoming_sportsfests.append(sportFest)
-                    }
-                    
-                    self.upcoming_sportsfests.sort(by: { $0.START < $1.START })
-                    self.past_sportfests.sort(by: { $0.START < $1.START })
-                    
-                    DispatchQueue.main.async {
-                        self.isLoading = false
-                        self.errorMessage = nil
-                    }
-                                
-                    
-                    
-                    
-                }.resume()
-            }
-            
-            
-            DispatchQueue.main.async {
-                self.isLoading = false
-                self.errorMessage = nil
-            }
-        }.resume()
-        
-    
+        } catch {
+            print("Error during request: \(error)")
+        }
     }
 }
 
