@@ -60,7 +60,6 @@ pub async fn register_handler(body: web::Json<Register>, db: web::Data<MySqlPool
     let create_person = create_person(person_for_create, &db).await;
     if create_person.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Create person error",
-        "message": create_person.unwrap_err().to_string()
     }))}
 
     let auth_query = sqlx::query("INSERT INTO AUTHENTICATION (PERSON_ID, AUTH) VALUES (?, ?)")
@@ -83,7 +82,6 @@ pub async fn register_handler(body: web::Json<Register>, db: web::Data<MySqlPool
         ,
         Err(e) => HttpResponse::InternalServerError().json(json!({
             "status": "Insert Auth error",
-            "message": e.to_string()
         }))
     }
 }
@@ -145,7 +143,6 @@ pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> 
         .await;
     if email_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Email not found",
-        "message": email_query.unwrap_err().to_string()
     }))}
 
     let pw_as_u32 = password.chars().into_iter().map(|c| c as u32).collect::<Vec<u32>>();
