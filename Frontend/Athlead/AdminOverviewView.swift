@@ -28,13 +28,10 @@ struct AdminOverviewView: View {
                 // Competitions Management Section
                 Section(header: Text("Contests")) {
                     NavigationLink(destination: AddContestView()) {
-                        Label("Add Contests", systemImage: "plus.square")
+                        Label("Add contest templates", systemImage: "plus.square")
                     }
                     NavigationLink(destination: ManageContestView()) {
-                        Label("Manage Contests", systemImage: "gearshape")
-                    }
-                    NavigationLink(destination: AssignContestToSportfestView()) {
-                        Label("Assign to Sportfest", systemImage: "arrowshape.turn.up.right")
+                        Label("Manage contest templates", systemImage: "gearshape")
                     }
                 }
                 

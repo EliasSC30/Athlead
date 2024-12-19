@@ -52,14 +52,22 @@ struct ManageContestView: View {
                 }
             }
             .navigationTitle("Manage Contests")
-            .navigationBarItems(trailing: Button(action: fetchContests) {
+            .navigationBarItems(trailing: Button(action: {
+                Task {
+                    await fetchContests()
+                
+                }}) {
                 Image(systemName: "arrow.clockwise")
             })
-            .onAppear(perform: fetchContests)
+            .onAppear {
+                Task {
+                    await fetchContests()
+                }
+            }
         
     }
     
-    private func fetchContests() {
+    private func fetchContests() async {
         isLoading = true
         errorMessage = nil
         
@@ -69,25 +77,28 @@ struct ManageContestView: View {
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            
-            if let error = error {
-                print("Error fetching contests: \(error)")
-                return
+        do {
+            let result = try await executeURLRequestAsync(request: request)
+            switch result {
+            case .success(_, let data):
+                guard let decodedResponse = try? JSONDecoder().decode(CTemplatesResponse.self, from: data) else {
+                    isLoading = false
+                    errorMessage = "Failed to decode contests"
+                    return
+                }
+                contests = decodedResponse.data
+                isLoading = false
+                errorMessage = nil
+            case .failure(let error):
+                isLoading = false
+                errorMessage = "Failed to fetch contests: \(error.localizedDescription)"
             }
-            
-            guard let data = data, let contestsResponse = try? JSONDecoder().decode(CTemplatesResponse.self, from: data) else {
-                print("Failed to decode contests")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                self.contests = contestsResponse.data
-                self.isLoading = false
-            }
-                
-            
-        }.resume()
+        } catch {
+            isLoading = false
+            errorMessage = "Error fetching contests: \(error)"
+            print("Error creating template: \(error)")
+        }
+
     
     }
     
@@ -141,11 +152,11 @@ struct AdminContestDetailView: View {
         }
         .navigationTitle(isEditing ? "Edit Contest" : contest.NAME)
         .navigationBarItems(
-            trailing: Button(isEditing ? "Save" : "Edit") {
+            trailing: Button(isEditing ? "WIP" : "WIP") {
                 if isEditing {
-                    saveChanges()
+                    //saveChanges()
                 } else {
-                    startEditing()
+                    //startEditing()
                 }
             }
         )
@@ -180,7 +191,7 @@ struct AdminContestDetailView: View {
         
         let url = URL(string: "\(apiURL)/ctemplates/\(contest.ID)")!
         var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
+        request.httpMethod = "PATCH"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         
@@ -190,25 +201,8 @@ struct AdminContestDetailView: View {
         }
         
         request.httpBody = encode
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error updating contest: \(error)")
-                return
-            }
-            
-            guard let data = data, let contestResponse = try? JSONDecoder().decode(UpdateCTemplateResponse.self, from: data) else {
-                print("Failed to decode contest")
-                return
-            }
-            
-            
-            DispatchQueue.main.async {
-                self.isEditing = false
-            }
-            
-            
-        }.resume()
+    
+    
         
     
     }

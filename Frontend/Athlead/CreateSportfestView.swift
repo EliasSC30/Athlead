@@ -78,7 +78,9 @@ struct CreateSportfestView: View {
                             ProgressView("Submitting...")
                         } else {
                             Button("Create Sportfest") {
-                                createSportfest()
+                                Task {
+                                    await createSportfest()
+                                }
                             }.popover(isPresented: $isSuccesful) {
                                 NavigationLink(destination: SportfestDetailView(sportfestID: newSportfestID!)) {
                                     Text("Sportfest created successfully. Click here to view.")
@@ -108,11 +110,13 @@ struct CreateSportfestView: View {
     }
     
     private func fetchData() {
-        fetchLocations()
-        fetchContacts()
+        Task {
+            await fetchLocations()
+            await fetchContacts()
+        }
     }
     
-    private func fetchLocations() {
+    private func fetchLocations() async {
         isLoading[0] = true
         errorMessageLoad = nil
         
@@ -122,40 +126,25 @@ struct CreateSportfestView: View {
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error fetching locations: \(error)")
-                DispatchQueue.main.async {
-                    self.isLoading[0] = false
-                    self.errorMessageLoad = "Error fetching locations"
-                }
-                return
+        do {
+            let result = try await executeURLRequestAsync(request: request)
+            switch result {
+            case .success(_, let data):
+                let locationData = try JSONDecoder().decode(LocationsResponse.self, from: data)
+                locations = locationData.data
+                selectedLocation = locations.first
+                isLoading[0] = false
+                errorMessageLoad = nil
+            default:
+                break
             }
-            
-            guard let data = data else {
-                return
-            }
-            
-            do {
-                let locationresponse = try JSONDecoder().decode(LocationsResponse.self, from: data)
-                DispatchQueue.main.async {
-                    self.locations = locationresponse.data
-                    self.selectedLocation = self.locations.first
-                    self.isLoading[0] = false
-                    self.errorMessageLoad = nil
-                    
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    self.isLoading[0] = false
-                    self.errorMessageLoad = "Error fetching locations"
-                }
-            }
-            
-        }.resume()
+        } catch {
+            errorMessageLoad = "Error fetching locations"
+            print("Error fetching locations: \(error)")
+        }
     }
     
-    private func fetchContacts() {
+    private func fetchContacts() async {
         isLoading[1] = true
         errorMessageLoad = nil
         
@@ -164,91 +153,91 @@ struct CreateSportfestView: View {
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error fetching persons: \(error)")
-                DispatchQueue.main.async {
-                    self.isLoading[1] = false
-                    self.errorMessageLoad = "Error fetching administrators"
-                }
-                return
+        
+        do {
+            let result = try await executeURLRequestAsync(request: request)
+            switch result {
+            case .success(_, let data):
+                let personsData = try JSONDecoder().decode(PersonsResponse.self, from: data)
+                let persons = personsData.data.filter { $0.ROLE.uppercased() == "ADMIN" }
+                
+                contactPersons = persons
+                selectedContact = contactPersons.first
+                isLoading[1] = false
+                errorMessageLoad = nil
+            default:
+                break
             }
-            
-            guard let data = data, let personsResponse = try? JSONDecoder().decode(PersonsResponse.self, from: data) else {
-                DispatchQueue.main.async {
-                    self.isLoading[1] = false
-                    self.errorMessageLoad = "Failed to fetch administrators"
-                }
-                return
-            }
-            
-            let persons = personsResponse.data.filter { $0.ROLE == "ADMIN" }
-            
-            DispatchQueue.main.async {
-                self.contactPersons = persons
-                self.selectedContact = self.contactPersons.first
-                self.isLoading[1] = false
-                self.errorMessageLoad = nil
-            }
-            
-            
-        }.resume()
+        } catch {
+            errorMessageLoad = "Error fetching contactpersons"
+            print("Error fetching locations: \(error)")
+        }
     }
     
-    private func createSportfest() {
+    private func createSportfest() async {
         guard let selectedLocation = selectedLocation,
               let selectedContact = selectedContact else {
             self.errorMessage = "Please select a location and a contact person."
             return
         }
+        
         isSubmitting = true
         errorMessage = nil
         
-        
-        let url = URL(string: apiURL + "/sportfests")!
+        let url = URL(string: apiURL + "/sportfests_with_location")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let details = SportfestLocationCreate(CONTACTPERSON_ID: selectedContact.ID, fest_name: sportfestName, fest_start: String(startDate.ISO8601Format().dropLast()), fest_end:   String(endDate.ISO8601Format().dropLast()), city: selectedLocation.CITY, zip_code: selectedLocation.ZIPCODE, street: selectedLocation.STREET, streetnumber: selectedLocation.STREETNUMBER, location_name: selectedLocation.NAME)
+        let sportfest: SportfestLocationCreate = SportfestLocationCreate(location_id: selectedLocation.ID, CONTACTPERSON_ID: selectedContact.ID, fest_name: sportfestName, fest_start: String(startDate.ISO8601Format().dropLast()), fest_end: String(endDate.ISO8601Format().dropLast()))
         
-        guard let encode = try? JSONEncoder().encode(details) else {
-            print("Failed to encode details")
-            errorMessage = "Failed to encode details"
+        guard let body = try? JSONEncoder().encode(sportfest) else {
+            errorMessage = "Could not encode sportfest."
+            isSuccesful = false
             isSubmitting = false
             return
         }
+        request.httpBody = body
         
-        request.httpBody = encode
+        print(request)
+        if let body = String(data: request.httpBody!, encoding: .utf8){
+            print(body)
+        }
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            
-            if let error {
-                print("Error: \(error)")
-                DispatchQueue.main.async {
-                    self.errorMessage = "Error: \(error)"
-                    self.isSubmitting = false
+        do {
+            let result = try await executeURLRequestAsync(request: request)
+            switch result {
+            case .success(_, let data):
+                isSubmitting = false
+                guard let sportFestResponse = try? JSONDecoder().decode(SportfestLocationCreateResponse.self, from: data) else {
+                    isSuccesful = false
+                    errorMessage = "Could not decode sportfest."
+                    return
                 }
-                return
-            }
-            
-            guard let data = data, let sportfestResponse = try? JSONDecoder().decode(SportfestCreateResponse.self, from: data) else {
-                DispatchQueue.main.async {
-                    self.errorMessage = "Failed to create sportfest. Please try again."
-                    self.isSubmitting = false
+                if sportFestResponse.status == "success" {
+                    // Invalidate cache after successful creation of the sportfest
+                    invalidateSportfestCache()
                 }
-                
-                return
+                isSuccesful = sportFestResponse.status == "success"
+                errorMessage = sportFestResponse.status == "success" ? nil : "Could not create sportfest."
+                newSportfestID = sportFestResponse.status == "success" ? "dummy" : sportFestResponse.data.ID
+            default:
+                break
             }
-            
-            DispatchQueue.main.async {
-                
-                self.newSportfestID = sportfestResponse.data.id
-                self.errorMessage = nil
-                self.isSuccesful = true
-            }
-        }.resume()
+        } catch {
+            isSubmitting = false
+            isSuccesful = false
+            errorMessage = "Could not create sportfest."
+            print("Error creating sportfest: \(error)")
+        }
     }
+
+    private func invalidateSportfestCache() {
+        // Invalidate the cache by removing it from UserDefaults
+        UserDefaults.standard.removeObject(forKey: "cachedSportfests")
+        UserDefaults.standard.removeObject(forKey: "cacheExpiry")
+    }
+
     
 }
 

@@ -9,18 +9,15 @@ import SwiftUI
 
 @main
 struct AthleadApp: App {
+    
+    init(){
+        loadPersistentCookies()
+    }
+    
     var body: some Scene {
         WindowGroup {
-            ContentView().onAppear(perform: loadCookiesFromStorage)
+            ContentView()
         }
     }
     
-    
-    private func loadCookiesFromStorage() {
-        
-        var configuration = URLSessionConfiguration.default
-        configuration.httpCookieAcceptPolicy = .always
-        configuration.httpShouldSetCookies = true
-        
-    }
 }

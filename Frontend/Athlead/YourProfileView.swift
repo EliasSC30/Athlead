@@ -93,18 +93,32 @@ struct YourProfileView: View {
 
 struct LogoutView: View {
     
-    init() {
-        for key in UserDefaults.standard.dictionaryRepresentation().keys {
-            UserDefaults.standard.removeObject(forKey: key)
-        }
-        UserDefaults.standard.synchronize()
-        
-        HTTPCookieStorage.shared.cookies?.forEach(HTTPCookieStorage.shared.deleteCookie)
-    }
+    
     
     var body: some View {
         Text("You have been logged out.")
             .font(.title)
+            .onAppear(perform: logout)
+    }
+    
+    func logout(){
+        // Remove cookies stored in memory
+        clearCookies()
+        
+        // Delete the persistent cookies file
+        do {
+            if FileManager.default.fileExists(atPath: getCookieFilePath().path()) {
+                try FileManager.default.removeItem(at: getCookieFilePath())
+                print("Cookies file deleted.")
+            } else {
+                print("No cookies file found to delete.")
+            }
+        } catch {
+            print("Failed to delete cookies file: \(error)")
+        }
+        
+        // Clear HTTPCookieStorage (if applicable)
+        HTTPCookieStorage.shared.cookies?.forEach(HTTPCookieStorage.shared.deleteCookie)
     }
 }
 

@@ -11,7 +11,7 @@ struct AddContestView: View {
     struct DummyContestant: Identifiable, Equatable {
         let id = UUID()
         let name: String
-        let result: Int
+        let result: Double
         let unit: String
     }
 
@@ -21,8 +21,8 @@ struct AddContestView: View {
     @State private var gradeStart: Int = 1
     @State private var gradeEnd: Int = 4
     @State private var evaluationOrder: [DummyContestant] = [
-        DummyContestant(name: "Jan", result: Int.random(in: 1...1000), unit: "s"),
-        DummyContestant(name: "Elias", result: Int.random(in: 1...1000), unit: "s")
+        DummyContestant(name: "Jan", result: Double.random(in: 1...10), unit: "s"),
+        DummyContestant(name: "Elias", result: Double.random(in: 1...10), unit: "s")
     ]
     @State private var unit: String = ""
     @State private var showAlert: Bool = false
@@ -68,7 +68,7 @@ struct AddContestView: View {
                         .autocapitalization(.words)
                         .textInputAutocapitalization(.words)
                         .onChange(of: unit) { _ in
-                            evaluationOrder = evaluationOrder.map { DummyContestant(name: $0.name, result: Int.random(in: 1...1000), unit: self.unit) }
+                            evaluationOrder = evaluationOrder.map { DummyContestant(name: $0.name, result: Double.random(in: 1...10), unit: self.unit) }
                         }
                     
                 }
@@ -79,7 +79,7 @@ struct AddContestView: View {
                             HStack {
                                 Text(DummyContestant.name)
                                 Spacer()
-                                Text("\(DummyContestant.result) \(DummyContestant.unit)")
+                                Text("\(String(format: "%.2f",DummyContestant.result).replacingOccurrences(of: ".", with: ",")) \(DummyContestant.unit)")
                             }
                             .padding(.vertical, 5)
                         }
@@ -100,7 +100,9 @@ struct AddContestView: View {
                     if name.isEmpty || unit.isEmpty {
                         showAlert = true
                     } else {
-                        submitContest()
+                        Task {
+                         await submitContest()
+                        }
                     }
                 }) {
                     Text("Add Contest")
@@ -138,8 +140,8 @@ struct AddContestView: View {
         }
     }
 
-    private func submitContest() {
-        
+    private func submitContest() async {
+
         let ascending = evaluationOrder[0].result < evaluationOrder[1].result
         let url = URL(string: "\(apiURL)/ctemplates")!
         var request = URLRequest(url: url)
@@ -156,24 +158,17 @@ struct AddContestView: View {
         }
         request.httpBody = encoded
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error submitting contest: \(error)")
-                return
+        do {
+            let result = try await executeURLRequestAsync(request: request)
+            switch result {
+            case .success(_, let data):
+                created = true
+            default:
+                break
             }
-            
-            
-            
-            guard let data = data, let response = try? JSONDecoder().decode(CreateCTemplateResponse.self, from: data) else {
-                    print("Failed to decode contest response")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                self.created = true
-            }
-            
-        }.resume();
+        } catch {
+            print("Error creating template: \(error)")
+        }
     }
 }
 

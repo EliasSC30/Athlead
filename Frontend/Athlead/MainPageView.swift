@@ -9,8 +9,8 @@ import Foundation
 
 struct MainPageView: View {
     
-    @State private var upcoming_sportsfests: [SportFestDisplay] = []
-    @State private var past_sportfests: [SportFestDisplay] = []
+    @State private var upcoming_sportsfests: [SportfestData] = []
+    @State private var past_sportfests: [SportfestData] = []
     
     
     @State private var isLoading: Bool = true
@@ -19,6 +19,7 @@ struct MainPageView: View {
     
     var body: some View {
         Group {
+            /*
             if isLoading {
                 ProgressView("Loading sportfests...")
             } else if let error = errorMessage {
@@ -73,10 +74,12 @@ struct MainPageView: View {
                     .navigationTitle("Athlead")
                 }
             }
+                     
         }.onAppear {
             Task {
                 await loadSportFests()
             }
+         */
         }
     }
     

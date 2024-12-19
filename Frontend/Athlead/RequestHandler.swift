@@ -9,32 +9,39 @@ import Foundation
 // Manual cookie storage with persistence
 private var manualCookieStorage: [String: String] = [:]
 
-// Keys for UserDefaults
-private let cookiesStorageKey = "PersistentCookies"
+// File path for storing cookies using FileManager
+private let cookiesFilePath: URL = {
+    let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    return documentsDirectory.appendingPathComponent("PersistentCookies.json")
+}()
 
-// Load cookies from UserDefaults at app launch
+
+func clearCookies() {
+    manualCookieStorage.removeAll()
+}
+
+func getCookieFilePath() -> URL {
+    return cookiesFilePath
+}
+
+// Load cookies from file at app launch
 func loadPersistentCookies() {
-    if let savedData = UserDefaults.standard.data(forKey: cookiesStorageKey) {
-        do {
-            let savedCookies = try JSONDecoder().decode([String: String].self, from: savedData)
-            manualCookieStorage = savedCookies
-            print("Loaded persistent cookies: \(manualCookieStorage)")
-        } catch {
-            print("Failed to decode cookies: \(error)")
-        }
-    } else {
-        print("No persistent cookies found.")
+    do {
+        let data = try Data(contentsOf: cookiesFilePath)
+        let savedCookies = try JSONDecoder().decode([String: String].self, from: data)
+        manualCookieStorage = savedCookies
+    } catch {
+        print("Failed to load cookies: \(error)")
     }
 }
 
-// Save cookies to UserDefaults
+// Save cookies to file
 func savePersistentCookies() {
     do {
         let data = try JSONEncoder().encode(manualCookieStorage)
-        UserDefaults.standard.set(data, forKey: cookiesStorageKey)
-        print("Saved persistent cookies: \(manualCookieStorage)")
+        try data.write(to: cookiesFilePath)
     } catch {
-        print("Failed to encode cookies: \(error)")
+        print("Failed to save cookies: \(error)")
     }
 }
 
@@ -60,13 +67,11 @@ func executeURLRequestAsync(request: URLRequest) async throws -> Result {
     if let url = request.url {
         if let cookieHeader = manualCookieStorage[url.host ?? ""] {
             request.addValue(cookieHeader, forHTTPHeaderField: "Cookie")
-            print("Manually added cookies to request: \(cookieHeader)")
         } else {
             print("No manually stored cookies for \(url.host ?? "unknown host").")
         }
     }
     
-    print("Headers before sending request: \(request.allHTTPHeaderFields ?? [:])")
     
     return try await withCheckedThrowingContinuation { continuation in
         let task = sharedSession.dataTask(with: request) { data, response, error in
@@ -91,8 +96,7 @@ func executeURLRequestAsync(request: URLRequest) async throws -> Result {
                             manualCookieStorage[url.host ?? ""] = "\(name)=\(value)"
                         }
                     }
-                    print("Manually stored cookies: \(manualCookieStorage)")
-                    savePersistentCookies() // Save cookies persistently
+                    savePersistentCookies()
                 } else {
                     print("No cookies received.")
                 }

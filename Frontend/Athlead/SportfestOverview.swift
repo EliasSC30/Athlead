@@ -99,7 +99,7 @@ struct SportfestOverview: View {
     func loadSportfestData() {
         isLoading = true
         errorMessage = nil
-
+/*
         let url = URL(string: apiURL + "/sportfests/\(sportfestID)")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -113,7 +113,7 @@ struct SportfestOverview: View {
                     return
                 }
             }
-            guard let data = data, let sportfestResponse = try? JSONDecoder().decode(SportFestSingleResponse.self, from: data) else {
+            guard let data = data, let sportfestResponse = try? JSONDecoder().decode(SportfestData.self, from: data) else {
                 DispatchQueue.main.async {
                     self.isLoading = false
                     self.errorMessage = "Failed to decode sportfest."
@@ -122,7 +122,7 @@ struct SportfestOverview: View {
             }
 
             DispatchQueue.main.async {
-                self.locationName = sportfestResponse.data.location_name
+                self.locationName = sportfestResponse.location_name
 
                 let address = sportfestResponse.data.location_zipcode + " " + sportfestResponse.data.location_city + ", " + sportfestResponse.data.location_street + " " + sportfestResponse.data.location_street_number
                 let geoCoder = CLGeocoder()
@@ -150,5 +150,7 @@ struct SportfestOverview: View {
                 self.errorMessage = nil
             }
         }.resume()
+ 
+ */
     }
 }

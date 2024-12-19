@@ -109,7 +109,11 @@ struct LocationManagerView: View {
                                                         DefaultTextFieldStyle())
                                             }
                                             
-                                            Button(action: createLocation) {
+                                            Button(action: {
+                                                Task {
+                                                    await createLocation()
+                                                }
+                                            }) {
                                                 HStack {
                                                     Spacer()
                                                     Text("Save")
@@ -130,8 +134,16 @@ struct LocationManagerView: View {
                     .listStyle(InsetGroupedListStyle())
                     .navigationTitle("Locations")
                 }
-            }.onAppear(perform: loadLocations)
-                .navigationBarItems(trailing: Button(action: loadLocations) {
+            }.onAppear {
+                Task {
+                    await loadLocations()
+                }
+            }
+            .navigationBarItems(trailing: Button(action: {
+                Task {
+                    await loadLocations()
+                }
+            }) {
                     Image(systemName: "arrow.clockwise")
                 })
         }
@@ -160,7 +172,7 @@ struct LocationManagerView: View {
         
     }
     
-    private func createLocation() {
+    private func createLocation() async {
         let url = URL(string: "\(apiURL)/locations")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -180,79 +192,52 @@ struct LocationManagerView: View {
         }
 
         request.httpBody = encoded
-            
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error adding location: \(error)")
-                return
+        
+        do {
+            let result = try await executeURLRequestAsync(request: request)
+            switch result {
+            case .success(_, let data):
+                let locationData = try JSONDecoder().decode(LocationResponse.self, from: data)
+                allLocations.append(locationData.data)
+                name = ""
+                street = ""
+                streetNumber = ""
+                zipcode = ""
+                city = ""
+                showAddLocation = false
+            default:
+                break
             }
-
-            guard let data = data, let locationResponse = try? JSONDecoder().decode(LocationResponse.self, from: data) else {
-                print("Invalid response")
-                return
-            }
-
-            DispatchQueue.main.async {
-                self.allLocations.append(locationResponse.data)
-                self.name = ""
-                self.street = ""
-                self.streetNumber = ""
-                self.zipcode = ""
-                self.city = ""
-                self.showAddLocation = false
-            }
-
-        }.resume()
-
+        } catch {
+            print("Error fetching locations: \(error)")
+        }
     }
 
-    private func loadLocations() {
+    private func loadLocations() async {
         isLoading = true
         errorMessageLoad = nil
+        
         
         let url = URL(string: "\(apiURL)/locations")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error fetching locations: \(error)")
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.errorMessageLoad = "Failed to fetch locations"
-                }
-                return
+        
+        do {
+            let result = try await executeURLRequestAsync(request: request)
+            switch result {
+            case .success(_, let data):
+                let locationData = try JSONDecoder().decode(LocationsResponse.self, from: data)
+                allLocations = locationData.data
+                isLoading = false
+                errorMessageLoad = nil
+            default:
+                break
             }
-
-            guard let data = data else {
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.errorMessageLoad = "Failed to fetch locations"
-                }
-                return
-            }
-
-            do {
-                let locationresponse = try JSONDecoder().decode(
-                    LocationsResponse.self, from: data)
-                DispatchQueue.main.async {
-                    self.allLocations = locationresponse.data
-                }
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.errorMessageLoad = nil
-                }
-            } catch {
-                print("Error decoding locations: \(error)")
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.errorMessageLoad = "Failed to fetch locations"
-                }
-            }
-
-        }.resume()
+        } catch {
+            errorMessageLoad = "Error fetching locations"
+            print("Error fetching locations: \(error)")
+        }
     }
 }
 
@@ -303,7 +288,10 @@ struct LocationView: View {
                         .textFieldStyle(DefaultTextFieldStyle())
                 }
 
-                Button(action: saveLocation) {
+                Button(action: {
+                    Task{
+                        await saveLocation()
+                    }}) {
                     HStack {
                         Spacer()
                         Text("Save")
@@ -325,8 +313,8 @@ struct LocationView: View {
             .navigationBarTitleDisplayMode(.inline)
     }
 
-    private func saveLocation() {
-        let url = URL(string: "http://localhost:8000/locations/\(location.ID)")!
+    private func saveLocation() async {
+        let url = URL(string: "\(apiURL)/locations/\(location.ID)")!
         var request = URLRequest(url: url)
         request.httpMethod = "PATCH"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -344,29 +332,24 @@ struct LocationView: View {
             return
         }
         request.httpBody = encoded
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error saving location: \(error)")
-                return
+        
+        
+        do {
+            let result = try await executeURLRequestAsync(request: request)
+            switch result {
+            case .success(_, let data):
+                let locationData = try JSONDecoder().decode(LocationUpdate.self, from: data)
+                
+                location = locationData.result
+                editableLocation = EditableLocation(from: location)
+                updateSuccess = true
+                
+            default:
+                break
             }
-
-            guard let data = data,
-                let locationResponse = try? JSONDecoder().decode(
-                    LocationUpdate.self, from: data)
-            else {
-                print("Invalid response")
-                return
-            }
-
-            let locationResult = locationResponse.result
-
-            DispatchQueue.main.async {
-                self.location = locationResult
-                self.editableLocation = EditableLocation(from: locationResult)
-                self.updateSuccess = true
-            }
-        }.resume()
+        } catch {
+            print("Error fetching locations: \(error)")
+        }
     }
 
 

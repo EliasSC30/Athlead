@@ -63,14 +63,12 @@ struct ContentView: View {
                 
                 if isLogged.is_logged_in {
                     isLoggedIn = isLogged.is_logged_in
-                    role = "ADMIN"
+                    role = isLogged.role.uppercased()
                 } else {
                     isLoggedIn = false
                     role = "User"
                 }
-                
-                print("User is logged in: \(isLoggedIn)")
-                print("User role: \(role)")
+            
                 isLoading = false
             }
         }

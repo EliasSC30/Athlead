@@ -47,60 +47,9 @@ struct LoginResponse: Decodable {
     let status: String
 }
 
-
-
 struct ResultInfo {
     let name: String
     let metric: Metric
-}
-
-struct SportFestDisplay: Identifiable, Hashable {
-    let ID: String
-    let DETAILS_ID: String
-    let CONTACTPERSON_ID: String
-    let NAME: String
-    let LOCATION_ID: String
-    let START: Date
-    let END: Date
-    
-    var id: String { return self.ID }
-}
-
-struct SportFestsResponse: Decodable {
-    let data: [SportFest]
-    let results: Int
-    let status: String
-}
-
-struct SportFest: Identifiable, Decodable {
-    let id: String
-    let details_id: String
-}
-
-struct DetailsResponse: Decodable {
-    let data: [Detail]
-    let results: Int
-    let status: String
-}
-
-struct DetailResponse: Decodable {
-    let data: Detail
-    let status: String
-}
-struct Detail: Identifiable, Decodable, Hashable {
-    let ID: String
-    let CONTACTPERSON_ID: String
-    let NAME: String
-    let LOCATION_ID: String
-    let START: String
-    let END: String
-    
-    var id: String { return self.ID }
-}
-
-struct SportfestDetailsResponse: Decodable {
-    let result: SportfestDetails
-    let status: String
 }
 
 // Mock Data Structures
@@ -160,59 +109,59 @@ struct Person: Identifiable, Hashable, Decodable {
     let BIRTH_YEAR: String?
     let GRADE: String?
     let ROLE: String
+    let PICS: Int
+    let GENDER: String
     
     var id: String { return self.ID }
-}
-
-struct SportfestDetails: Identifiable, Decodable {
-    let ID: String
-    let NAME: String
-    let LOCATION_ID: String
-    let CONTACTPERSON_ID: String
-    let START: String
-    let END: String
-    
-    var id: String { return self.ID }
-}
-
-struct SportfestDetailsCreate: Encodable {
-    let NAME: String
-    let LOCATION_ID: String
-    let CONTACTPERSON_ID: String
-    let START: String
-    let END: String
 }
 
 struct SportfestLocationCreate: Encodable {
+    let location_id: String
     let CONTACTPERSON_ID: String
     let fest_name: String
     let fest_start: String
     let fest_end: String
-    let city: String
-    let zip_code: String
-    let street: String
-    let streetnumber: String
-    let location_name: String
 }
 
-struct SportFestResponse: Decodable {
-    let data: SportFest
-    let message: String
+struct SportFestSmall: Identifiable, Decodable {
+    let ID: String
+    let DETAILS_ID: String
+    
+    var id: String {return self.ID}
+}
+
+struct SportFestSmallLowercase: Identifiable, Decodable {
+    let id: String
+    let details_id: String
+}
+
+struct SportfestLocationCreateResponse: Decodable {
+    let data: SportFestSmall
     let status: String
 }
-struct SportfestCreateResponse: Decodable {
-    let data: SportfestCreateData
+
+struct SportFestsResponse: Decodable {
+    let data: [SportfestData]
     let status: String
     
 }
 
-struct SportFestSingleResponse: Decodable {
+struct ContestWithFlag: Codable, Hashable {
+    let participates: Bool
+    let contest_id: String
+}
+
+struct ParticipaticClasses: Decodable {
+    let in_it: Bool
+    let grade: String
+}
+
+struct SportfestResponse: Decodable {
+    let contests_with_flags: [ContestWithFlag]
     let data: SportfestData
     let status: String
-    
 }
-
-struct SportfestData: Identifiable, Hashable, Decodable {
+struct SportfestData: Identifiable, Hashable, Codable {
     let cp_birth_year: String
     let cp_email: String
     let cp_firstname: String
@@ -224,6 +173,7 @@ struct SportfestData: Identifiable, Hashable, Decodable {
     let details_end: String
     let details_id: String
     let details_start: String
+    let details_name: String
     let location_city: String
     let location_id: String
     let location_name: String
@@ -231,8 +181,52 @@ struct SportfestData: Identifiable, Hashable, Decodable {
     let location_street_number: String
     let location_zipcode: String
     let sportfest_id: String
+    let cts_wf: [ContestWithFlag]
     
     var id: String { return self.sportfest_id }
+}
+struct ContestData: Codable, Identifiable {
+    let C_TEMPLATE_ID: String
+    let ct_city: String
+    let ct_cp_birth_year: String
+    let ct_cp_email: String
+    let ct_cp_firstname: String
+    let ct_cp_grade: String
+    let ct_cp_id: String
+    let ct_cp_lastname: String
+    let ct_cp_phone: String
+    let ct_details_end: String
+    let ct_details_id: String
+    let ct_details_name: String
+    let ct_details_start: String
+    let ct_id: String
+    let ct_location_name: String
+    let ct_street: String
+    let ct_streetnumber: String
+    let ct_zipcode: String
+    let sf_city: String
+    let sf_cp_birth_year: String
+    let sf_cp_email: String
+    let sf_cp_firstname: String
+    let sf_cp_grade: String
+    let sf_cp_id: String
+    let sf_cp_lastname: String
+    let sf_cp_phone: String
+    let sf_details_end: String
+    let sf_details_id: String
+    let sf_details_start: String
+    let sf_id: String
+    let sf_location_name: String
+    let sf_street: String
+    let sf_streetnumber: String
+    let sf_zipcode: String
+    
+    var id: String { return self.ct_id }
+}
+
+struct ContestResponse: Codable {
+    let data: ContestData
+    let status: String
 }
 
 struct SportfestCreateData: Decodable, Identifiable {
@@ -297,9 +291,11 @@ struct AssignContestSportFestCreate: Encodable {
     let CONTACTPERSON_ID: String
     let C_TEMPLATE_ID: String
     let NAME : String
-    let START: Date
-    let END: Date
+    let START: String
+    let END: String
+    let HELPERS: [String]
 }
+
 
     
 var STORE : [String:[ResultInfo]] = [:];
@@ -312,6 +308,7 @@ var UserId: String?
 
 struct IsLoggedIn: Decodable {
     let is_logged_in: Bool
+    let role: String
 }
 
 func isUserLoggedIn() async -> IsLoggedIn {
@@ -333,7 +330,7 @@ func isUserLoggedIn() async -> IsLoggedIn {
     } catch {
         print("Error during request: \(error)")
     }
-    return IsLoggedIn(is_logged_in: false)
+    return IsLoggedIn(is_logged_in: false, role: "User")
 }
 
 
