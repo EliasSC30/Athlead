@@ -465,23 +465,70 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
         .bind(&details_res.as_ref().clone().unwrap().ID)
         .bind(&body.C_TEMPLATE_ID.clone())
         .execute(db.as_ref())
-        .await.map_err(|e: sqlx::Error| e.to_string());
-    match contest_query {
-        Ok(_) => {
-            HttpResponse::Ok().json(json!({
+        .await;
+    if contest_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Insert contest error",
+        "message": contest_query.unwrap_err().to_string(),
+    })); };
+    if body.HELPERS.is_empty() {
+        return HttpResponse::Ok().json(json!({
                 "status": "success",
                 "data": json!({
                     "ID": contest_id.to_string(),
                     "SPORTFEST_ID": sf_id,
                     "DETAILS_ID": details_res.unwrap().ID,
                     "C_TEMPLATE_ID": body.C_TEMPLATE_ID,
-                })
-            }))
-        },
-        Err(e) => HttpResponse::InternalServerError().json(json!({
-        "status": "Create Contest Error",
-        "message": e.to_string()
-    }))
-    }
+                    "HELPERS": serde_json::to_value(body.HELPERS.clone()).unwrap(),
+                    })
+                }));
+    };
 
+    let mut check_helper_query = String::from("SELECT * FROM PERSON WHERE ID IN (");
+    for helper in body.HELPERS.clone() {
+        check_helper_query += "\"";
+        check_helper_query += helper.as_str();
+        check_helper_query += "\", ";
+    }
+    check_helper_query.truncate(check_helper_query.len().saturating_sub(2));
+    check_helper_query += ")";
+
+    let check_helper_query = sqlx::query(check_helper_query.as_str()).fetch_all(db.as_ref()).await;
+    if check_helper_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Check helper query error",
+        "message": check_helper_query.unwrap_err().to_string(),
+    })); };
+
+    let helper = check_helper_query.unwrap();
+    if helper.len() != body.HELPERS.len() { return HttpResponse::BadRequest().json(json!({
+        "status": "error",
+        "message": format!("Only {}/{} helper have valid ids",helper.len(), body.HELPERS.len()).as_str()
+    })); };
+
+    let mut helper_query = String::from("INSERT INTO HELPER (CONTEST_ID, HELPER_ID) VALUES ");
+
+    for helper in body.HELPERS.clone() {
+        helper_query += "(\"";
+        helper_query += contest_id.clone().to_string().as_str();
+        helper_query += "\", \"";
+        helper_query += helper.to_string().as_str();
+        helper_query += "\"), ";
+    }
+    helper_query.truncate(helper_query.len().saturating_sub(2));
+
+    let helper_query = sqlx::query(helper_query.as_str()).execute(db.as_ref()).await;
+    if helper_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "error",
+        "message": helper_query.unwrap_err().to_string()
+    })); };
+
+    HttpResponse::Ok().json(json!({
+                "status": "success",
+                "data": json!({
+                        "ID": contest_id.to_string(),
+                        "SPORTFEST_ID": sf_id,
+                        "DETAILS_ID": details_res.unwrap().ID,
+                        "C_TEMPLATE_ID": body.C_TEMPLATE_ID,
+                        "HELPER": serde_json::to_value(body.HELPERS.clone()).unwrap(),
+                        })
+    }))
 }

@@ -64,6 +64,7 @@ pub struct ContestWithPartFlag {
 #[allow(non_snake_case)]
 pub struct CreateContestForFest {
     pub C_TEMPLATE_ID: String,
+    pub HELPERS: Vec<String>,
     //Details fields
     pub LOCATION_ID: String,
     pub CONTACTPERSON_ID: String,

@@ -1,9 +1,8 @@
-### POST request to create a sportfests
 POST http://localhost:8000/sportfests
 Content-Type: application/json
 
 {
-  "CONTACTPERSON_ID": "0606d6a9-26f3-493a-ad2c-de74611e6089",
+  "CONTACTPERSON_ID": "032c044b-2b8c-4d69-886a-3b06cfe12064",
   "fest_name": "Sportfest 2",
   "fest_start": "2024-12-02T15:30:00",
   "fest_end": "2025-12-02T15:30:00",
