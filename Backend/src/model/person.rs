@@ -1,4 +1,3 @@
-use std::fmt;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
@@ -12,6 +11,27 @@ pub struct Person {
     pub GRADE: Option<String>,
     pub BIRTH_YEAR: Option<String>,
     pub ROLE: String,
+    pub GENDER: String,
+    pub PICS: u8,
+    pub PASSWORD: String
+}
+
+impl Person {
+    pub(crate) fn clone(&self) -> Person {
+        Person {
+            ID: self.ID.clone(),
+            FIRSTNAME: self.FIRSTNAME.clone(),
+            LASTNAME: self.LASTNAME.clone(),
+            EMAIL: self.EMAIL.clone(),
+            PHONE: self.PHONE.clone(),
+            GRADE: self.GRADE.clone(),
+            BIRTH_YEAR: self.BIRTH_YEAR.clone(),
+            ROLE: self.ROLE.clone(),
+            GENDER: self.GENDER.clone(),
+            PICS: self.PICS.clone(),
+            PASSWORD: self.PASSWORD.clone()
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
@@ -29,6 +49,9 @@ pub struct CreatePerson {
     pub grade: Option<String>,
     pub birth_year: Option<String>,
     pub role: String,
+    pub gender: String,
+    pub pics: u8,
+    pub password: String
 }
 
 #[derive(Debug, Deserialize, Serialize)]

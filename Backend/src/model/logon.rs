@@ -12,22 +12,23 @@ pub struct Register {
     pub phone: String,
     pub grade: Option<String>,
     pub birth_year: Option<String>,
-    // Person Fields
     pub role: String,
+    pub gender: String,
+    pub pics: u8,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
 pub struct Auth {
-    pub pwd_encrypted: String,
     pub person_id: String,
+    pub pwd_encrypted: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
 pub struct Authentication {
-    pub AUTH: String,
     pub PERSON_ID: String,
+    pub PASSWORD: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]

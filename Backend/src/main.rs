@@ -63,7 +63,7 @@ async fn authorization_check(req: ServiceRequest, next: Next<impl MessageBody>) 
         .app_data::<web::Data<MySqlPool>>()
         .ok_or_else(|| ErrorBadRequest("Database pool not found"))?;
     let cookie = req.cookie("Token");
-    let mut token_to_send_back = String::from("");
+    let mut token_to_send_back: Option<String> = None;
     let mut request_sender: Option<Person> = None;
 
     if req_needs_cookie(&req) {
@@ -79,7 +79,7 @@ async fn authorization_check(req: ServiceRequest, next: Next<impl MessageBody>) 
                 let user_auth_level = string_to_auth_level(&user.ROLE)?;
                 if min_auth_level > user_auth_level { return Err(ErrorBadRequest("No access to this path")); };
 
-                token_to_send_back = new_token;
+                token_to_send_back = Some(new_token);
                 request_sender = Some(user);
             } else {
                 if req.path() != "/loggedin" { return Err(ErrorBadRequest("Invalid Token")); };
@@ -94,10 +94,10 @@ async fn authorization_check(req: ServiceRequest, next: Next<impl MessageBody>) 
     // invoke the wrapped middleware or service
     let mut res = next.call(req).await?;
 
-    if !token_to_send_back.is_empty() {
+    if token_to_send_back.is_some() {
         let duration = cookie::time::Duration::days(9999);
         let expire_date = cookie::time::OffsetDateTime::now_utc().add(duration);
-        let cookie = Cookie::build("Token", token_to_send_back)
+        let cookie = Cookie::build("Token", token_to_send_back.unwrap())
             .path("/")
             .http_only(true)
             .expires(expire_date)

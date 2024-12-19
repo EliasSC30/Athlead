@@ -55,6 +55,9 @@ pub async fn register_handler(body: web::Json<Register>, db: web::Data<MySqlPool
         phone: body.phone.clone(),
         grade: body.grade.clone(),
         birth_year: body.birth_year.clone(),
+        gender: body.gender.clone(),
+        pics: body.pics,
+        password: hashed_password.to_string()
     };
 
     let create_person = create_person(person_for_create, &db).await;
@@ -62,28 +65,16 @@ pub async fn register_handler(body: web::Json<Register>, db: web::Data<MySqlPool
         "status": "Create person error",
     }))}
 
-    let auth_query = sqlx::query("INSERT INTO AUTHENTICATION (PERSON_ID, AUTH) VALUES (?, ?)")
-        .bind(&create_person.as_ref().clone().unwrap().ID)
-        .bind(&hashed_password)
-        .execute(db.as_ref())
-        .await;
-
     let keys = generate_key();
     let mut to_crypt = create_person.as_ref().unwrap().ID.clone();
     to_crypt.push_str(encryption::u32_to_parsable_chars(our_time_now()).as_str());
     let new_token = crypt_str(&to_crypt, &keys.1, &keys.2);
     let mut new_token = encryption::BigInt::non_a7_u32_vec_to_exp_string(&new_token.parts);
-    match auth_query {
-        Ok(_) => HttpResponse::Ok().json(json!({
-                "status": "success",
-                "data": new_token,
-                "id": create_person.unwrap().ID
-            }))
-        ,
-        Err(e) => HttpResponse::InternalServerError().json(json!({
-            "status": "Insert Auth error",
+    HttpResponse::Ok().json(json!({
+            "status": "success",
+            "data": new_token,
+            "id": create_person.unwrap().ID
         }))
-    }
 }
 
 pub async fn check_token(mut token: String, db: &web::Data<MySqlPool>) -> Result<(String, Person),String> {
@@ -137,52 +128,41 @@ pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> 
 {
     let password = body.password.as_ref().clone().unwrap();
 
-    let email_query = sqlx::query("SELECT * FROM PERSON WHERE EMAIL = ?")
-        .bind(&body.email)
+    let email_query = sqlx::query_as!(Person, "SELECT * FROM PERSON WHERE EMAIL = ?",
+        &body.email)
         .fetch_one(db.as_ref())
         .await;
     if email_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Email not found",
-    }))}
+    }));};
+    let user = email_query.unwrap();
 
     let pw_as_u32 = password.chars().into_iter().map(|c| c as u32).collect::<Vec<u32>>();
 
-    let hashed_password = hash(&pw_as_u32);
+    let hashed_password = hash(&pw_as_u32).to_string();
 
-    let password_query = sqlx::query_as!(Authentication, "SELECT * FROM AUTHENTICATION WHERE AUTH = ?",hashed_password)
-        .fetch_one(db.as_ref())
-        .await;
-    if password_query.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "Password query error",
-    }))}
+    if hashed_password != user.PASSWORD {return HttpResponse::InternalServerError().json(json!({
+        "status": "Wrong password",
+    }));};
 
     let keys = generate_key();
-    let mut to_crypt = password_query.as_ref().clone().unwrap().PERSON_ID.clone();
+    let mut to_crypt = user.ID.clone();
     let now = our_time_now();
     to_crypt.push_str(encryption::u32_to_parsable_chars(now).as_str());
     let new_token = crypt_str(&to_crypt,&keys.1,&keys.2);
     let new_token = encryption::BigInt::non_a7_u32_vec_to_exp_string(&new_token.parts);
-    match password_query {
-        Ok(_) => {
-            let duration = cookie::time::Duration::days(9999);
-            let expire_date = cookie::time::OffsetDateTime::now_utc().add(duration);
-            let cookie = Cookie::build("Token", new_token.clone())
-                .path("/")                           // Cookie is valid for all paths
-                .expires(expire_date)               // Long expiration date
-                .same_site(cookie::SameSite::Lax)   // Allow for some cross-site requests
-                .http_only(true)                    // Prevent access from JavaScript
-                .finish();
+    let duration = cookie::time::Duration::days(9999);
+    let expire_date = cookie::time::OffsetDateTime::now_utc().add(duration);
+    let cookie = Cookie::build("Token", new_token.clone())
+        .path("/")
+        .expires(expire_date)
+        .same_site(cookie::SameSite::Lax)
+        .http_only(true)
+        .finish();
 
-            let mut res = HttpResponse::Ok().json(json!({
-        "status": "success",
-        }));
+    let mut res = HttpResponse::Ok().json(json!({"status": "success",}));
 
-            res.add_cookie(&cookie);                // Add the cookie to the response
-            println!("Set-Cookie Header: {:?}", res.headers().get("Set-Cookie")); // Debugging
-            res
-        },
-        Err(_) => HttpResponse::InternalServerError().json(json!({
-            "status": "Wrong password",
-        }))
-    }
+    res.add_cookie(&cookie);
+    res
+
 }

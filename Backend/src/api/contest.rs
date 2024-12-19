@@ -19,7 +19,7 @@ pub async fn contest_get_results_by_id_handler(path: web::Path<String>, db: web:
     let contest_res = get_contest(contest_id.clone(), &db).await;
 
     if contest_res.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "error",
+        "status": "Get contest error",
         "message": contest_res.unwrap_err().to_string()
     })); }
 
@@ -116,9 +116,6 @@ pub async fn contests_create_results(body: web::Json<Vec<CreateContestResultCont
     build_metrics_query.pop();
     build_cr_query.pop();
 
-    println!("build_cr_query: {:?}", build_cr_query.clone());
-    println!("params: {:?}", cr_parameters.clone());
-
     let mut metrics_query_builder = sqlx::query(&build_metrics_query);
     for (id, t, tu, l, lu, w, wu, a) in &metric_parameters {
         metrics_query_builder = metrics_query_builder.bind(id).bind(t).bind(tu).bind(l).bind(lu).bind(w).bind(wu).bind(a);
@@ -156,7 +153,7 @@ pub async fn contests_get_master_view_handler(path: web::Path<String>, db: web::
 
     let contest_res = get_contest(contest_id.clone(), &db).await;
     if contest_res.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "error",
+        "status": "Get Contest Error",
         "message": contest_res.unwrap_err().to_string()
     })); }
 

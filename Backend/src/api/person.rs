@@ -135,7 +135,7 @@ pub async fn create_person(body: CreatePerson, db: &web::Data<MySqlPool>) -> Res
     let new_person_id = Uuid::new_v4();
 
     let query = sqlx::query(
-        "INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+        "INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE, GENDER, PICS, PASSWORD) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         .bind(&new_person_id.to_string())
         .bind(body.first_name.clone())
         .bind(body.last_name.clone())
@@ -144,6 +144,9 @@ pub async fn create_person(body: CreatePerson, db: &web::Data<MySqlPool>) -> Res
         .bind(body.grade.clone())
         .bind(body.birth_year.clone())
         .bind(body.role.clone())
+        .bind(body.gender.clone())
+        .bind(body.pics)
+        .bind(body.password.clone())
         .execute(db.as_ref())
         .await;
 
@@ -156,7 +159,10 @@ pub async fn create_person(body: CreatePerson, db: &web::Data<MySqlPool>) -> Res
             PHONE: body.phone,
             GRADE: body.grade,
             BIRTH_YEAR: body.birth_year,
-            ROLE: body.role.clone()
+            ROLE: body.role.clone(),
+            GENDER: body.gender.clone(),
+            PICS: body.pics,
+            PASSWORD: body.password.clone()
         }),
         Err(e) => Err(e.to_string())
     }
@@ -183,20 +189,21 @@ fn find_error_in_csv(csv: &String) -> Option<usize>
 {
     let csv_length = csv.len();
     let mut index = 0;
+    let n_alphabetic_chars_followed_by_comma = |n_min: usize, n_max: usize, index: &mut usize| -> Option<usize> {
+        let mut nr_of_chars_seen = 0;
+        while *index < csv_length && csv.chars().nth(*index).unwrap().is_alphabetic() { *index += 1; };
+        if nr_of_chars_seen < n_min && n_max < nr_of_chars_seen { return Some(*index); };
+        if *index >= csv_length || csv.chars().nth(*index).unwrap() != ',' { return Some(*index); } else { *index += 1; None }
+    };
+
     let mut nr_of_entries = 0;
     while index < csv_length
     {
         // Firstname
-        let index_before_first_name = index;
-        while index < csv_length && csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; };
-        if index < (index_before_first_name + 2) { return Some(index); };
-        if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+        n_alphabetic_chars_followed_by_comma(2, 20, &mut index)?;
 
         // Lastname
-        let index_before_last_name = index;
-        while index < csv_length && csv.chars().nth(index).unwrap().is_alphabetic() { index += 1; };
-        if index < (index_before_last_name + 2) { return Some(index); };
-        if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+        n_alphabetic_chars_followed_by_comma(2, 20, &mut index)?;
 
         // Email
         let index_before_at = index;
@@ -241,6 +248,13 @@ fn find_error_in_csv(csv: &String) -> Option<usize>
         if nr_of_role_chars_seen != 10 && nr_of_role_chars_seen != 5 { return Some(index); };
         let role = &csv[index-nr_of_role_chars_seen..index];
         if role.to_lowercase() != "admin" && role.to_lowercase() != "judge" && role.to_lowercase() != "contestant" { return Some(index); };
+        if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+
+        // Gender
+        n_alphabetic_chars_followed_by_comma(2, 8, &mut index)?;
+
+        // Pics
+        n_alphabetic_chars_followed_by_comma(1, 4, &mut index)?;
 
         if index >= csv_length || csv.chars().nth(index).unwrap() != '\n' { return Some(index); } else { index += 1; };
         nr_of_entries += 1;
@@ -260,7 +274,7 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         }));
     };
 
-    let mut person_query = String::from("INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE) VALUES ");
+    let mut person_query = String::from("INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE, GENDER, PICS, PASSWORD) VALUES ");
 
     let mut passwords_and_ids = Vec::<(String,String)>::with_capacity(30);
     let mut index = 0;
@@ -279,9 +293,12 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         let phone = parse(12, &mut index, ',');
         let grade = parse(4, &mut index, ',');
         let birth_year = parse(4, &mut index, ',');
-        let role = parse(10, &mut index, '\n');
+        let role = parse(10, &mut index, ',');
+        let gender = parse(8, &mut index, ',');
+        let pics = parse(1, &mut index, '\n');
+        let password = generate(8, "abcdefghijklmnopqrstuvwxyz1234567890");
 
-        let mut append = String::with_capacity(8+10+24+12+4+4+10);
+        let mut append = String::with_capacity(8+10+24+12+4+4+10+8+1+8+31);
         append.push_str("(\"");
         append.push_str(id.to_string().as_str());
         append.push_str("\", \"");
@@ -298,11 +315,17 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         append.push_str(birth_year.as_str());
         append.push_str("\", \"");
         append.push_str(role.as_str());
+        append.push_str("\", \"");
+        append.push_str(gender.as_str());
+        append.push_str("\", ");
+        append.push_str(pics.as_str());
+        append.push_str(", \"");
+        append.push_str(password.as_str());
         append.push_str("\"), ");
 
         person_query.push_str(append.as_str());
 
-        passwords_and_ids.push((id.to_string(), generate(8, "abcdefghijklmnopqrstuvwxyz1234567890")));
+        passwords_and_ids.push((id.to_string(), password));
 
         // skip newline
         index += 1;
@@ -316,21 +339,6 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
     if query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Insert persons error",
         "message": query.unwrap_err().to_string()
-    }));};
-
-    let mut auth_query = String::from("INSERT INTO AUTHENTICATION (PERSON_ID, AUTH) VALUES ");
-    for (id,password) in &passwords_and_ids {
-        auth_query.push_str("(\"");
-        auth_query.push_str(id.as_str());
-        auth_query.push_str("\", ");
-        auth_query.push_str(hash(&password.chars().into_iter().map(|c| c as u32).collect::<Vec<u32>>()).to_string().as_str());
-        auth_query.push_str("), ");
-    }
-    auth_query = auth_query[..auth_query.len()-2].to_string();
-    let auth_query = sqlx::query(&auth_query).execute(db.as_ref()).await;
-    if auth_query.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "Insert AUTHENTICATION error",
-        "message": auth_query.unwrap_err().to_string()
     }));};
 
     HttpResponse::Ok().json(json!({

@@ -8,6 +8,15 @@ pub struct Sportfest {
     pub DETAILS_ID: String,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+#[allow(non_snake_case)]
+pub struct SFMasterStacked {
+    pub sf: SportfestMaster,
+    pub part_cls_wf: Vec<PartClassesWithInItFlag>,
+    pub cts_wf: Vec<ContestWithPartFlag>
+}
+
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateSportfest {
     // Detail Fields
@@ -39,6 +48,17 @@ pub struct CreateSportfestWithLocation {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateSportfest {
     pub DETAILS_ID: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PartClassesWithInItFlag {
+    pub in_it: bool,
+    pub class: String,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ContestWithPartFlag {
+    pub participates: bool,
+    pub contest_id: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]

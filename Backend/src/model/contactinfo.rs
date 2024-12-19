@@ -9,7 +9,7 @@ pub struct ContactInfo {
     pub EMAIL: String,
     pub PHONE: String,
     pub GRADE: Option<String>,
-    pub BIRTH_YEAR: Option<String>
+    pub BIRTH_YEAR: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
