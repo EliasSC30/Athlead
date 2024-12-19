@@ -60,7 +60,7 @@ pub async fn register_handler(body: web::Json<Register>, db: web::Data<MySqlPool
 
     let create_person = create_person(person_for_create, &db).await;
     if create_person.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "Create person error",
+        "status": format!("Create person error\n{}", create_person.unwrap_err().to_string().as_str()).as_str()
     }))}
 
     let keys = generate_key();

@@ -1,7 +1,7 @@
 POST http://localhost:8000/persons/batch
-Cookie: Token=jpjcdpiafodpbgefpiahogkeniimimapcpmjkdpgoffdmolpbpchphmehacaffccofcgeehkjodjckekipoocbjlbdleajdlkhhkgfihiadljpdpbnaghmfbbcigfpdaakgaaaaa
 Content-Type: application/json
+Cookie: Token=cnpbkglddjlmjekknonfcbnddgcfjpenffgghoajloecgdgenoaegfehifcpoecigaikmodpahhnmiafmbkinbgpklbklkplfjapojnjaimpmgngpmlinhgepahhogifdfhmaaaa
 
 {
-  "csv": "FIRSTNAME,LASTNAME,EMAIL@hds,123456789012,1a,1999,admin,female,1\nFIRSTNAME,LASTNAME2,EMAIL@hdf,123456789012,1a,1999,admin,male,0\nFIRSTNAME,LASTNAME3,EMAIL@hdfs,123456789012,1a,1999,admin,diverse,1\n"
+  "csv": "Baba,Gabriel,baba@gabriel.de,123456789012\nBaba,Oezcan,baba@oezcan.de,123456789012\nMama,Oezcan,mama@oezcan.de,123456789012\n;\nElias,Oezcan,elias.rw2@gmail.com,123456789012,1a,1999,admin,male,1,baba@oezcan.de,mama@oezcan.de\nElias,Gabriel,elias.gab2@gmail.com,123456789012,1a,1999,admin,male,1,baba@gabriel.de\n"
 }

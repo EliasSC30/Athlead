@@ -1,7 +1,7 @@
 use crate::model::person::*;
 use actix_web::{get, post,patch, web, HttpResponse, Responder};
 use serde_json::json;
-use sqlx::MySqlPool;
+use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
 use random_string::generate;
 use crate::api::encryption::encryption::hash;
@@ -191,29 +191,65 @@ fn find_error_in_csv(csv: &String) -> Option<usize>
     let mut index = 0;
     let n_alphabetic_chars_followed_by_comma = |n_min: usize, n_max: usize, index: &mut usize| -> Option<usize> {
         let mut nr_of_chars_seen = 0;
-        while *index < csv_length && csv.chars().nth(*index).unwrap().is_alphabetic() { *index += 1; };
-        if nr_of_chars_seen < n_min && n_max < nr_of_chars_seen { return Some(*index); };
-        if *index >= csv_length || csv.chars().nth(*index).unwrap() != ',' { return Some(*index); } else { *index += 1; None }
+        while *index < csv_length && csv.chars().nth(*index).unwrap().is_alphabetic() { *index += 1; nr_of_chars_seen += 1; };
+        if nr_of_chars_seen < n_min || n_max < nr_of_chars_seen { return Some(*index); };
+        if *index >= csv_length || csv.chars().nth(*index).unwrap() != ',' { Some(*index) } else { *index += 1; None }
     };
 
-    let mut nr_of_entries = 0;
+    let email_followed_by_comma = |index: &mut usize| -> Option<usize> {
+        let index_before_at = *index;
+        while *index < csv_length && is_email_character(csv.chars().nth(*index).unwrap()) { *index += 1;};
+        if *index < (index_before_at + 1) { return Some(*index); };
+        if *index >= csv_length || csv.chars().nth(*index).unwrap() != '@' { return Some(*index); } else { *index += 1; };
+        let index_after_at = *index;
+        while *index < csv_length && is_email_character(csv.chars().nth(*index).unwrap()) { *index += 1; };
+        if *index < (index_after_at + 3) { return Some(*index); };
+        if *index >= csv_length || csv.chars().nth(*index).unwrap() != ',' { Some(*index) } else { *index += 1; None }
+    };
+
+    while index < csv_length && csv.chars().nth(index).unwrap() != ';' {
+        // Firstname
+        if let Some(err_index) = n_alphabetic_chars_followed_by_comma(2, 20, &mut index) {
+            return Some(err_index);
+        };
+
+        // Lastname
+        if let Some(err_index) = n_alphabetic_chars_followed_by_comma(2, 20, &mut index) {
+            return Some(err_index);
+        };
+
+        // Email
+        if let Some(err_index) = email_followed_by_comma(&mut index){
+            return Some(err_index);
+        };
+
+        // Phone
+        let nr_of_digits_in_a_phone_nr = 12;
+        let mut nr_of_digits_seen = 0;
+        while index < csv_length && csv.chars().nth(index).unwrap().is_ascii_digit() { index += 1; nr_of_digits_seen +=1; };
+        if nr_of_digits_in_a_phone_nr != nr_of_digits_seen { return Some(index); };
+        if index >= csv_length || csv.chars().nth(index).unwrap() != '\n' { return Some(index); } else { index += 1; };
+    };
+    index += 1;
+    if index >= csv_length || csv.chars().nth(index).unwrap() != '\n' { return Some(index); } else { index += 1; };
+    // End of parents, start of children
+
     while index < csv_length
     {
         // Firstname
-        n_alphabetic_chars_followed_by_comma(2, 20, &mut index)?;
+        if let Some(err_index) = n_alphabetic_chars_followed_by_comma(2, 20, &mut index) {
+            return Some(err_index);
+        };
 
         // Lastname
-        n_alphabetic_chars_followed_by_comma(2, 20, &mut index)?;
+        if let Some(err_index) = n_alphabetic_chars_followed_by_comma(2, 20, &mut index) {
+            return Some(err_index);
+        };
 
         // Email
-        let index_before_at = index;
-        while index < csv_length && is_email_character(csv.chars().nth(index).unwrap()) { index += 1;};
-        if index < (index_before_at + 1) { return Some(index); };
-        if index >= csv_length || csv.chars().nth(index).unwrap() != '@' { return Some(index); } else { index += 1; };
-        let index_after_at = index;
-        while index < csv_length && is_email_character(csv.chars().nth(index).unwrap()) { index += 1; };
-        if index < (index_after_at + 3) { return Some(index); };
-        if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+        if let Some(err_index) = email_followed_by_comma(&mut index){
+            return Some(err_index);
+        };
 
         // Phone
         let nr_of_digits_in_a_phone_nr = 12;
@@ -251,13 +287,21 @@ fn find_error_in_csv(csv: &String) -> Option<usize>
         if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
 
         // Gender
-        n_alphabetic_chars_followed_by_comma(2, 8, &mut index)?;
+        if let Some(err_index) = n_alphabetic_chars_followed_by_comma(2, 8, &mut index) {
+            return Some(err_index);
+        }
 
         // Pics
-        n_alphabetic_chars_followed_by_comma(1, 4, &mut index)?;
+        if index >= csv_length || (csv.chars().nth(index).unwrap() != '1' && csv.chars().nth(index).unwrap() != '0')
+        { return Some(index); } else { index += 1; };
+        if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
+
+        // First parent email
+        email_followed_by_comma(&mut index)?;
+            // Optional second parent email
+            if index >= csv_length || csv.chars().nth(index).unwrap() != '\n' { email_followed_by_comma(&mut index)?; };
 
         if index >= csv_length || csv.chars().nth(index).unwrap() != '\n' { return Some(index); } else { index += 1; };
-        nr_of_entries += 1;
         if index == csv_length { break; };
     }
 
@@ -274,10 +318,68 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         }));
     };
 
-    let mut person_query = String::from("INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE, GENDER, PICS, PASSWORD) VALUES ");
+    let mut passwords_and_emails = Vec::<(String,String)>::with_capacity(30);
 
-    let mut passwords_and_ids = Vec::<(String,String)>::with_capacity(30);
+    let mut parents_query = String::from("INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE, GENDER, PICS, PASSWORD) VALUES ");
     let mut index = 0;
+    while body.csv.chars().nth(index).unwrap() != ';' {
+        let parse = |length: usize, index: &mut usize, delimiter: char|-> String {
+            let mut value = String::with_capacity(length);
+            while body.csv.chars().nth(*index).unwrap() != delimiter {value.push(body.csv.chars().nth(*index).unwrap()); *index += 1};
+            *index += 1; // skip comma
+            value
+        };
+        let id = Uuid::new_v4();
+        let first_name = parse(8, &mut index, ',');
+        let last_name = parse(10, &mut index, ',');
+        let email = parse(24, &mut index, ',');
+        let phone = parse(12, &mut index, '\n');
+        let password = generate(8, "abcdefghijklmnopqrstuvwxyz1234567890");
+
+        let mut append = String::with_capacity(8+10+24+12+4+4+10+8+1+8+31);
+        append.push_str("(\"");
+        append.push_str(id.to_string().as_str());
+        append.push_str("\", \"");
+        append.push_str(first_name.as_str());
+        append.push_str("\", \"");
+        append.push_str(last_name.as_str());
+        append.push_str("\", \"");
+        append.push_str(email.clone().as_str());
+        append.push_str("\", \"");
+        append.push_str(phone.as_str());
+        append.push_str("\", ");
+        append.push_str("NULL");
+        append.push_str(", ");
+        append.push_str("NULL");
+        append.push_str(", \"");
+        append.push_str("Contestant");
+        append.push_str("\", \"");
+        append.push_str("Unknown");
+        append.push_str("\", ");
+        append.push_str("0");
+        append.push_str(", \"");
+        append.push_str(password.as_str());
+        append.push_str("\"), ");
+
+        passwords_and_emails.push((email, password));
+        parents_query.push_str(append.as_str());
+    }
+    parents_query = parents_query[..parents_query.len()-2].to_string();
+
+    println!("{}", parents_query);
+
+    let parents_query = sqlx::query(&parents_query).execute(db.as_ref()).await;
+    if parents_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": format!("Insert Parents error\n{}", parents_query.unwrap_err().to_string()).as_str()
+    })); };
+
+    // End of parents, start of children
+    index += 2;
+
+
+    let mut children_query = String::from("INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE, GENDER, PICS, PASSWORD) VALUES ");
+
+    let mut parents_and_child = Vec::<(String,String, Option<String>)>::with_capacity(30);
     while index < body.csv.len() {
         let parse = |length: usize, index: &mut usize, delimiter: char|-> String {
             let mut value = String::with_capacity(length);
@@ -295,8 +397,23 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         let birth_year = parse(4, &mut index, ',');
         let role = parse(10, &mut index, ',');
         let gender = parse(8, &mut index, ',');
-        let pics = parse(1, &mut index, '\n');
+        let pics = parse(1, &mut index, ',');
         let password = generate(8, "abcdefghijklmnopqrstuvwxyz1234567890");
+
+        let mut first_parent_email = String::with_capacity(24);
+        while body.csv.chars().nth(index).unwrap() != ',' &&
+              body.csv.chars().nth(index).unwrap() != '\n' {
+            first_parent_email.push(body.csv.chars().nth(index).unwrap()); index += 1
+        };
+        let mut second_parent_email: Option<String> = None;
+        if body.csv.chars().nth(index).unwrap() == ',' {
+            index += 1;
+            let mut local = String::with_capacity(24);
+            while body.csv.chars().nth(index).unwrap() != '\n' {
+                local.push(body.csv.chars().nth(index).unwrap()); index += 1
+            };
+            second_parent_email = Some(local);
+        }
 
         let mut append = String::with_capacity(8+10+24+12+4+4+10+8+1+8+31);
         append.push_str("(\"");
@@ -306,7 +423,7 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         append.push_str("\", \"");
         append.push_str(last_name.as_str());
         append.push_str("\", \"");
-        append.push_str(email.as_str());
+        append.push_str(email.clone().as_str());
         append.push_str("\", \"");
         append.push_str(phone.as_str());
         append.push_str("\", \"");
@@ -323,27 +440,84 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         append.push_str(password.as_str());
         append.push_str("\"), ");
 
-        person_query.push_str(append.as_str());
+        children_query.push_str(append.as_str());
 
-        passwords_and_ids.push((id.to_string(), password));
+        passwords_and_emails.push((email.clone(), password));
+        parents_and_child.push((email, first_parent_email, second_parent_email));
 
         // skip newline
         index += 1;
     }
     // Remove excessive ", "
-    person_query = person_query[..person_query.len()-2].to_string();
+    children_query = children_query[..children_query.len()-2].to_string();
 
-    let query = sqlx::query(&person_query)
+    let children_query = sqlx::query(&children_query)
         .execute(db.as_ref())
         .await;
-    if query.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "Insert persons error",
-        "message": query.unwrap_err().to_string()
+    if children_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Insert children error",
+        "message": children_query.unwrap_err().to_string()
     }));};
+
+    let mut parent_to_child_query = String::from("INSERT INTO PARENT (PARENT_ID, CHILD_ID) VALUES ");
+
+    for (child_email, first_parent_email, second_parent_email) in parents_and_child {
+        let mut emails_to_check = vec![child_email.clone(), first_parent_email.clone()];
+        if second_parent_email.is_some() { emails_to_check.push(second_parent_email.clone().unwrap().clone()); };
+
+        let mut email_query = format!("SELECT * FROM PERSON WHERE EMAIL IN (\"{}\", \"{}\"", child_email, first_parent_email);
+        if second_parent_email.is_some() {
+            email_query += format!(", \"{}\")", second_parent_email.clone().unwrap().clone()).as_str();
+        } else {
+            email_query += ")";
+        };
+        let email_query = sqlx::query(&email_query).fetch_all(db.as_ref()).await;
+        if email_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+            "status": "Get Person by email query error",
+        })); };
+        let id_and_emails = email_query.unwrap().into_iter().map( |row| {
+            (row.try_get("ID").unwrap(),row.try_get("EMAIL").unwrap())
+        }).collect::<Vec<(String,String)>>();
+        if id_and_emails.len() != emails_to_check.len() { return HttpResponse::InternalServerError().json(json!({
+            "status": "Some email was not found",
+        })); };
+
+        let mut child_id = String::from("");
+        id_and_emails.iter().for_each(|info| { if info.1 == child_email {child_id = info.0.clone()} });
+        let mut first_parent_id = String::from("");
+        id_and_emails.iter().for_each(|info| { if info.1 == first_parent_email {first_parent_id = info.0.clone()} });
+        let mut second_parent_id: Option<String> = if second_parent_email.is_some() {
+                let mut ret: Option<String> = None;
+                id_and_emails.iter().for_each(|info| {
+                    if info.1 == second_parent_email.clone().unwrap() {
+                        ret = Some(info.0.clone())
+                    }
+                });
+                ret
+        } else { None };
+
+        parent_to_child_query += "(\"";
+        parent_to_child_query += first_parent_id.as_str();
+        parent_to_child_query += "\", \"";
+        parent_to_child_query += child_id.as_str();
+        parent_to_child_query += "\"), ";
+        if second_parent_id.is_none() {continue;};
+
+        parent_to_child_query += "(\"";
+        parent_to_child_query += second_parent_id.unwrap().as_str();
+        parent_to_child_query += "\", \"";
+        parent_to_child_query += child_id.as_str();
+        parent_to_child_query += "\"), ";
+    }
+    parent_to_child_query = parent_to_child_query[..parent_to_child_query.len()-2].to_string();
+    let parents_query = sqlx::query(&parent_to_child_query).execute(db.as_ref()).await;
+    if parents_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Insert persons error",
+    })); };
 
     HttpResponse::Ok().json(json!({
         "status": "success",
-        "Created_persons": passwords_and_ids.len()
+        "Created_persons": passwords_and_emails.len(),
     }))
 
     // Send emails with passwords.
