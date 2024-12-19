@@ -12,8 +12,7 @@ pub struct Sportfest {
 #[allow(non_snake_case)]
 pub struct SFMasterStacked {
     pub sf: SportfestMaster,
-    pub part_cls_wf: Vec<PartClassesWithInItFlag>,
-    pub cts_wf: Vec<ContestWithPartFlag>
+
 }
 
 
@@ -53,7 +52,7 @@ pub struct UpdateSportfest {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PartClassesWithInItFlag {
     pub in_it: bool,
-    pub class: String,
+    pub grade: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ContestWithPartFlag {
@@ -98,4 +97,34 @@ pub struct SportfestMaster {
     pub cp_phone : String,
     pub cp_grade : Option<String>,
     pub cp_birth_year : Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
+pub struct SportfestMasterWithArrays {
+    pub sportfest_id : String,
+
+    pub details_id : String,
+    pub details_name: String,
+    pub details_start : NaiveDateTime,
+    pub details_end : NaiveDateTime,
+
+    pub location_id : String,
+    pub location_name : String,
+    pub location_city : String,
+    pub location_zipcode : String,
+    pub location_street : String,
+    pub location_street_number : String,
+
+    pub cp_id : String,
+    pub cp_role : String,
+    pub cp_firstname : String,
+    pub cp_lastname : String,
+    pub cp_email : String,
+    pub cp_phone : String,
+    pub cp_grade : Option<String>,
+    pub cp_birth_year : Option<String>,
+
+    pub part_cls_wf: Vec<PartClassesWithInItFlag>,
+    pub cts_wf: Vec<ContestWithPartFlag>
 }

@@ -1,15 +1,13 @@
 use std::ops::Add;
 use std::time::{SystemTime, UNIX_EPOCH};
-use actix_web::{cookie, post, web, Error, HttpResponse, Responder};
-use actix_web::cookie::{Cookie, Expiration};
-use actix_web::cookie::Expiration::DateTime;
-use actix_web::cookie::time::PrimitiveDateTime;
+use actix_web::{cookie, post, web, HttpResponse, Responder};
+use actix_web::cookie::{Cookie};
 use serde_json::json;
 use sqlx::MySqlPool;
 use crate::api::encryption::encryption;
 use crate::api::encryption::encryption::{crypt_str, crypt, generate_key, hash};
 use crate::api::person::create_person;
-use crate::model::logon::{Login, Register, Authentication};
+use crate::model::logon::{Login, Register};
 use crate::model::person::{CreatePerson, Person};
 
 const DEV: bool = true;

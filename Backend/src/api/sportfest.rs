@@ -1,6 +1,7 @@
 use crate::model::sportfest::*;
 use actix_web::{get, post, patch, web, HttpResponse, Responder, HttpRequest, HttpMessage};
 use actix_web::dev::ServiceRequest;
+use chrono::NaiveDateTime;
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
@@ -34,7 +35,7 @@ pub async fn sportfests_list_handler(db: web::Data<MySqlPool>, req: HttpRequest)
     })); }
     let sfs = sf_query.unwrap();
 
-    let mut sf_contents: Vec<Result<SFMasterStacked, String>> = vec![];
+    let mut sf_contents: Vec<Result<SportfestMasterWithArrays, String>> = vec![];
     for sf in sfs {
         let sf_id = sf.ID.to_string();
         let user_cloned = user.clone();
@@ -44,7 +45,7 @@ pub async fn sportfests_list_handler(db: web::Data<MySqlPool>, req: HttpRequest)
     if sf_contents.iter().any(|res| res.is_err()) {
         return HttpResponse::InternalServerError().json(json!({"status": "Couldn't get all"}));};
     let sf_contents = sf_contents.into_iter().map(|res| res.unwrap())
-        .collect::<Vec<SFMasterStacked>>();
+        .collect::<Vec<SportfestMasterWithArrays>>();
 
     HttpResponse::Ok().json(json!({
         "status": "success",
@@ -54,7 +55,7 @@ pub async fn sportfests_list_handler(db: web::Data<MySqlPool>, req: HttpRequest)
 
 
 pub async fn get_sf_masterview(sf_id: String, user: Person, db: &web::Data<MySqlPool>)
-    -> Result<SFMasterStacked, String> {
+    -> Result<SportfestMasterWithArrays, String> {
     let details_id_query =
         sqlx::query_as!(Sportfest,"SELECT * FROM SPORTFEST WHERE ID = ?",sf_id.clone())
             .fetch_one(db.as_ref())
@@ -148,7 +149,6 @@ pub async fn get_sf_masterview(sf_id: String, user: Person, db: &web::Data<MySql
         )
         .fetch_one(db.as_ref())
         .await;
-
     if result.is_err() { return Err(result.unwrap_err().to_string()); };
 
     let contest_query = sqlx::query_as!(Contest, "SELECT * FROM CONTEST WHERE SPORTFEST_ID = ?", sf_id.clone())
@@ -158,10 +158,10 @@ pub async fn get_sf_masterview(sf_id: String, user: Person, db: &web::Data<MySql
     let contests_of_sf = contest_query.unwrap();
 
     let user_class = user.GRADE.clone().unwrap_or("".to_string());
-    let participating_classes_with_flags = participating_classes.into_iter().map(|class|{
-        PartClassesWithInItFlag{
-            in_it: class == user_class,
-            class
+    let participating_classes_with_flags = participating_classes.into_iter().map(|grade|{
+        PartClassesWithInItFlag {
+            in_it: grade == user_class,
+            grade
         }
     }).collect::<Vec<PartClassesWithInItFlag>>();
 
@@ -194,8 +194,35 @@ pub async fn get_sf_masterview(sf_id: String, user: Person, db: &web::Data<MySql
         }).collect::<Vec<ContestWithPartFlag>>()
     } else { vec![] };
 
-    let master_query_result = result.unwrap();
-    Ok(SFMasterStacked{ sf: master_query_result, part_cls_wf: participating_classes_with_flags, cts_wf: contests_with_flags})
+    let sf = result.unwrap();
+    let ret = SportfestMasterWithArrays{
+        sportfest_id : sf.sportfest_id,
+
+        details_id : sf.details_id,
+        details_name: sf.details_name,
+        details_start : sf.details_start,
+        details_end : sf.details_end,
+
+        location_id : sf.location_id,
+        location_name : sf.location_name,
+        location_city : sf.location_city,
+        location_zipcode : sf.location_zipcode,
+        location_street : sf.location_street,
+        location_street_number : sf.location_street_number,
+
+        cp_id : sf.cp_id,
+        cp_role : sf.cp_role,
+        cp_firstname : sf.cp_firstname,
+        cp_lastname : sf.cp_lastname,
+        cp_email : sf.cp_email,
+        cp_phone : sf.cp_phone,
+        cp_grade : sf.cp_grade,
+        cp_birth_year : sf.cp_birth_year,
+
+        part_cls_wf: participating_classes_with_flags,
+        cts_wf: contests_with_flags
+    };
+    Ok(ret)
 }
 
 #[get("/sportfests/{id}")]
@@ -214,12 +241,10 @@ pub async fn sportfests_get_masterview_handler(
     }))};
 
     match get_sf_masterview(sf_id, (*user.unwrap()).clone(), &db).await {
-        Ok(Stack) => {
+        Ok(Sf_wa) => {
             HttpResponse::Ok().json(json!({
                 "status": "success",
-                "data": serde_json::to_value(Stack.sf).unwrap(),
-                "participating_classes_with_flags": serde_json::to_value(Stack.part_cls_wf).unwrap(),
-                "contests_with_flags": serde_json::to_value(Stack.cts_wf).unwrap()
+                "data": serde_json::to_value(Sf_wa).unwrap()
             }))
         },
         Err(e) => {
@@ -230,7 +255,6 @@ pub async fn sportfests_get_masterview_handler(
         }
     }
 }
-
 
 #[post("/sportfests")]
 pub async fn sportfests_create_handler(body: web::Json<CreateSportfest>, db: web::Data<MySqlPool>) -> impl Responder {
