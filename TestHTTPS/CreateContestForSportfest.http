@@ -1,11 +1,11 @@
-POST http://localhost:8000/sportfests/1f47a414-2401-499d-82ba-e95d98bcfcfa/contests
+POST http://localhost:8000/sportfests/51ecffcd-6360-43fb-bb24-5d4670a0e029/contests
 Content-Type: application/json
 
 {
-  "LOCATION_ID": "ecfc9f82-cf56-42b8-aa09-60eac58aa4c4",
-  "CONTACTPERSON_ID": "3228dc8b-c2fe-4460-a779-75c052c292e8",
-  "C_TEMPLATE_ID" : "d80f130f-a0c9-43fb-94f5-5ea249d6ccb3",
-  "NAME": "100m Lauf",
+  "LOCATION_ID": "a259837e-18cc-4236-a3c9-a2e6b6062a96",
+  "CONTACTPERSON_ID": "2311869a-c617-49aa-bf14-2c3a2a9ff943",
+  "C_TEMPLATE_ID" : "40de50b0-548d-4400-aefd-2679856fc42d",
+  "NAME": "100m Lauf 3",
   "START": "2025-12-02T15:30:00",
   "END": "2025-12-02T22:00:00"
 }

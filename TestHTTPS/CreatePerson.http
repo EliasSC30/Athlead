@@ -8,5 +8,8 @@ Content-Type: application/json
   "email": "johd.doe@web.com",
   "phone": "123456789",
   "role": "ADMIN",
-  "grade": "2c"
+  "grade": "2c",
+  "gender": "female",
+  "pics": 1,
+  "password": "Elias"
 }

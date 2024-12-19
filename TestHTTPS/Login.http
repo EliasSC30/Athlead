@@ -1,7 +1,7 @@
-GET http://localhost:8000/loggedin
+POST http://localhost:8000/login
 Content-Type: application/json
 
 {
-  "email": "elias.rw2@gmail.de",
+  "email": "test",
   "password": "password"
 }

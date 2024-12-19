@@ -1,7 +1,7 @@
 POST http://localhost:8000/persons/batch
+Cookie: Token=jpjcdpiafodpbgefpiahogkeniimimapcpmjkdpgoffdmolpbpchphmehacaffccofcgeehkjodjckekipoocbjlbdleajdlkhhkgfihiadljpdpbnaghmfbbcigfpdaakgaaaaa
 Content-Type: application/json
-Cookie: Token=nhllbclochcpgocolfapbnomehdeblhgdmkjbklfbfhidpaampcnfdnlflkckjcpkcjdhbmhpnjiadlncmafjhhbadfiabphphlhgmhblhpapjaambnpcpeeimcmhgdfkebpaaaa
 
 {
-  "csv": "FIRSTNAME,LASTNAME,EMAIL@hds,123456789012,1a,1999,admin\nFIRSTNAME,LASTNAME,EMAIL@hdf,123456789012,1a,1999,admin\nFIRSTNAME,LASTNAME,EMAIL@hdfs,123456789012,1a,1999,admin\n"
+  "csv": "FIRSTNAME,LASTNAME,EMAIL@hds,123456789012,1a,1999,admin,female,1\nFIRSTNAME,LASTNAME2,EMAIL@hdf,123456789012,1a,1999,admin,male,0\nFIRSTNAME,LASTNAME3,EMAIL@hdfs,123456789012,1a,1999,admin,diverse,1\n"
 }

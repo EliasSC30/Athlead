@@ -3,8 +3,8 @@ POST http://localhost:8000/sportfests
 Content-Type: application/json
 
 {
-  "CONTACTPERSON_ID": "0f3f032f-1ec3-4dc4-9bf4-c33c0b5b9211",
-  "fest_name": "Sportfest",
+  "CONTACTPERSON_ID": "0606d6a9-26f3-493a-ad2c-de74611e6089",
+  "fest_name": "Sportfest 2",
   "fest_start": "2024-12-02T15:30:00",
   "fest_end": "2025-12-02T15:30:00",
   "city": "Gau-Algesheim",

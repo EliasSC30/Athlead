@@ -1,7 +1,6 @@
-POST http://localhost:8000/contests/9bf3e46c-5734-4ad1-9fce-ceeb3bd6a7c9/participants
-Cookie: Token=cohofelaejbhpmikblfljkhabhajkhagpgmkekgojjmdccgmeccgdinkcfddebhnjbnkmmameahaiajglpaiplomgkpcimdfjebfhfkfdkbdljmbibncdcbechmimnjjgabmaaaa;
+POST http://localhost:8000/contests/56aaf309-b257-4657-ada6-8e43a36d3210/participants
 Content-Type: application/json
 
 {
-  "participant_ids": ["0f3f032f-1ec3-4dc4-9bf4-c33c0b5b9211"]
+  "participant_ids": ["9f7b89ae-196c-40e9-964e-bae70efad93e"]
 }

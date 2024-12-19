@@ -1,2 +1,2 @@
-GET http://45.81.234.175:8000/loggedin
-Cookie: Token=pgdjhdhbjdebbdieokfliokehimjlhdiimkjdfckpjgnojafagjhokidajpdnjplefnndcckfljbelobaecmljjfcdichdbdhgkddbdodepoplinapfjaemihmgiijekchohaaaa
+GET http://localhost:8000/loggedin
+Cookie: Token=jpjcdpiafodpbgefpiahogkeniimimapcpmjkdpgoffdmolpbpchphmehacaffccofcgeehkjodjckekipoocbjlbdleajdlkhhkgfihiadljpdpbnaghmfbbcigfpdaakgaaaaa
