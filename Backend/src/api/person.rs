@@ -196,7 +196,7 @@ fn find_error_in_csv(csv: &String) -> Option<usize>
         if *index >= csv_length || csv.chars().nth(*index).unwrap() != ',' { Some(*index) } else { *index += 1; None }
     };
 
-    let email_followed_by_comma = |index: &mut usize| -> Option<usize> {
+    let email_followed_by = |delimiter: char, index: &mut usize| -> Option<usize> {
         let index_before_at = *index;
         while *index < csv_length && is_email_character(csv.chars().nth(*index).unwrap()) { *index += 1;};
         if *index < (index_before_at + 1) { return Some(*index); };
@@ -204,7 +204,7 @@ fn find_error_in_csv(csv: &String) -> Option<usize>
         let index_after_at = *index;
         while *index < csv_length && is_email_character(csv.chars().nth(*index).unwrap()) { *index += 1; };
         if *index < (index_after_at + 3) { return Some(*index); };
-        if *index >= csv_length || csv.chars().nth(*index).unwrap() != ',' { Some(*index) } else { *index += 1; None }
+        if *index >= csv_length || csv.chars().nth(*index).unwrap() != delimiter { Some(*index) } else { *index += 1; None }
     };
 
     while index < csv_length && csv.chars().nth(index).unwrap() != ';' {
@@ -219,7 +219,7 @@ fn find_error_in_csv(csv: &String) -> Option<usize>
         };
 
         // Email
-        if let Some(err_index) = email_followed_by_comma(&mut index){
+        if let Some(err_index) = email_followed_by(',', &mut index){
             return Some(err_index);
         };
 
@@ -247,7 +247,7 @@ fn find_error_in_csv(csv: &String) -> Option<usize>
         };
 
         // Email
-        if let Some(err_index) = email_followed_by_comma(&mut index){
+        if let Some(err_index) = email_followed_by(',', &mut index){
             return Some(err_index);
         };
 
@@ -297,11 +297,19 @@ fn find_error_in_csv(csv: &String) -> Option<usize>
         if index >= csv_length || csv.chars().nth(index).unwrap() != ',' { return Some(index); } else { index += 1; };
 
         // First parent email
-        email_followed_by_comma(&mut index)?;
-            // Optional second parent email
-            if index >= csv_length || csv.chars().nth(index).unwrap() != '\n' { email_followed_by_comma(&mut index)?; };
+        let index_before_first_email = index;
+        if let Some(_) = email_followed_by('\n', &mut index){
+            index = index_before_first_email;
+            if let Some(err_index) = email_followed_by(',', &mut index){
+                return Some(err_index);
+            };
 
-        if index >= csv_length || csv.chars().nth(index).unwrap() != '\n' { return Some(index); } else { index += 1; };
+            // Optional second parent email
+            if let Some(err_index) = email_followed_by('\n', &mut index){
+                return Some(err_index);
+            };
+        };
+
         if index == csv_length { break; };
     }
 
