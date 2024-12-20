@@ -73,6 +73,30 @@ pub struct CreateContestForFest {
     pub END: NaiveDateTime,
 }
 
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow, Clone)]
+#[allow(non_snake_case)]
+pub struct PersonWithPoint{
+    pub p_f_name: String,
+    pub p_l_name: String,
+    pub p_email: String,
+    pub p_phone: String,
+    pub p_grade: Option<String>,
+    pub p_birth_year: Option<String>,
+    pub p_role: String,
+    pub p_gender: String,
+    pub p_pics: u8,
+    pub points: u32
+}
+
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow, Clone)]
+#[allow(non_snake_case)]
+pub struct ContestWithResults{
+    pub id: String,
+    pub unit: String,
+    pub results: Vec<PersonWithPoint>
+}
+
+
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
 pub struct SportfestMaster {

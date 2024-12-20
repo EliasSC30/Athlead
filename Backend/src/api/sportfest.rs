@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::model::sportfest::*;
 use actix_web::{get, post, patch, web, HttpResponse, Responder, HttpRequest, HttpMessage};
 use actix_web::dev::ServiceRequest;
@@ -400,6 +401,67 @@ pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
     }
 }
 
+pub fn placing_points(placing: usize) -> u32
+{
+    match placing {
+        0 => 25,
+        1 => 18,
+        2 => 15,
+        3 => 12,
+        4 => 10,
+        5 => 8,
+        6 => 6,
+        7 => 4,
+        8 => 2,
+        9 => 1,
+        _ => 0
+    }
+}
+
+pub fn evaluate_contest(mut contest: Vec<ContestEvaluation>) -> Vec<PersonWithPoint>
+{
+    let asc = contest.get(0).unwrap().evaluation == "ASCENDING";
+    contest.sort_by(|lhs,rhs| {
+        match lhs.unit.to_lowercase().as_str() {
+            "kg" => {
+                if asc { lhs.weight.unwrap().partial_cmp(&rhs.weight.unwrap()).unwrap() }
+                else { rhs.weight.unwrap().partial_cmp(&lhs.weight.unwrap()).unwrap() }
+            },
+            "s" => {
+                if asc { lhs.time.unwrap().partial_cmp(&rhs.time.unwrap()).unwrap() }
+                else { rhs.time.unwrap().partial_cmp(&lhs.time.unwrap()).unwrap() }
+            },
+            "m" => {
+                if asc { lhs.length.unwrap().partial_cmp(&rhs.length.unwrap()).unwrap() }
+                else { rhs.length.unwrap().partial_cmp(&lhs.length.unwrap()).unwrap() }
+            },
+            _ => {
+                if asc { lhs.amount.unwrap().partial_cmp(&rhs.amount.unwrap()).unwrap() }
+                else { rhs.amount.unwrap().partial_cmp(&lhs.amount.unwrap()).unwrap() }
+            },
+        }
+    });
+
+    let mut points_for_contestants = Vec::<PersonWithPoint>::with_capacity(contest.len());
+    for index in 0..contest.len() {
+        let info = contest.get(index).unwrap();
+        points_for_contestants.push(
+            PersonWithPoint {
+                p_f_name: info.p_f_name.clone(),
+                p_l_name: info.p_l_name.clone(),
+                p_email: info.p_email.clone(),
+                p_phone: info.p_phone.clone(),
+                p_grade: info.p_grade.clone(),
+                p_birth_year: info.p_birth_year.clone(),
+                p_role: info.p_role.clone(),
+                p_gender: info.p_gender.clone(),
+                p_pics: info.p_pics.clone(),
+                points: placing_points(index)});
+    }
+
+    points_for_contestants
+}
+
 #[get("/sportfests/{id}/results")]
 pub async fn sportfests_get_results_by_id_handler(db: web::Data<MySqlPool>,
                                                   path: web::Path<String>
@@ -413,7 +475,17 @@ pub async fn sportfests_get_results_by_id_handler(db: web::Data<MySqlPool>,
                                     ct.DETAILS_ID as ct_details_id,
                                     ct_t.EVALUATION as evaluation,
                                     ct_t.UNIT as unit,
-                                    ct_res.PERSON_ID as person_id,
+
+                                    p.FIRSTNAME as p_f_name,
+                                    p.LASTNAME as p_l_name,
+                                    p.EMAIL as p_email,
+                                    p.PHONE as p_phone,
+                                    p.GRADE as p_grade,
+                                    p.BIRTH_YEAR as p_birth_year,
+                                    p.ROLE as p_role,
+                                    p.GENDER as p_gender,
+                                    p.PICS as p_pics,
+
                                     m.LENGTH as length,
                                     m.LENGTHUNIT as length_unit,
                                     m.WEIGHT as weight,
@@ -426,6 +498,7 @@ pub async fn sportfests_get_results_by_id_handler(db: web::Data<MySqlPool>,
                                     JOIN C_TEMPLATE as ct_t ON ct.C_TEMPLATE_ID = ct_t.ID
                                     JOIN CONTESTRESULT as ct_res ON ct.ID = ct_res.CONTEST_ID
                                     JOIN METRIC as m ON ct_res.METRIC_ID = m.ID
+                                    JOIN PERSON as p ON p.ID = ct_res.PERSON_ID
                                     WHERE SPORTFEST_ID = ?
                                     ORDER BY ct.ID ASC
                                     "#
@@ -443,11 +516,54 @@ pub async fn sportfests_get_results_by_id_handler(db: web::Data<MySqlPool>,
         let cur_contest_id = contests.get(index).unwrap().ct_id.clone();
         while index < contests.len() && cur_contest_id == contests.get(index).unwrap().ct_id {
             contest.push(contests.get(index).unwrap().clone());
+            index += 1;
         }
-        all_contests.push(contest);
+        if !contest.is_empty() { all_contests.push(contest); };
+        index += 1;
     }
 
-    HttpResponse::Ok().json(json!({}))
+    let all_results =
+        all_contests.into_iter().map(|ct_eval|{
+            let unit = ct_eval.get(0).unwrap().unit.clone();
+            let id = ct_eval.get(0).unwrap().ct_id.clone();
+            ContestWithResults{ id, unit, results: evaluate_contest(ct_eval)}
+        })
+            .collect::<Vec<ContestWithResults>>();
+
+    let mut total_points = HashMap::<String, PersonWithPoint>::new();
+    all_results.clone().into_iter().for_each(|ct|{
+        ct.results.into_iter().for_each(|result| {
+            let prev_entry = total_points.get(&result.p_email);
+            if prev_entry.is_some() {
+                let prev_entry = prev_entry.unwrap();
+                let updated = PersonWithPoint {
+                    p_f_name: prev_entry.p_f_name.clone(),
+                    p_l_name: prev_entry.p_l_name.clone(),
+                    p_email: prev_entry.p_email.clone(),
+                    p_phone: prev_entry.p_phone.clone(),
+                    p_grade: prev_entry.p_grade.clone(),
+                    p_birth_year: prev_entry.p_birth_year.clone(),
+                    p_role: prev_entry.p_role.clone(),
+                    p_gender: prev_entry.p_gender.clone(),
+                    p_pics: prev_entry.p_pics.clone(),
+                    points: prev_entry.points + result.points};
+                total_points.insert(result.p_email.clone(), updated);
+            } else {
+                total_points.insert(result.p_email.clone(), result.clone());
+            }
+        });
+    });
+
+    let mut total_points =
+        total_points.values().into_iter().map(|p| (*p).clone() ).collect::<Vec<PersonWithPoint>>();
+    total_points.sort_by_key(|p_w_p| p_w_p.points);
+
+
+    HttpResponse::Ok().json(json!({
+        "status": "success",
+        "contests": serde_json::to_value(all_results).unwrap(),
+        "contestants_totals": serde_json::to_value(total_points).unwrap()
+    }))
 }
 
 #[get("/sportfests/{sf_id}/contests")]

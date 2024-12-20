@@ -17,7 +17,16 @@ pub struct ContestEvaluation {
     pub ct_details_id: String,
     pub evaluation: String,
     pub unit: String,
-    pub person_id: String,
+    pub p_f_name: String,
+    pub p_l_name: String,
+    pub p_email: String,
+    pub p_phone: String,
+    pub p_grade: Option<String>,
+    pub p_birth_year: Option<String>,
+    pub p_role: String,
+    pub p_gender: String,
+    pub p_pics: u8,
+
     pub length: Option<f64>,
     pub length_unit: Option<String>,
     pub weight: Option<f64>,
@@ -25,6 +34,12 @@ pub struct ContestEvaluation {
     pub time: Option<f64>,
     pub time_unit: Option<String>,
     pub amount: Option<f64>,
+}
+
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
+pub struct UnitWrapper {
+    pub unit: String
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]

@@ -74,12 +74,17 @@ pub async fn contests_create_results(body: web::Json<Vec<CreateContestResultCont
                                              -> impl Responder
 {
     let contest_id = path.into_inner();
-    let find_contest_query = get_contest(contest_id.clone(), &db).await;
+    let unit = sqlx::query_as!(UnitWrapper,
+        "SELECT ct_t.UNIT as unit FROM CONTEST as ct JOIN C_TEMPLATE as ct_t ON ct.C_TEMPLATE_ID = ct_t.ID WHERE ct.ID = ?",
+        contest_id.clone())
+        .fetch_one(db.as_ref())
+        .await;
 
-    if find_contest_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+    if unit.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Find Contest Error",
-        "message": find_contest_query.unwrap_err().to_string()
-    })); }
+        "message": unit.unwrap_err().to_string()
+    })); };
+    let unit = unit.unwrap();
 
     let mut build_metrics_query =
         String::from("INSERT INTO METRIC (ID, TIME, TIMEUNIT, LENGTH, LENGTHUNIT, WEIGHT, WEIGHTUNIT, AMOUNT) VALUES ");
@@ -91,6 +96,17 @@ pub async fn contests_create_results(body: web::Json<Vec<CreateContestResultCont
 
     for info in &body.0
     {
+        let needed_unit_is_there = match unit.unit.to_lowercase().as_str() {
+            "s" => {info.time.is_some()},
+            "m" => {info.length.is_some()},
+            "kg" => {info.weight.is_some()},
+            _ => false
+        };
+        if !needed_unit_is_there { return HttpResponse::BadRequest().json(json!({
+                "status": format!("Need other unit in metrics! Need {}", unit.unit.clone()),
+        })); };
+
+
         build_metrics_query += "(?, ?, ?, ?, ?, ?, ?, ?),";
         let new_metric_id = Uuid::new_v4().to_string();
         metric_parameters.push((

@@ -1,29 +1,29 @@
-POST http://localhost:8000/contests/da7081db-0dfc-48d7-b018-577064379941/contestresults
+POST http://localhost:8000/contests/668e37b7-a385-4855-9110-38def963763a/contestresults
 Content-Type: application/json
 
 [
   {
-    "p_id" :  "0b86b8db-ab11-44d7-85ac-bd37ba158fcc",
-    "time" : 10.0
+    "p_id" :  "032c044b-2b8c-4d69-886a-3b06cfe12064",
+    "length" : 10.0
   },
   {
-    "p_id" :  "312595a6-d043-46ef-a8f7-674b8143530c",
-    "time" : 13.0
+    "p_id" :  "058ec3f9-9226-4e79-905c-4f89a4379441",
+    "length" : 13.0
   },
   {
-    "p_id" :  "8f85672a-558b-4a07-bc10-e9908f968392",
-    "time" : 19.0
+    "p_id" :  "0d00a437-aa92-42e5-a6e8-1c8d142050bc",
+    "length" : 19.0
   },
   {
-    "p_id" :  "a32c77ae-2c71-4e00-af73-8baa76614c29",
-    "time" : 20.0
+    "p_id" :  "174d774f-f9fc-492d-9769-53e66b9ba26d",
+    "length" : 20.0
   },
   {
-    "p_id" :  "bfa48461-ef17-4352-b625-8fa2e5500499",
-    "time" : 32.0
+    "p_id" :  "241815ef-7d06-4459-bf0e-da2c668aca19",
+    "length" : 32.0
   },
   {
-    "p_id" :  "f1b86240-4527-4a7f-ab6a-88657819a3b2",
-    "time" : 8.0
+    "p_id" :  "29aec1a0-26ee-49e6-84ba-c054ff12209d",
+    "length" : 8.0
   }
 ]
