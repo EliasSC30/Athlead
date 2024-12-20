@@ -376,16 +376,13 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
     }
     parents_query = parents_query[..parents_query.len()-2].to_string();
 
-    println!("{}", parents_query);
-
-    let parents_query = sqlx::query(&parents_query).execute(db.as_ref()).await;
+    let parents_query = sqlx::query(&parents_query).execute(&mut *tx).await;
     if parents_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": format!("Insert Parents error\n{}", parents_query.unwrap_err().to_string()).as_str()
     })); };
 
     // End of parents, start of children
     index += 2;
-
 
     let mut children_query = String::from("INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE, GENDER, PICS, PASSWORD) VALUES ");
 
@@ -520,7 +517,7 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         parent_to_child_query += "\"), ";
     }
     parent_to_child_query = parent_to_child_query[..parent_to_child_query.len()-2].to_string();
-    let parents_query = sqlx::query(&parent_to_child_query).execute(db.as_ref()).await;
+    let parents_query = sqlx::query(&parent_to_child_query).execute(&mut *tx).await;
     if parents_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Insert persons error",
     })); };

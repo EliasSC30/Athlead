@@ -516,7 +516,7 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
         .bind(&sf_id.clone())
         .bind(&details_res.as_ref().clone().unwrap().ID)
         .bind(&body.C_TEMPLATE_ID.clone())
-        .execute(db.as_ref())
+        .execute(&mut *tx)
         .await;
     if contest_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Insert contest error",
@@ -567,7 +567,7 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
     }
     helper_query.truncate(helper_query.len().saturating_sub(2));
 
-    let helper_query = sqlx::query(helper_query.as_str()).execute(db.as_ref()).await;
+    let helper_query = sqlx::query(helper_query.as_str()).execute(&mut *tx).await;
     if helper_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "error",
         "message": helper_query.unwrap_err().to_string()
