@@ -506,6 +506,8 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
         "message": details_res.unwrap_err().to_string()
     }))};
 
+    let mut tx = db.begin().await.expect("Failed to begin transaction");
+
     let contest_id = Uuid::new_v4();
     let contest_query = sqlx::query(
             "INSERT INTO CONTEST (ID, SPORTFEST_ID, DETAILS_ID, C_TEMPLATE_ID) VALUES (?, ?, ?, ?)"
@@ -570,6 +572,8 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
         "status": "error",
         "message": helper_query.unwrap_err().to_string()
     })); };
+
+    tx.commit().await.expect("Failed to commit transaction");
 
     HttpResponse::Ok().json(json!({
                 "status": "success",

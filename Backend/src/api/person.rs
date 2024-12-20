@@ -326,6 +326,8 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         }));
     };
 
+    let mut tx = db.begin().await.expect("Db error");
+
     let mut passwords_and_emails = Vec::<(String,String)>::with_capacity(30);
 
     let mut parents_query = String::from("INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE, GENDER, PICS, PASSWORD) VALUES ");
@@ -522,6 +524,8 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
     if parents_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Insert persons error",
     })); };
+
+    tx.commit().await.expect("Error commit transaction");
 
     HttpResponse::Ok().json(json!({
         "status": "success",
