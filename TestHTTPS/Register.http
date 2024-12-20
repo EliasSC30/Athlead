@@ -2,15 +2,15 @@ POST http://localhost:8000/register
 Content-Type: application/json
 
 {
-  "email": "elias.rw2@gmail.de",
-  "password": "password",
+  "email": "test",
+  "password": "pwd",
 
-  "first_name": "String",
-  "last_name": "Ace",
+  "first_name": "Elias",
+  "last_name": "Judge",
   "phone": "String",
   "grade": "Option<String>",
   "birth_year": "Option<String>",
-  "role": "Admin",
+  "role": "Judge",
   "gender": "male",
   "pics": 1
 }

@@ -18,7 +18,68 @@ extension String {
     }
 }
 
+struct JudgeContestsView : View {
+    let competitions = ["100m Lauf", "Weitsprung", "Hochsprung"]
+    
+    var body: some View {
+        NavigationStack {
+            VStack {
+                ForEach(competitions.indices, id: \.self) { index in
+                    NavigationLink(destination: JudgeContestView(COMPETITION: competitions[index])) {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(competitions[index])
+                                    .font(.headline)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.gray)
+                            
+                        }
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+                        .padding(.horizontal)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 4)
+                }
+            }
+        }
+    }
+}
+
 struct JudgeContestView : View {
+    let COMPETITION: String
+    
+    var body: some View {
+        NavigationStack {
+            VStack {
+                NavigationLink(destination: JudgeEntryView(COMPETITION: COMPETITION)){
+                    Text("Enter results")
+                }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+                .padding(.horizontal)
+                
+                NavigationLink(destination: JudgeScanView()){
+                    Text("Register Contestants")
+                }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+                .padding(.horizontal)
+            }
+            
+        }
+    }
+}
+
+struct JudgeEntryView : View {
     let COMPETITION : String
     // Local results that update the results in the store when leaving
     @State private var results: [ResultInfo] = []
