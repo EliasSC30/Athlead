@@ -1,3 +1,4 @@
+use std::cmp::Reverse;
 use std::collections::HashMap;
 use crate::model::sportfest::*;
 use actix_web::{get, post, patch, web, HttpResponse, Responder, HttpRequest, HttpMessage};
@@ -556,7 +557,7 @@ pub async fn sportfests_get_results_by_id_handler(db: web::Data<MySqlPool>,
 
     let mut total_points =
         total_points.values().into_iter().map(|p| (*p).clone() ).collect::<Vec<PersonWithPoint>>();
-    total_points.sort_by_key(|p_w_p| p_w_p.points);
+    total_points.sort_by_key(|p_w_p| Reverse(p_w_p.points));
 
 
     HttpResponse::Ok().json(json!({
