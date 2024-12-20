@@ -158,7 +158,10 @@ pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> 
         .http_only(true)
         .finish();
 
-    let mut res = HttpResponse::Ok().json(json!({"status": "success",}));
+    let mut res = HttpResponse::Ok().json(json!({
+        "status": "success",
+        "role": user.ROLE.clone()
+    }));
 
     res.add_cookie(&cookie);
     res

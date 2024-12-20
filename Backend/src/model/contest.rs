@@ -10,6 +10,23 @@ pub struct Contest {
     pub C_TEMPLATE_ID: String,
 }
 
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow, Clone)]
+#[allow(non_snake_case)]
+pub struct ContestEvaluation {
+    pub ct_id: String,
+    pub ct_details_id: String,
+    pub evaluation: String,
+    pub unit: String,
+    pub person_id: String,
+    pub length: Option<f64>,
+    pub length_unit: Option<String>,
+    pub weight: Option<f64>,
+    pub weight_unit: Option<String>,
+    pub time: Option<f64>,
+    pub time_unit: Option<String>,
+    pub amount: Option<f64>,
+}
+
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
 pub struct ContestMaster {

@@ -7,7 +7,7 @@ use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
 use crate::api::details::create_details;
 use crate::api::location::create_location;
-use crate::model::contest::Contest;
+use crate::model::contest::{Contest, ContestEvaluation};
 use crate::model::contestresult::ContestResult;
 use crate::model::sportfest::CreateContestForFest;
 use crate::model::details::{CreateDetails};
@@ -398,6 +398,56 @@ pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
                                 }))
         }
     }
+}
+
+#[get("/sportfests/{id}/results")]
+pub async fn sportfests_get_results_by_id_handler(db: web::Data<MySqlPool>,
+                                                  path: web::Path<String>
+)
+    -> impl Responder {
+    let sf_id = path.into_inner();
+
+    let contests =
+        sqlx::query_as!(ContestEvaluation, r#"SELECT
+                                    ct.ID as ct_id,
+                                    ct.DETAILS_ID as ct_details_id,
+                                    ct_t.EVALUATION as evaluation,
+                                    ct_t.UNIT as unit,
+                                    ct_res.PERSON_ID as person_id,
+                                    m.LENGTH as length,
+                                    m.LENGTHUNIT as length_unit,
+                                    m.WEIGHT as weight,
+                                    m.WEIGHTUNIT as weight_unit,
+                                    m.TIME as time,
+                                    m.TIMEUNIT as time_unit,
+                                    m.AMOUNT as amount
+
+                                    FROM CONTEST as ct
+                                    JOIN C_TEMPLATE as ct_t ON ct.C_TEMPLATE_ID = ct_t.ID
+                                    JOIN CONTESTRESULT as ct_res ON ct.ID = ct_res.CONTEST_ID
+                                    JOIN METRIC as m ON ct_res.METRIC_ID = m.ID
+                                    WHERE SPORTFEST_ID = ?
+                                    ORDER BY ct.ID ASC
+                                    "#
+            ,sf_id)
+            .fetch_all(db.as_ref()).await;
+    if contests.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Get Contest Error",
+        "message": contests.unwrap_err().to_string()
+    })); };
+    let contests = contests.unwrap();
+    let mut index = 0;
+    let mut all_contests: Vec<Vec<ContestEvaluation>> = vec![];
+    while index < contests.len() {
+        let mut contest: Vec<ContestEvaluation> = vec![];
+        let cur_contest_id = contests.get(index).unwrap().ct_id.clone();
+        while index < contests.len() && cur_contest_id == contests.get(index).unwrap().ct_id {
+            contest.push(contests.get(index).unwrap().clone());
+        }
+        all_contests.push(contest);
+    }
+
+    HttpResponse::Ok().json(json!({}))
 }
 
 #[get("/sportfests/{sf_id}/contests")]
