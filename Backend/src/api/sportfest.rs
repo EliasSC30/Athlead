@@ -2,19 +2,59 @@ use std::cmp::Reverse;
 use std::collections::HashMap;
 use crate::model::sportfest::*;
 use actix_web::{get, post, patch, web, HttpResponse, Responder, HttpRequest, HttpMessage};
-use actix_web::dev::ServiceRequest;
-use chrono::NaiveDateTime;
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
 use crate::api::details::create_details;
+use crate::api::general::{update_table_handler, FieldWithValue};
 use crate::api::location::create_location;
 use crate::model::contest::{Contest, ContestEvaluation};
 use crate::model::contestresult::ContestResult;
 use crate::model::sportfest::CreateContestForFest;
 use crate::model::details::{CreateDetails};
-use crate::model::location::CreateLocation;
+use crate::model::location::{CreateLocation, Location};
 use crate::model::person::Person;
+
+#[patch("/sportfests/{id}")]
+pub async fn sportfests_patch_handler(path: web::Path<String>, db: web::Data<MySqlPool>, updates: web::Json<UpdateSportfest>) -> impl Responder {
+    let sf_id = path.into_inner();
+    let sf_query =
+        sqlx::query_as!(Sportfest,"SELECT * FROM SPORTFEST WHERE ID = ?", sf_id.clone())
+        .fetch_one(db.as_ref()).await;
+    if sf_query.is_err() { return HttpResponse::BadRequest().json(json!({
+        "status": "Invalid Sportfest Id",
+        "message": sf_query.unwrap_err().to_string()
+    })); };
+
+    let mut updated_fields: Vec<FieldWithValue> = vec![];
+
+    let mut fields_to_update = Vec::<FieldWithValue>::with_capacity(5);
+    if updates.location_id.is_some() { fields_to_update.push(FieldWithValue{name: "LOCATION_ID", value: updates.location_id.clone().unwrap()}); };
+    if updates.contact_person_id.is_some() { fields_to_update.push(FieldWithValue{name: "CONTACTPERSON_ID", value: updates.contact_person_id.clone().unwrap()}); };
+    if updates.fest_name.is_some() { fields_to_update.push(FieldWithValue{name: "NAME", value: updates.fest_name.clone().unwrap()}); };
+    if updates.fest_start.is_some() { fields_to_update.push(FieldWithValue{name: "START", value: updates.fest_start.clone().unwrap().to_string()}); };
+    if updates.fest_end.is_some() { fields_to_update.push(FieldWithValue{name: "END", value: updates.fest_end.clone().unwrap().to_string()}); };
+
+    if fields_to_update.is_empty() { return HttpResponse::Ok().json(json!({
+        "status": "success",
+        "updated_fields": serde_json::to_value(updated_fields).unwrap()
+    })); };
+
+    let mut updated_details_fields = update_table_handler("DETAILS",
+                                              fields_to_update,
+                                              format!("ID = \"{}\"", sf_query.unwrap().DETAILS_ID),
+                                              db.as_ref()).await;
+    if updated_details_fields.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Update Details error",
+        "message": updated_details_fields.err().unwrap()
+    })); };
+    updated_fields.extend(updated_details_fields.unwrap());
+
+    HttpResponse::Ok().json(json!({
+        "status": "success",
+        "updated_fields": serde_json::to_value(updated_fields).unwrap()
+    }))
+}
 
 #[get("/sportfests")]
 pub async fn sportfests_list_handler(db: web::Data<MySqlPool>, req: HttpRequest) -> impl Responder {
@@ -105,10 +145,16 @@ pub async fn get_sf_masterview(sf_id: String, user: Person, db: &web::Data<MySql
             person_query = person_query[..person_query.len() - 3].to_string();
             person_query.push_str(") GROUP BY GRADE");
 
-            let person_query_result = sqlx::query(person_query.as_str()).fetch_all(db.as_ref()).await;
-            if person_query_result.is_err() { return Err(person_query_result.unwrap_err().to_string()); };
+            let person_query = sqlx::query(person_query.as_str()).fetch_all(db.as_ref()).await;
+            if person_query.is_err() { return Err(person_query.unwrap_err().to_string()); };
+            let person_query = person_query.unwrap();
+            if person_query.is_empty() { return Err(String::from("Invalid values in DB")); }
 
-            person_query_result.unwrap().into_iter().map(|row| row.try_get("GRADE").unwrap()).collect()
+            person_query.into_iter().map(|row|{
+                let content = row.try_get("GRADE");
+                if content.is_err() { return String::from("No class"); };
+                content.unwrap()
+            }).collect()
         } else { vec![] }
     };
 
@@ -350,55 +396,6 @@ pub async fn sportfests_create_with_location_handler(body: web::Json<CreateSport
             "status": "Insert Sportfest Error",
             "message": format!("Failed to insert SPORTFEST: {}", e),
         }))
-    }
-}
-
-#[patch("/sportfests/{id}")]
-pub async fn sportfests_update_handler(body: web::Json<UpdateSportfest>,
-                                       db: web::Data<MySqlPool>,
-                                       path: web::Path<String>)
-    -> impl Responder
-{
-    let sportfest_id = path.into_inner();
-
-    let updates_details = body.DETAILS_ID.is_some();
-
-    let nr_of_updates : u8 =
-        [updates_details as u8].iter().sum();
-
-    if nr_of_updates == 0 { return HttpResponse::BadRequest().json(json!({"status": "Invalid Body Error"})); }
-
-    let mut build_update_query = String::from("SET ");
-
-    if updates_details {
-        build_update_query += format!("DETAILS_ID = '{}', ", body.DETAILS_ID.clone().unwrap()).as_str();
-    }
-
-    // Remove excessive ', '
-    build_update_query.truncate(build_update_query.len().saturating_sub(2));
-
-    let result = format!("UPDATE SPORTFEST {} WHERE ID = '{}'", build_update_query, sportfest_id);
-
-    match sqlx::query(result.as_str()).execute(db.as_ref()).await {
-        Ok(_) => {
-            HttpResponse::Ok().json(
-                json!(
-                                {
-                                    "status": "success",
-                                    "result": json!({
-                                        "ID" : sportfest_id,
-                                        "DETAILS_ID":     if updates_details { body.DETAILS_ID.clone().unwrap() }
-                                                          else { String::from("") },
-                                    }),
-                                }))}
-        Err(e) => {
-            HttpResponse::InternalServerError().json(
-                json!(
-                                {
-                                    "status": "error",
-                                    "message": &e.to_string(),
-                                }))
-        }
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::model::ctemplate::*;
-use actix_web::{get, post, patch, web, HttpResponse, Responder};
+use actix_web::{get, post, web, HttpResponse, Responder};
 
 use serde_json::json;
 use sqlx::MySqlPool;

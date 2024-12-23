@@ -144,7 +144,6 @@ struct LoginView: View {
                         DispatchQueue.main.async {
                             self.isLoggedIn = true
                             self.loginError = ""
-                            
                         }
                     } else {
                         DispatchQueue.main.async {

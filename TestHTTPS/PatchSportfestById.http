@@ -1,0 +1,10 @@
+PATCH http://localhost:8000/sportfests/9698d122-2332-4f7e-a1cf-56e9166b4f2a
+Content-Type: application/json
+
+{
+  "fest_name": "Elias Sportfest",
+  "fest_start": "2026-12-02T15:30:00",
+  "fest_end": "2026-12-02T15:30:00",
+  "contact_person_id": "058ec3f9-9226-4e79-905c-4f89a4379441",
+  "location_id": "b2d13368-c5cc-4925-8664-a3e508d2a5e3"
+}

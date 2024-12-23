@@ -12,9 +12,20 @@ pub struct Sportfest {
 #[allow(non_snake_case)]
 pub struct SFMasterStacked {
     pub sf: SportfestMaster,
-
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+#[allow(non_snake_case)]
+pub struct UpdateSportfest {
+    // Detail Fields
+    pub contact_person_id: Option<String>,
+    pub fest_name: Option<String>,
+    pub fest_start: Option<NaiveDateTime>,
+    pub fest_end: Option<NaiveDateTime>,
+
+    // Location Fields
+    pub location_id: Option<String>,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateSportfest {
@@ -42,11 +53,6 @@ pub struct CreateSportfestWithLocation {
 
     // Location Fields
     pub location_id: String
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct UpdateSportfest {
-    pub DETAILS_ID: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

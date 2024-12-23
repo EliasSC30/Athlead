@@ -1,10 +1,10 @@
 use crate::model::person::*;
-use actix_web::{get, post,patch, web, HttpResponse, Responder};
+use actix_web::{get, post, web, HttpResponse, Responder};
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
 use random_string::generate;
-use crate::api::encryption::encryption::hash;
+
 /*
 #[patch("/persons/{id}")]
 pub async fn persons_update_handler(body: web::Json<UpdatePerson>,

@@ -9,7 +9,7 @@ import SwiftUI
 struct ContentView: View {
     
     @State private var isLoggedIn = false // Status for authentication
-    @State private var role: String = "User" // User role
+    @State private var role: String = "Admin" // User role
     @State private var isLoading = true // Loading status
 
     var body: some View {
