@@ -27,6 +27,19 @@ pub struct CreateContestResult {
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
+pub struct UpdateContestResult {
+    // Metric Fields
+    pub time: Option<f64>,
+    pub time_unit: Option<String>,
+    pub length: Option<f64>,
+    pub length_unit: Option<String>,
+    pub weight: Option<f64>,
+    pub weight_unit: Option<String>,
+    pub amount: Option<f64>,
+}
+
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
 pub struct CreateContestResultContestView {
     pub p_id: String,
 
