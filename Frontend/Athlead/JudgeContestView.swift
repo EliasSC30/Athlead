@@ -19,16 +19,16 @@ extension String {
 }
 
 struct JudgeContestsView : View {
-    let competitions = ["100m Lauf", "Weitsprung", "Hochsprung"]
+    let competitions: [ContestForJudge]
     
     var body: some View {
         NavigationStack {
             VStack {
                 ForEach(competitions.indices, id: \.self) { index in
-                    NavigationLink(destination: JudgeContestView(COMPETITION: competitions[index])) {
+                    NavigationLink(destination: JudgeContestView(COMPETITION: competitions[index].ct_name)) {
                         HStack {
                             VStack(alignment: .leading) {
-                                Text(competitions[index])
+                                Text(competitions[index].ct_name)
                                     .font(.headline)
                             }
                             Spacer()

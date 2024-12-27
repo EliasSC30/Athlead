@@ -9,7 +9,7 @@ import SwiftUI
 struct ContentView: View {
     
     @State private var isLoggedIn = false // Status for authentication
-    @State private var role: String = "Admin" // User role
+    @State private var role: String = "User" // User role
     @State private var isLoading = true // Loading status
 
     var body: some View {
@@ -58,7 +58,6 @@ struct ContentView: View {
             Task {
                 isLoading = true
             
-                
                 let isLogged = await isUserLoggedIn();
                 
                 if isLogged.is_logged_in {
@@ -70,6 +69,7 @@ struct ContentView: View {
                 }
             
                 isLoading = false
+                role = "Judge"
             }
         }
     }

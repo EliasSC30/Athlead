@@ -229,6 +229,19 @@ struct ContestResponse: Codable {
     let status: String
 }
 
+struct ContestForJudge: Codable {
+    let ct_end: String
+    let ct_location_name: String
+    let ct_name: String
+    let ct_start: String
+    let sf_name: String
+}
+
+struct ContestForJudgeResponse: Codable {
+    let data: [ContestForJudge]
+    let status: String
+}
+
 struct SportfestCreateData: Decodable, Identifiable {
     let ID: String
     let DETAILS_ID: String
@@ -331,6 +344,63 @@ func isUserLoggedIn() async -> IsLoggedIn {
         print("Error during request: \(error)")
     }
     return IsLoggedIn(is_logged_in: false, role: "User")
+}
+
+import Foundation
+
+enum MyResult<Success, Failure: Error> {
+    case success(Success)
+    case failure(Failure)
+}
+
+
+import Foundation
+
+func fetchData<T: Codable>(
+    from urlString: String,
+    ofType type: T.Type,
+    cookies: [String: String]? = nil,
+    method: String,
+    completion: @escaping (MyResult<T, Error>) -> Void
+) {
+    guard let url = URL(string: urlString) else {
+        completion(.failure(NSError(domain: "InvalidURL", code: -1, userInfo: nil)))
+        return
+    }
+    
+    // Create a URLRequest
+    var request = URLRequest(url: url)
+    request.httpMethod = method;
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type");
+    
+    // Add cookies to the header if provided
+    if let cookies = cookies {
+        let cookieHeader = cookies.map { "\($0.key)=\($0.value)" }.joined(separator: "; ")
+        request.addValue(cookieHeader, forHTTPHeaderField: "Cookie")
+    }
+    
+    // Create a data task
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            completion(.failure(error))
+            return
+        }
+        
+        guard let data = data else {
+            completion(.failure(NSError(domain: "NoData", code: -1, userInfo: nil)))
+            return
+        }
+        
+        do {
+            let decodedData = try JSONDecoder().decode(T.self, from: data)
+            completion(.success(decodedData))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+    
+    // Start the task
+    task.resume()
 }
 
 
