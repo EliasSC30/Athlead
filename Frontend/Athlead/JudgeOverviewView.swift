@@ -8,7 +8,12 @@
 import SwiftUI
 
 struct JudgeOverviewView: View {
+    let contests: [Contest] = [];
     var body: some View {
-        JudgeContestsView()
+        NavigationView {
+            VStack {
+                JudgeContestsView()
+            }
+        }
     }
 }

@@ -616,7 +616,7 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
     let details_res = create_details(&detail_values, &db).await;
 
     if details_res.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "error",
+        "status": "Details error",
         "message": details_res.unwrap_err().to_string()
     }))};
 
@@ -637,6 +637,8 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
         "message": contest_query.unwrap_err().to_string(),
     })); };
     if body.HELPERS.is_empty() {
+        tx.commit().await.expect("Failed to commit transaction");
+
         return HttpResponse::Ok().json(json!({
                 "status": "success",
                 "data": json!({
@@ -666,7 +668,7 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
 
     let helper = check_helper_query.unwrap();
     if helper.len() != body.HELPERS.len() { return HttpResponse::BadRequest().json(json!({
-        "status": "error",
+        "status": "Helper error",
         "message": format!("Only {}/{} helper have valid ids",helper.len(), body.HELPERS.len()).as_str()
     })); };
 

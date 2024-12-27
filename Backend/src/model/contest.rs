@@ -10,6 +10,15 @@ pub struct Contest {
     pub C_TEMPLATE_ID: String,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ContestForJudge {
+    pub ct_name: String,
+    pub ct_start: NaiveDateTime,
+    pub ct_end: NaiveDateTime,
+    pub ct_location_name: String,
+    pub sf_name: String,
+}
+
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow, Clone)]
 #[allow(non_snake_case)]
 pub struct ContestEvaluation {

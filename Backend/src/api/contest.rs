@@ -1,9 +1,10 @@
 use crate::model::contest::*;
-use actix_web::{get, post, web, HttpResponse, Responder};
+use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
 use crate::model::contestresult::{ContestResultContestView, CreateContestResultContestView};
+use crate::model::person::Person;
 
 pub async fn get_contest(id: String, db: &web::Data<MySqlPool>) -> Result<Contest, String>
 {
@@ -264,6 +265,47 @@ pub async fn contests_get_handler(db: web::Data<MySqlPool>) -> impl Responder {
                 "status": "success",
                 "results": details.len(),
                 "data": serde_json::to_value(&details).unwrap(),
+                }))
+        ,
+        Err(e) => {
+            HttpResponse::InternalServerError().json(json!({
+                "status": "error",
+                "message": format!("Failed to fetch Contests: {}", e),
+            }))
+        }
+    }
+}
+
+#[get("/contests/judge/mycontests")]
+pub async fn contests_judge_mycontests_handler(db: web::Data<MySqlPool>, req: HttpRequest) -> impl Responder {
+    let container = req.extensions();
+    let user = container.get::<Person>();
+    if user.is_none() { return HttpResponse::InternalServerError().json(json!({
+        "status": "User was none error",
+        "message": "Should not happen..",
+    }))};
+    let user = user.unwrap();println!("User id {}", user.ID.clone());
+
+    let result = sqlx::query_as!(ContestForJudge,
+            "SELECT dt.NAME as ct_name,
+                    dt.START as ct_start,
+                    dt.END as ct_end,
+                    lc.NAME as ct_location_name,
+                    sf_dt.NAME as sf_name
+
+                    FROM CONTEST as ct
+                    JOIN DETAILS as dt ON dt.ID = ct.DETAILS_ID
+                    JOIN LOCATION as lc ON dt.LOCATION_ID = lc.ID
+                    JOIN SPORTFEST as sf ON ct.SPORTFEST_ID = sf.ID
+                    JOIN DETAILS as sf_dt ON sf_dt.ID = sf.DETAILS_ID
+                    WHERE dt.CONTACTPERSON_ID = ?",user.ID.clone())
+        .fetch_all(db.as_ref())
+        .await;
+
+    match result {
+        Ok(details) => HttpResponse::Ok().json(json!({
+                "status": "success",
+                "data": serde_json::to_value(details).unwrap(),
                 }))
         ,
         Err(e) => {

@@ -8,6 +8,12 @@ pub struct FieldWithValue {
     pub value: String,
 }
 
+pub async fn optional_update_handler(table_name: &'static str,
+                                     fields: Vec<FieldWithValue>,where_key: String,
+                                        db: &MySqlPool
+) {
+
+}
 pub async fn update_table_handler(table_name: &'static str,
                                   fields: Vec<FieldWithValue>,
                                   where_key: String,
@@ -23,7 +29,7 @@ pub async fn update_table_handler(table_name: &'static str,
     }
     query.truncate(query.len().saturating_sub(2));
     query += format!(" WHERE {where_key}").as_str();
-println!("Updating table {}", query);
+
     let query = sqlx::query(&query).execute(db).await;
 
     match query {
