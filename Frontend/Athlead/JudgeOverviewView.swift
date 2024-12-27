@@ -10,19 +10,16 @@ import SwiftUI
 struct JudgeOverviewView: View {
     @State var contests: [ContestForJudge] = [];
     var body: some View {
-        NavigationView {
-            VStack {
+        VStack {
                 JudgeContestsView(competitions: contests)
-            }
-        }.onAppear {
-            let urlString = "\(apiURL)/contests/judge/mycontests"
+            }.onAppear {
             let cookies = [
                 "Token": """
                 akafbmoipljlmeilmbkiclgffffocdpgdeghnhabboghoffdaohijebiakalknnalipaedlkhegfaonjgbaiihcndeeolhmmecpcaljfjpnicckjjmddooohpadkhghcmfenaaaa
                 """,
             ]
 
-            fetchData(from: urlString, ofType: ContestForJudgeResponse.self, cookies: cookies, method: "GET") { result in
+            fetchData(from: "\(apiURL)/contests/judge/mycontests", ofType: ContestForJudgeResponse.self, cookies: cookies, method: "GET") { result in
                 switch result {
                 case .success(let myData):
                     print("Fetched Data: \(myData)")
@@ -31,7 +28,6 @@ struct JudgeOverviewView: View {
                     print("Error fetching data: \(error)")
                 }
             }
-
         };
     }
 }

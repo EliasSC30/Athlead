@@ -24,26 +24,33 @@ struct JudgeContestsView : View {
     var body: some View {
         NavigationStack {
             VStack {
-                ForEach(competitions.indices, id: \.self) { index in
-                    NavigationLink(destination: JudgeContestView(COMPETITION: competitions[index].ct_name)) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(competitions[index].ct_name)
-                                    .font(.headline)
-                            }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.gray)
-                            
-                        }
+                if competitions.isEmpty {
+                    Text("You have no competitions")
                         .padding()
                         .background(Color.white)
-                        .cornerRadius(10)
-                        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
-                        .padding(.horizontal)
+                        .shadow(radius: 5.0)
+                } else {
+                    ForEach(competitions.indices, id: \.self) { index in
+                        NavigationLink(destination: JudgeContestView(COMPETITION: competitions[index])) {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(competitions[index].ct_name)
+                                        .font(.headline)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.gray)
+                                
+                            }
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(10)
+                            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+                            .padding(.horizontal)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 4)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 4)
                 }
             }
         }
@@ -51,7 +58,7 @@ struct JudgeContestsView : View {
 }
 
 struct JudgeContestView : View {
-    let COMPETITION: String
+    let COMPETITION: ContestForJudge
     
     var body: some View {
         NavigationStack {
@@ -80,7 +87,7 @@ struct JudgeContestView : View {
 }
 
 struct JudgeEntryView : View {
-    let COMPETITION : String
+    let COMPETITION : ContestForJudge
     // Local results that update the results in the store when leaving
     @State private var results: [ResultInfo] = []
 
@@ -97,7 +104,7 @@ struct JudgeEntryView : View {
     var body: some View {
         VStack {
             ResultEntry(
-                COMPETITION: COMPETITION,
+                COMPETITION: COMPETITION.ct_name,
                 onNewResult: {
                     results.append(ResultInfo(name:newParticipantName, metric:newMetric));
                     newParticipantName = ""
@@ -113,21 +120,8 @@ struct JudgeEntryView : View {
                     Section(header: Text("Eingetragene Ergebnisse").font(.headline)) {
                         ForEach(results.indices, id: \.self) { index in
                             HStack {
-                                if(COMPETITION == "100m Lauf") {
                                     Text("\(results[index].name) \(results[index].metric.time, specifier: "%.2f")\(results[index].metric.timeUnit)")
                                                                         .padding(.leading)
-                                } else if(COMPETITION == "Weitsprung")
-                                {
-                                    Text("\(results[index].name) \(results[index].metric.length, specifier: "%.2f")\(results[index].metric.lengthUnit)")
-                                                                        .padding(.leading)
-                                } else if(COMPETITION == "Hochsprung")
-                                {
-                                    Text("\(results[index].name) \(results[index].metric.length, specifier: "%.2f")\(results[index].metric.lengthUnit)")
-                                                                        .padding(.leading)
-                                } else {
-                                    Text("Competition unknown")
-                                }
-
                                 Spacer()
 
                                 // Edit button
@@ -159,15 +153,15 @@ struct JudgeEntryView : View {
         } // VStack
         .onDisappear(){
             // We only write to the store when we leave
-            STORE[COMPETITION] = results
+            STORE[COMPETITION.ct_name] = results
         }
         .onAppear(){
-            if(STORE[COMPETITION]) != nil {
-                results = STORE[COMPETITION]!
+            if(STORE[COMPETITION.ct_name]) != nil {
+                results = STORE[COMPETITION.ct_name]!
             }
         }
         .sheet(isPresented: $showEditSheet) {
-            EditResultView(COMPETITION: COMPETITION,
+            EditResultView(COMPETITION: COMPETITION.ct_name,
                            nameToEdit: $nameToEdit,
                            metricToEdit: $metricToEdit,
                            onNewResult: {
@@ -233,30 +227,11 @@ struct ResultEntry: View {
                 .padding()
                 .frame(width: 300)
             
-            if(COMPETITION == "100m Lauf")
-            {
                 FloatInput(onNewResult: onNewResult,
                            entryTitle: "Zeit in Sekunden",
                            name: $name,
                            value: $metric.time,
                            startingInput: isEdit ? String(metric.time) : "")
-            } else if(COMPETITION == "Weitsprung")
-            {
-                FloatInput(onNewResult: onNewResult,
-                           entryTitle: "Weite in Meter",
-                           name: $name,
-                           value: $metric.length,
-                           startingInput: isEdit ? String(metric.length) : "")
-            } else if(COMPETITION == "Hochsprung")
-            {
-                FloatInput(onNewResult: onNewResult,
-                           entryTitle: "Höhe in Meter",
-                           name: $name,
-                           value: $metric.length,
-                           startingInput: isEdit ? String(metric.length) : "")
-            } else {
-                Text("Unknown competition")
-            }
 
         }
         .padding()

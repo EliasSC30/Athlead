@@ -115,17 +115,7 @@ struct CompetitionsOverviewView: View {
     
     func getFormattedPlacings(competition : String, compInfos : [CompetitorContestInfo]) -> [String]
     {
-        switch(competition)
-        {
-        case "Weitsprung":
-            return compInfos.map { $0.name + " jumped " + $0.metric.length.formatted() + $0.metric.lengthUnit };
-        case "100m Lauf":
-            return compInfos.map { $0.name + " ran 100m " + $0.metric.time.formatted() + $0.metric.timeUnit };
-        case "Hochsprung":
-            return compInfos.map { $0.name + " jumped " + $0.metric.length.formatted() + $0.metric.lengthUnit + " high" };
-        default:
-            return ["Competition is unknown"];
-        }
+        return compInfos.map { $0.name + " jumped " + $0.metric.length.formatted() + $0.metric.lengthUnit };
     }
 
     var body: some View {
