@@ -4,7 +4,7 @@ use serde_json::json;
 use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
 use crate::model::contestresult::{ContestResultContestView, CreateContestResultContestView};
-use crate::model::person::Person;
+use crate::model::person::{Participant, Person};
 
 pub async fn get_contest(id: String, db: &web::Data<MySqlPool>) -> Result<Contest, String>
 {
@@ -276,6 +276,83 @@ pub async fn contests_get_handler(db: web::Data<MySqlPool>) -> impl Responder {
     }
 }
 
+#[get("/contests/{id}/participants")]
+pub async fn contests_get_participants_handler(path: web::Path<String>, db: web::Data<MySqlPool>) -> impl Responder {
+    let ct_id = path.into_inner();
+    let participants = sqlx::query_as!(Participant,
+        r#"SELECT p.ID as id,
+                  p.FIRSTNAME as f_name,
+                  p.LASTNAME as l_name,
+                  p.EMAIL as email,
+                  p.PHONE as phone,
+                  p.GRADE as grade,
+                  p.BIRTH_YEAR as birth_year,
+                  p.ROLE as role,
+                  p.GENDER as gender,
+                  p.PICS as pics
+
+                  FROM CONTEST as ct
+                  JOIN CONTESTRESULT as ctr ON ct.ID = ctr.CONTEST_ID
+                  JOIN PERSON as p ON p.ID = ctr.PERSON_ID
+                  WHERE ct.ID = ?"#,
+        ct_id.clone())
+        .fetch_all(db.as_ref())
+        .await;
+    if participants.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Participants error",
+        "message": participants.unwrap_err().to_string(),
+    })); };
+    let participants = participants.unwrap();
+
+    HttpResponse::Ok().json(json!({
+        "status": "success",
+        "data": serde_json::to_value(participants).unwrap(),
+    }))
+}
+
+#[get("/contests/participants/mycontests")]
+pub async fn contests_participants_mycontests_handler(db: web::Data<MySqlPool>, req: HttpRequest) -> impl Responder {
+    let container = req.extensions();
+    let user = container.get::<Person>();
+    if user.is_none() { return HttpResponse::InternalServerError().json(json!({
+        "status": "User was none error",
+        "message": "Should not happen..",
+    })); };
+    let user = user.unwrap();
+
+    let result = sqlx::query_as!(ContestForJudge,
+            "SELECT ct.ID as ct_id,
+                    dt.NAME as ct_name,
+                    dt.START as ct_start,
+                    dt.END as ct_end,
+                    lc.NAME as ct_location_name,
+                    sf_dt.NAME as sf_name
+
+                    FROM CONTEST as ct
+                    JOIN CONTESTRESULT as ctr ON ctr.CONTEST_ID = ct.ID
+                    JOIN DETAILS as dt ON dt.ID = ct.DETAILS_ID
+                    JOIN LOCATION as lc ON dt.LOCATION_ID = lc.ID
+                    JOIN SPORTFEST as sf ON ct.SPORTFEST_ID = sf.ID
+                    JOIN DETAILS as sf_dt ON sf_dt.ID = sf.DETAILS_ID
+                    WHERE ctr.PERSON_ID = ?",user.ID.clone())
+        .fetch_all(db.as_ref())
+        .await;
+
+    match result {
+        Ok(details) => HttpResponse::Ok().json(json!({
+                "status": "success",
+                "data": serde_json::to_value(details).unwrap(),
+                }))
+        ,
+        Err(e) => {
+            HttpResponse::InternalServerError().json(json!({
+                "status": "error",
+                "message": format!("Failed to fetch Contests: {}", e),
+            }))
+        }
+    }
+}
+
 #[get("/contests/judge/mycontests")]
 pub async fn contests_judge_mycontests_handler(db: web::Data<MySqlPool>, req: HttpRequest) -> impl Responder {
     let container = req.extensions();
@@ -283,11 +360,12 @@ pub async fn contests_judge_mycontests_handler(db: web::Data<MySqlPool>, req: Ht
     if user.is_none() { return HttpResponse::InternalServerError().json(json!({
         "status": "User was none error",
         "message": "Should not happen..",
-    }))};
-    let user = user.unwrap();println!("User id {}", user.ID.clone());
+    })); };
+    let user = user.unwrap();
 
     let result = sqlx::query_as!(ContestForJudge,
-            "SELECT dt.NAME as ct_name,
+            "SELECT ct.ID as ct_id,
+                    dt.NAME as ct_name,
                     dt.START as ct_start,
                     dt.END as ct_end,
                     lc.NAME as ct_location_name,

@@ -16,6 +16,21 @@ pub struct Person {
     pub PASSWORD: String
 }
 
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
+pub struct Participant {
+    pub id: String,
+    pub f_name: String,
+    pub l_name: String,
+    pub email: String,
+    pub phone: String,
+    pub grade: Option<String>,
+    pub birth_year: Option<String>,
+    pub role: String,
+    pub gender: String,
+    pub pics: u8,
+}
+
 impl Person {
     pub(crate) fn clone(&self) -> Person {
         Person {

@@ -12,6 +12,7 @@ pub struct Contest {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ContestForJudge {
+    pub ct_id: String,
     pub ct_name: String,
     pub ct_start: NaiveDateTime,
     pub ct_end: NaiveDateTime,

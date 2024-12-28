@@ -1,4 +1,4 @@
-POST http://localhost:8000/contests/668e37b7-a385-4855-9110-38def963763a/contestresults
+POST http://localhost:8000/contests/a2756327-826b-4d0d-8478-20b0dc5263b5/contestresults
 Content-Type: application/json
 
 [
