@@ -59,12 +59,22 @@ struct JudgeContestsView : View {
 
 struct JudgeContestView : View {
     let COMPETITION: ContestForJudge
+    @State var participants: [Participant] = []
     
     var body: some View {
         NavigationStack {
             VStack {
                 NavigationLink(destination: JudgeEntryView(COMPETITION: COMPETITION)){
-                    Text("Enter results")
+                    Text("Ergebnisse eintragen")
+                }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+                .padding(.horizontal)
+                
+                NavigationLink(destination: JudgeParticipants(participants: $participants)){
+                    Text("Teilnehmer")
                 }
                 .padding()
                 .background(Color.white)
@@ -73,7 +83,7 @@ struct JudgeContestView : View {
                 .padding(.horizontal)
                 
                 NavigationLink(destination: JudgeScanView()){
-                    Text("Register Contestants")
+                    Text("Checkin Teilnehmer")
                 }
                 .padding()
                 .background(Color.white)
@@ -81,7 +91,33 @@ struct JudgeContestView : View {
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
                 .padding(.horizontal)
             }
-            
+        }.onAppear{
+            fetch(from: "\(apiURL)/contests/\(COMPETITION.ct_id)/participants", ofType: ParticipantsForJudge.self, method: "GET"){result in
+                switch result {
+                case .success(let participantsResult): participants = participantsResult.data;
+                case .failure(let err): print(err);
+                }
+            }
+        }
+    }
+}
+
+struct JudgeParticipants : View {
+    @Binding var participants: [Participant]
+    
+    var body: some View {
+        VStack {
+            if participants.isEmpty{
+                Text("Bisher keine Teilnehmer")
+            } else {
+                ForEach(participants){ participant in
+                    HStack {
+                        Text("\(participant.f_name) \(participant.l_name)")
+                    }
+                    .padding()
+                    .background(Color.white)
+                }
+            }
         }
     }
 }

@@ -19,10 +19,9 @@ struct JudgeOverviewView: View {
                 """,
             ]
 
-            fetchData(from: "\(apiURL)/contests/judge/mycontests", ofType: ContestForJudgeResponse.self, cookies: cookies, method: "GET") { result in
+            fetch(from: "\(apiURL)/contests/judge/mycontests", ofType: ContestForJudgeResponse.self, cookies: cookies, method: "GET") { result in
                 switch result {
                 case .success(let myData):
-                    print("Fetched Data: \(myData)")
                     contests = myData.data;
                 case .failure(let error):
                     print("Error fetching data: \(error)")

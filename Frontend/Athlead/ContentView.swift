@@ -9,7 +9,7 @@ import SwiftUI
 struct ContentView: View {
     
     @State private var isLoggedIn = false // Status for authentication
-    @State private var role: String = "User" // User role
+    @State private var role: String = "Contestant" // User role
     @State private var isLoading = true // Loading status
 
     var body: some View {
@@ -37,15 +37,21 @@ struct ContentView: View {
                                     Image(systemName: "sportscourt")
                                     Text("Wettkämpfe")
                                 }
+                        } else if role.uppercased() == "CONTESTANT" {
+                            ParticipantView()
+                                .tabItem {
+                                    Image(systemName: "sportscourt")
+                                    Text("Meine Wettkämpfe")
+                                }
                         }
                         
-                        YourProfileView()
+                        YourProfileView(isLoggedIn: isLoggedIn)
                             .tabItem {
                                 Image(systemName: "person.fill")
                                 Text("Profil")
                             }
                     } else {
-                        LoginView(isLoggedIn: $isLoggedIn)
+                        LoginView(isLoggedIn: isLoggedIn)
                             .tabItem {
                                 Image(systemName: "person.fill")
                                 Text("Login")
@@ -55,6 +61,7 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            print("Role is ", role)
             Task {
                 isLoading = true
             
@@ -69,7 +76,6 @@ struct ContentView: View {
                 }
             
                 isLoading = false
-                role = "Judge"
             }
         }
     }

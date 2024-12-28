@@ -6,23 +6,61 @@
 //
 import SwiftUI
 
-struct ContestDetailView: View {
-    let contest : Contest = Contest(ID: "1", SPORTFEST_ID: "1", DETAILS_ID: "1", CONTESTRESULT_ID: "1")
-    
-    struct Contest: Identifiable, Hashable {
-        let ID: String
-        let SPORTFEST_ID: String
-        let DETAILS_ID: String
-        let CONTESTRESULT_ID: String
-        
-        var id: String { return self.ID }
+import CoreImage.CIFilterBuiltins
+
+struct QRCodeGeneratorView: View {
+    @State var qrString: String = ""
+    private let context = CIContext()
+    private let filter = CIFilter.qrCodeGenerator()
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Check-In QR Code")
+                .font(.headline)
+
+            if let qrImage = generateQRCode(from: qrString) {
+                Image(uiImage: qrImage)
+                    .interpolation(.none)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 200, height: 200)
+            } else {
+                Text("Failed to generate QR Code")
+                    .foregroundColor(.red)
+            }
+        }
+        .padding()
     }
+
+    private func generateQRCode(from string: String) -> UIImage? {
+        guard let data = string.data(using: .utf8) else { return nil }
+        filter.setValue(data, forKey: "inputMessage")
+
+        if let outputImage = filter.outputImage,
+           let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
+            return UIImage(cgImage: cgImage)
+        }
+        return nil
+    }
+}
+
+
+struct ContestDetailView: View {
+    @State var contest: ContestForJudge?
     
     var body: some View {
         
         VStack {
-            
-            Text("Wettkampf")
+            if contest != nil {
+                NavigationLink(destination: QRCodeGeneratorView(qrString: contest!.ct_id + ";" + (UserId ?? ""))){
+                    Text("Checke für \(contest!.ct_name) ein")
+                }
+                .padding()
+                .background(Color.white)
+                .shadow(radius: 4.0)
+            } else {
+                Text("Kein Wettkampf")
+            }
             
         }
     }

@@ -99,7 +99,7 @@ struct CompetitionsOverviewView: View {
         Competition(name: "100m Lauf", date: "21.11.2024", location: "Stadion B"),
         Competition(name: "Hochsprung", date: "22.11.2024", location: "Stadion C")
     ]
-    //length = 0, lengthUnit = "", w
+    
     let contestInfos = [
         // 100m Dummy
         CompetitorContestInfo(name: "Elias", metric: Metric(time: 9.53)),

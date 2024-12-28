@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 var apiURL: String {
     get {
         #if targetEnvironment(simulator)
@@ -17,7 +16,6 @@ var apiURL: String {
         #endif
     }
 }
-
 
 struct RegisterData: Encodable {
     let email: String
@@ -44,6 +42,8 @@ struct LoginData: Encodable {
 }
 
 struct LoginResponse: Decodable {
+    let data: String
+    let id: String
     let status: String
 }
 
@@ -113,6 +113,24 @@ struct Person: Identifiable, Hashable, Decodable {
     let GENDER: String
     
     var id: String { return self.ID }
+}
+
+struct Participant: Codable, Identifiable {
+    let id: String
+    let f_name: String
+    let l_name: String
+    let email: String
+    let phone: String
+    let grade: String?
+    let birth_year: String?
+    let role: String
+    let gender: String
+    let pics: Int
+}
+
+struct ParticipantsForJudge: Codable {
+    let status: String
+    let data: [Participant]
 }
 
 struct SportfestLocationCreate: Encodable {
@@ -229,12 +247,15 @@ struct ContestResponse: Codable {
     let status: String
 }
 
-struct ContestForJudge: Codable {
+struct ContestForJudge: Codable, Identifiable {
+    let ct_id: String
     let ct_end: String
     let ct_location_name: String
     let ct_name: String
     let ct_start: String
     let sf_name: String
+    
+    var id: String { return self.ct_id; }
 }
 
 struct ContestForJudgeResponse: Codable {
@@ -317,8 +338,6 @@ var SessionToken: String?
 var UserId: String?
 
 
-
-
 struct IsLoggedIn: Decodable {
     let is_logged_in: Bool
     let role: String
@@ -353,10 +372,7 @@ enum MyResult<Success, Failure: Error> {
     case failure(Failure)
 }
 
-
-import Foundation
-
-func fetchData<T: Codable>(
+func fetch<T: Codable>(
     from urlString: String,
     ofType type: T.Type,
     cookies: [String: String]? = nil,

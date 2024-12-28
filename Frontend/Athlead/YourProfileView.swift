@@ -7,6 +7,8 @@
 import SwiftUI
 
 struct YourProfileView: View {
+    @State var isLoggedIn = false
+    
     var body: some View {
         NavigationView {
             List {
@@ -26,10 +28,16 @@ struct YourProfileView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    NavigationLink(destination: LogoutView()) {
-                        Label("Log Out", systemImage: "arrowshape.turn.up.backward")
-                            .foregroundColor(.red)
-                            .fontWeight(.bold)
+                    NavigationLink(destination: ContentView()) {
+                        Button(action:
+                        {
+                            isLoggedIn = false;
+                            UserId = "";
+                        }){
+                            Label("Log out", systemImage: "")
+                                .foregroundColor(.red)
+                                .fontWeight(.bold)
+                        }
                     }
                 }
                 
@@ -92,9 +100,7 @@ struct YourProfileView: View {
 }
 
 struct LogoutView: View {
-    
-    
-    
+
     var body: some View {
         Text("You have been logged out.")
             .font(.title)
