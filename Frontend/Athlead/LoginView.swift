@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 struct LoginView: View {
-    @State var isLoggedIn: Bool
+    @Binding var isLoggedIn: Bool
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var showForgotPassword = false  // State to navigate to ForgotPasswordView
@@ -143,7 +143,6 @@ struct LoginView: View {
                         DispatchQueue.main.async {
                             self.isLoggedIn = true
                             self.loginError = ""
-                            UserId = loginResponse.id
                         }
                     } else {
                         DispatchQueue.main.async {

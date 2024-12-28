@@ -42,8 +42,8 @@ struct LoginData: Encodable {
 }
 
 struct LoginResponse: Decodable {
-    let data: String
-    let id: String
+  //  let data: String
+  //  let id: String
     let status: String
 }
 

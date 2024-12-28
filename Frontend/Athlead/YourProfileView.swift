@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct YourProfileView: View {
-    @State var isLoggedIn = false
+    @Binding var isLoggedIn: Bool
     
     var body: some View {
         NavigationView {
@@ -29,16 +29,16 @@ struct YourProfileView: View {
                         }
                     }
                     NavigationLink(destination: ContentView()) {
-                        Button(action:
-                        {
+                        Button (action: {
                             isLoggedIn = false;
-                            UserId = "";
+                            UserId = ""
+                            print("I was pressed")
                         }){
-                            Label("Log out", systemImage: "")
+                            Label("Log Out", systemImage: "arrowshape.turn.up.backward")
                                 .foregroundColor(.red)
                                 .fontWeight(.bold)
                         }
-                    }
+                    }.isDetailLink(false)
                 }
                 
                 // Achievements Section
@@ -127,10 +127,3 @@ struct LogoutView: View {
         HTTPCookieStorage.shared.cookies?.forEach(HTTPCookieStorage.shared.deleteCookie)
     }
 }
-
-struct YourProfileView_Previews: PreviewProvider {
-    static var previews: some View {
-        YourProfileView()
-    }
-}
-

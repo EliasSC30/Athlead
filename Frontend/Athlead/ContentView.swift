@@ -45,13 +45,13 @@ struct ContentView: View {
                                 }
                         }
                         
-                        YourProfileView(isLoggedIn: isLoggedIn)
+                        YourProfileView(isLoggedIn: $isLoggedIn)
                             .tabItem {
                                 Image(systemName: "person.fill")
                                 Text("Profil")
                             }
                     } else {
-                        LoginView(isLoggedIn: isLoggedIn)
+                        LoginView(isLoggedIn: $isLoggedIn)
                             .tabItem {
                                 Image(systemName: "person.fill")
                                 Text("Login")
