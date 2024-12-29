@@ -15,9 +15,7 @@ const TIME_OFFSET: u64 = 1734269586u64;
 const TIMESTAMP_LENGTH: usize = 8;
 const ID_LENGTH: usize = 36;
 const DECRYPT_TOKEN_LENGTH: usize = ID_LENGTH+TIMESTAMP_LENGTH;
-const ENCRYPT_TOKEN_PREFIX_LENGTH: usize = 6;
 const ENCRYPT_TOKEN_LENGTH: usize = 136;
-const ENCRYPT_TOKEN_LENGTH_WITH_PREFIX: usize = ENCRYPT_TOKEN_PREFIX_LENGTH + ENCRYPT_TOKEN_LENGTH;
 
 fn our_time_now() -> u32 { (SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() - TIME_OFFSET) as u32 }
 
@@ -75,9 +73,14 @@ pub async fn register_handler(body: web::Json<Register>, db: web::Data<MySqlPool
         }))
 }
 
-pub async fn check_token(mut token: String, db: &web::Data<MySqlPool>) -> Result<(String, Person),String> {
-    if token.chars().count() != ENCRYPT_TOKEN_LENGTH_WITH_PREFIX { return Err(String::from("Token is too short")); };
-    token = token[ENCRYPT_TOKEN_PREFIX_LENGTH..].to_string();
+pub async fn check_token(token: String, db: &web::Data<MySqlPool>) -> Result<(String, Person),String> {
+    let token = token.split(";").collect::<Vec<&str>>();
+    let token = token.get(0);
+    if token.is_none() { return Err(String::from("Token is invalid")); };
+    let token = token.unwrap().split("=").collect::<Vec<&str>>();
+    if token.len() != 2 { return Err(String::from("Token is invalid")); };
+    if !token.get(0).unwrap().eq(&"Token") { return Err(String::from("Token is invalid")); };
+    let mut token = (*token.get(1).unwrap()).to_string();
 
     if token.chars().any(|c| (c as u32) >(97+15) || (c as u32) < 97) { return Err(String::from("Invalid Token")); };
     let token_to_decrypt = encryption::BigInt { parts: encryption::BigInt::exp_str_to_u32_vec(&token) };
@@ -160,6 +163,7 @@ pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> 
 
     let mut res = HttpResponse::Ok().json(json!({
         "status": "success",
+        "id": user.ID.clone(),
         "role": user.ROLE.clone()
     }));
 

@@ -31,8 +31,9 @@ struct YourProfileView: View {
                     NavigationLink(destination: ContentView()) {
                         Button (action: {
                             isLoggedIn = false;
-                            UserId = ""
-                            print("I was pressed")
+                            UserRole = "Contestant";
+                            UserId = "";
+                            SessionToken = "";
                         }){
                             Label("Log Out", systemImage: "arrowshape.turn.up.backward")
                                 .foregroundColor(.red)

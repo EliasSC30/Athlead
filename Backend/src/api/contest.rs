@@ -318,7 +318,7 @@ pub async fn contests_participants_mycontests_handler(db: web::Data<MySqlPool>, 
         "status": "User was none error",
         "message": "Should not happen..",
     })); };
-    let user = user.unwrap();
+    let user = user.unwrap();println!("User was valid");
 
     let result = sqlx::query_as!(ContestForJudge,
             "SELECT ct.ID as ct_id,

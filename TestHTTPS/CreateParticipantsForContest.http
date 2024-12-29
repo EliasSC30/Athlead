@@ -1,6 +1,6 @@
-POST http://localhost:8000/contests/56aaf309-b257-4657-ada6-8e43a36d3210/participants
+POST http://localhost:8000/contests/281e456c-6d11-46e7-9032-759c697ea3d3/participants
 Content-Type: application/json
 
 {
-  "participant_ids": ["9f7b89ae-196c-40e9-964e-bae70efad93e"]
+  "participant_ids": ["56baaaac-fe55-4908-a1d3-6216205c82d8"]
 }

@@ -17,11 +17,10 @@ use actix_web::http::Method;
 use crate::api::logon::check_token;
 use crate::model::person::Person;
 
-const ADMIN_REQUESTS: [(&'static str, &'static str);1] = [("GET", "/details")];
-const JUDGE_REQUESTS: [(&'static str, &'static str);1] = [("GET", "/sportfests")];
+const ADMIN_REQUESTS: [(&'static str, &'static str);1] = [("GET", "")];
+const JUDGE_REQUESTS: [(&'static str, &'static str);1] = [("GET", "")];
 
 pub fn string_to_auth_level(role: &String) -> Result<AuthLevel, Error> {
-    println!("{}",role);
     match role.as_str().to_lowercase().as_str() {
         "admin" => Ok(AuthLevel::Admin),
         "judge" => Ok(AuthLevel::Judge),

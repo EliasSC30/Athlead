@@ -133,16 +133,23 @@ struct LoginView: View {
         request.httpBody = encodedData
         
         do {
-            // Perform the request asynchronously
             let result = try await executeURLRequestAsync(request: request)
-            
             switch result {
-            case .success(_, let data):
+            case .success(let resp, let data):
                 if let loginResponse = try? JSONDecoder().decode(LoginResponse.self, from: data) {
                     if loginResponse.status == "success" {
                         DispatchQueue.main.async {
                             self.isLoggedIn = true
                             self.loginError = ""
+                            UserId = loginResponse.id
+                            UserRole = loginResponse.role
+                            
+                            if resp.value(forHTTPHeaderField: "Set-Cookie") == nil {
+                                print("Cookie is nil")
+                            } else {
+                                SessionToken = resp.value(forHTTPHeaderField: "Set-Cookie").unsafelyUnwrapped.truncateUntilSemicolon();
+                            }
+                            print("Everything worked: ", loginResponse, "ST ", SessionToken)
                         }
                     } else {
                         DispatchQueue.main.async {
@@ -165,8 +172,6 @@ struct LoginView: View {
             }
         }
     }
-
-
 }
 struct ForgotPasswordView: View {
     @Environment(\.presentationMode) var presentationMode  // For dismissing the sheet

@@ -9,7 +9,6 @@ import SwiftUI
 struct ContentView: View {
     
     @State private var isLoggedIn = false // Status for authentication
-    @State private var role: String = "Contestant" // User role
     @State private var isLoading = true // Loading status
 
     var body: some View {
@@ -25,19 +24,19 @@ struct ContentView: View {
                                 Text("Hauptseite")
                             }
                         
-                        if role.uppercased() == "ADMIN" {
+                        if UserRole!.uppercased() == "ADMIN" {
                             AdminOverviewView()
                                 .tabItem {
                                     Image(systemName: "person.3.fill")
                                     Text("Administration")
                                 }
-                        } else if role.uppercased() == "JUDGE" {
+                        } else if UserRole!.uppercased() == "JUDGE" {
                             JudgeOverviewView()
                                 .tabItem {
                                     Image(systemName: "sportscourt")
                                     Text("Wettkämpfe")
                                 }
-                        } else if role.uppercased() == "CONTESTANT" {
+                        } else if UserRole!.uppercased() == "CONTESTANT" {
                             ParticipantView()
                                 .tabItem {
                                     Image(systemName: "sportscourt")
@@ -61,10 +60,10 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            print("Role is ", role)
             Task {
                 isLoading = true
-            
+
+                /* <<< Uncomment to go back
                 let isLogged = await isUserLoggedIn();
                 
                 if isLogged.is_logged_in {
@@ -74,6 +73,21 @@ struct ContentView: View {
                     isLoggedIn = false
                     role = "User"
                 }
+                  <<< Uncomment to go back */
+                
+                // <<< Remove to go back
+                
+                fetch(from: "\(apiURL)/loggedin",
+                      ofType: IsLoggedIn.self,
+                      method: "GET") { response in
+                    switch response {
+                    case .success(let loggedIn):
+                        isLoggedIn = loggedIn.is_logged_in;
+                        UserRole = loggedIn.role.uppercased();
+                    case .failure(let err): print(err);
+                    }
+                }
+                // <<< Remove to go back
             
                 isLoading = false
             }

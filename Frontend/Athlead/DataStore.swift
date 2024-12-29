@@ -17,6 +17,11 @@ var apiURL: String {
     }
 }
 
+var STORE : [String:[ResultInfo]] = [:];
+var SessionToken: String?
+var UserId: String?
+var UserRole: String?
+
 struct RegisterData: Encodable {
     let email: String
     let password: String
@@ -41,10 +46,10 @@ struct LoginData: Encodable {
     let token: String?
 }
 
-struct LoginResponse: Decodable {
-  //  let data: String
-  //  let id: String
+struct LoginResponse: Codable {
+    let role: String
     let status: String
+    let id: String
 }
 
 struct ResultInfo {
@@ -74,10 +79,11 @@ struct LocationResponse: Decodable {
     let status: String
 }
 
-struct PersonsResponse: Decodable {
+struct PersonsResponse: Codable {
     let data: [Person]
     let results: Int
     let status: String
+
 }
 
 struct PersonResponse: Decodable {
@@ -100,7 +106,7 @@ struct PersonCreateResponse: Decodable {
     let status: String
 }
 
-struct Person: Identifiable, Hashable, Decodable {
+struct Person: Identifiable, Hashable, Codable {
     let ID : String
     let FIRSTNAME: String
     let LASTNAME: String
@@ -330,15 +336,7 @@ struct AssignContestSportFestCreate: Encodable {
     let HELPERS: [String]
 }
 
-
-    
-var STORE : [String:[ResultInfo]] = [:];
-
-var SessionToken: String?
-var UserId: String?
-
-
-struct IsLoggedIn: Decodable {
+struct IsLoggedIn: Codable {
     let is_logged_in: Bool
     let role: String
 }
@@ -348,6 +346,10 @@ func isUserLoggedIn() async -> IsLoggedIn {
     var request = URLRequest(url: url)
     request.httpMethod = "GET"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    
+    
+    let cookieHeader = "Token=\(SessionToken ?? "")"
+    request.addValue(cookieHeader, forHTTPHeaderField: "Cookie")
     
     do {
         let result = try await executeURLRequestAsync(request: request)
@@ -365,8 +367,6 @@ func isUserLoggedIn() async -> IsLoggedIn {
     return IsLoggedIn(is_logged_in: false, role: "User")
 }
 
-import Foundation
-
 enum MyResult<Success, Failure: Error> {
     case success(Success)
     case failure(Failure)
@@ -376,6 +376,7 @@ func fetch<T: Codable>(
     from urlString: String,
     ofType type: T.Type,
     cookies: [String: String]? = nil,
+    body: [String: String]? = nil,
     method: String,
     completion: @escaping (MyResult<T, Error>) -> Void
 ) {
@@ -384,18 +385,17 @@ func fetch<T: Codable>(
         return
     }
     
-    // Create a URLRequest
     var request = URLRequest(url: url)
     request.httpMethod = method;
     request.setValue("application/json", forHTTPHeaderField: "Content-Type");
-    
-    // Add cookies to the header if provided
-    if let cookies = cookies {
-        let cookieHeader = cookies.map { "\($0.key)=\($0.value)" }.joined(separator: "; ")
-        request.addValue(cookieHeader, forHTTPHeaderField: "Cookie")
+    if method != "GET" && body != nil {
+        do {
+            request.httpBody = try JSONEncoder().encode(body.unsafelyUnwrapped);
+        } catch { print("Could not encode body: \(error)"); }
     }
     
-    // Create a data task
+    request.addValue(SessionToken ?? "", forHTTPHeaderField: "Cookie");
+    
     let task = URLSession.shared.dataTask(with: request) { data, response, error in
         if let error = error {
             completion(.failure(error))
@@ -407,6 +407,16 @@ func fetch<T: Codable>(
             return
         }
         
+        guard let httpResponse = response as? HTTPURLResponse else {
+            completion(.failure(NSError(domain: "Response error", code: -1, userInfo: nil)))
+            return
+        }
+        
+        if httpResponse.statusCode != 200 {
+            completion(.failure(NSError(domain: "Response error", code: httpResponse.statusCode, userInfo: nil)))
+            return
+        }
+        
         do {
             let decodedData = try JSONDecoder().decode(T.self, from: data)
             completion(.success(decodedData))
@@ -415,11 +425,17 @@ func fetch<T: Codable>(
         }
     }
     
-    // Start the task
     task.resume()
 }
 
-
+extension String {
+    func truncateUntilSemicolon() -> String {
+        if let semicolonIndex = self.firstIndex(of: ";") {
+            return String(self[..<semicolonIndex])
+        }
+        return self
+    }
+}
 
 
 

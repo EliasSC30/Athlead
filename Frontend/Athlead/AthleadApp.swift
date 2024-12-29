@@ -11,7 +11,10 @@ import SwiftUI
 struct AthleadApp: App {
     
     init(){
-        loadPersistentCookies()
+        #if targetEnvironment(simulator)
+        #else
+            loadPersistentCookies()
+        #endif
     }
     
     var body: some Scene {
