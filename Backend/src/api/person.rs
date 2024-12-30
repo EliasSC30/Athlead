@@ -459,7 +459,7 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
     children_query = children_query[..children_query.len()-2].to_string();
 
     let children_query = sqlx::query(&children_query)
-        .execute(db.as_ref())
+        .execute(&mut *tx)
         .await;
     if children_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Insert children error",
@@ -478,7 +478,7 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         } else {
             email_query += ")";
         };
-        let email_query = sqlx::query(&email_query).fetch_all(db.as_ref()).await;
+        let email_query = sqlx::query(&email_query).fetch_all(&mut *tx).await;
         if email_query.is_err() { return HttpResponse::InternalServerError().json(json!({
             "status": "Get Person by email query error",
         })); };
@@ -530,8 +530,6 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
     }))
 
     // Send emails with passwords.
-
-
 }
 
 

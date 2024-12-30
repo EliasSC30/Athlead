@@ -171,7 +171,7 @@ struct JudgeEntryView : View {
                                 // Edit button
                                 Button(action: {
                                     self.editingIndex = index
-                                    self.metricToEdit = self.contestResults[index].metric
+                    
                                     self.nameToEdit = self.contestResults[index].p_firstname
                                     self.showEditSheet = true
                                 }) {
@@ -222,7 +222,7 @@ struct JudgeEntryView : View {
                            onNewResult: {
                                 // Save the edited result back to the list
                                 if !contestResults.isEmpty {
-                                    contestResults[editingIndex] = ContestResult(name: nameToEdit, metric: metricToEdit)
+                                    
                                 }
 
                                 showEditSheet = false

@@ -38,13 +38,8 @@ pub struct ContestEvaluation {
     pub p_gender: String,
     pub p_pics: u8,
 
-    pub length: Option<f64>,
-    pub length_unit: Option<String>,
-    pub weight: Option<f64>,
-    pub weight_unit: Option<String>,
-    pub time: Option<f64>,
-    pub time_unit: Option<String>,
-    pub amount: Option<f64>,
+    pub m_value: f64,
+    pub m_unit: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]

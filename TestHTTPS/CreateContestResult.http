@@ -1,8 +1,0 @@
-POST http://localhost:8000/contestresults
-Content-Type: application/json
-
-{
-  "PERSON_ID": "8f85672a-558b-4a07-bc10-e9908f968392",
-  "CONTEST_ID": "da7081db-0dfc-48d7-b018-577064379941",
-  "time" : 10.0
-}

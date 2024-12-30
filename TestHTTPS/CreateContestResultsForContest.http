@@ -1,29 +1,31 @@
-POST http://localhost:8000/contests/a2756327-826b-4d0d-8478-20b0dc5263b5/contestresults
+POST http://localhost:8000/contests/577139a6-17a6-444e-9275-f9678c9ccc97/contestresults
 Content-Type: application/json
 
-[
+{
+    "results": [
   {
-    "p_id" :  "032c044b-2b8c-4d69-886a-3b06cfe12064",
-    "length" : 10.0
+    "p_id" :  "0f520bdc-b0b8-485b-a262-789b994fa0ef",
+    "value" : 10.0
   },
   {
-    "p_id" :  "058ec3f9-9226-4e79-905c-4f89a4379441",
-    "length" : 13.0
+    "p_id" :  "2098da32-00ff-48b5-9cdf-adf3653216c2",
+    "value" : 13.0
   },
   {
-    "p_id" :  "0d00a437-aa92-42e5-a6e8-1c8d142050bc",
-    "length" : 19.0
+    "p_id" :  "2581f0dc-8d1f-46bd-803c-5e0e7f2958da",
+    "value" : 19.0
   },
   {
-    "p_id" :  "174d774f-f9fc-492d-9769-53e66b9ba26d",
-    "length" : 20.0
+    "p_id" :  "2db4ea61-2926-4037-af5a-2737c1f68a34",
+    "value" : 20.0
   },
   {
-    "p_id" :  "241815ef-7d06-4459-bf0e-da2c668aca19",
-    "length" : 32.0
+    "p_id" :  "3b3c0c80-a89f-41d8-bfa3-b7d7f7231c8c",
+    "value" : 32.0
   },
   {
-    "p_id" :  "29aec1a0-26ee-49e6-84ba-c054ff12209d",
-    "length" : 8.0
+    "p_id" :  "3d9b9c46-0f19-4609-bb60-cea9f7b6d9cd",
+    "value" : 8.0
   }
 ]
+}

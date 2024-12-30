@@ -16,26 +16,14 @@ pub struct CreateContestResult {
     pub CONTEST_ID: String,
 
     // Metric Fields
-    pub time: Option<f64>,
-    pub time_unit: Option<String>,
-    pub length: Option<f64>,
-    pub length_unit: Option<String>,
-    pub weight: Option<f64>,
-    pub weight_unit: Option<String>,
-    pub amount: Option<f64>,
+    pub value: f64,
+    pub unit: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
 pub struct UpdateContestResult {
-    // Metric Fields
-    pub time: Option<f64>,
-    pub time_unit: Option<String>,
-    pub length: Option<f64>,
-    pub length_unit: Option<String>,
-    pub weight: Option<f64>,
-    pub weight_unit: Option<String>,
-    pub amount: Option<f64>,
+    pub value: f64,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
@@ -44,13 +32,13 @@ pub struct CreateContestResultContestView {
     pub p_id: String,
 
     // Metric Fields
-    pub time: Option<f64>,
-    pub time_unit: Option<String>,
-    pub length: Option<f64>,
-    pub length_unit: Option<String>,
-    pub weight: Option<f64>,
-    pub weight_unit: Option<String>,
-    pub amount: Option<f64>,
+    pub value: f64,
+}
+
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
+pub struct BatchContestResults {
+    pub results: Vec<CreateContestResultContestView>,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
@@ -74,13 +62,8 @@ pub struct ContestResultContestView {
     pub p_birth_year: Option<String>,
 
     // Metric Fields
-    pub time: Option<f64>,
-    pub time_unit: Option<String>,
-    pub length: Option<f64>,
-    pub length_unit: Option<String>,
-    pub weight: Option<f64>,
-    pub weight_unit: Option<String>,
-    pub amount: Option<f64>,
+    pub value: f64,
+    pub unit: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]

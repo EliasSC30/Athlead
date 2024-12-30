@@ -2,15 +2,15 @@ POST http://localhost:8000/register
 Content-Type: application/json
 
 {
-  "email": "judge",
+  "email": "admin",
   "password": "pwd",
 
   "first_name": "Elias",
-  "last_name": "judgeFr",
+  "last_name": "Admin",
   "phone": "String",
-  "grade": "Option<String>",
-  "birth_year": "Option<String>",
-  "role": "Judge",
+  "grade": "1a",
+  "birth_year": "1999",
+  "role": "admin",
   "gender": "male",
   "pics": 1
 }

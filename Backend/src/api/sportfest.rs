@@ -420,24 +420,8 @@ pub fn evaluate_contest(mut contest: Vec<ContestEvaluation>) -> Vec<PersonWithPo
 {
     let asc = contest.get(0).unwrap().evaluation == "ASCENDING";
     contest.sort_by(|lhs,rhs| {
-        match lhs.unit.to_lowercase().as_str() {
-            "kg" => {
-                if asc { lhs.weight.unwrap().partial_cmp(&rhs.weight.unwrap()).unwrap() }
-                else { rhs.weight.unwrap().partial_cmp(&lhs.weight.unwrap()).unwrap() }
-            },
-            "s" => {
-                if asc { lhs.time.unwrap().partial_cmp(&rhs.time.unwrap()).unwrap() }
-                else { rhs.time.unwrap().partial_cmp(&lhs.time.unwrap()).unwrap() }
-            },
-            "m" => {
-                if asc { lhs.length.unwrap().partial_cmp(&rhs.length.unwrap()).unwrap() }
-                else { rhs.length.unwrap().partial_cmp(&lhs.length.unwrap()).unwrap() }
-            },
-            _ => {
-                if asc { lhs.amount.unwrap().partial_cmp(&rhs.amount.unwrap()).unwrap() }
-                else { rhs.amount.unwrap().partial_cmp(&lhs.amount.unwrap()).unwrap() }
-            },
-        }
+        if asc { lhs.m_value.partial_cmp(&rhs.m_value).unwrap() }
+        else { rhs.m_value.partial_cmp(&lhs.m_value).unwrap() }
     });
 
     let mut points_for_contestants = Vec::<PersonWithPoint>::with_capacity(contest.len());
@@ -484,13 +468,8 @@ pub async fn sportfests_get_results_by_id_handler(db: web::Data<MySqlPool>,
                                     p.GENDER as p_gender,
                                     p.PICS as p_pics,
 
-                                    m.LENGTH as length,
-                                    m.LENGTHUNIT as length_unit,
-                                    m.WEIGHT as weight,
-                                    m.WEIGHTUNIT as weight_unit,
-                                    m.TIME as time,
-                                    m.TIMEUNIT as time_unit,
-                                    m.AMOUNT as amount
+                                    m.VALUE as m_value,
+                                    m.UNIT as m_unit
 
                                     FROM CONTEST as ct
                                     JOIN C_TEMPLATE as ct_t ON ct.C_TEMPLATE_ID = ct_t.ID

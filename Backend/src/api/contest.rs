@@ -1,11 +1,10 @@
 use crate::model::contest::*;
 use actix_web::{get, patch, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
-use actix_web::rt::signal::ctrl_c;
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
-use crate::api::person::persons_create_batch_handler;
-use crate::model::contestresult::{ContestResultContestView, CreateContestResultContestView, PatchContestResults};
+use crate::model::contestresult::{BatchContestResults, ContestResultContestView, CreateContestResultContestView, PatchContestResults};
+use crate::model::metric::Metric;
 use crate::model::person::{Participant, Person};
 
 pub async fn get_contest(id: String, db: &web::Data<MySqlPool>) -> Result<Contest, String>
@@ -40,13 +39,9 @@ pub async fn contest_get_results_by_id_handler(path: web::Path<String>, db: web:
             p.GRADE AS p_grade,
             p.BIRTH_YEAR AS p_birth_year,
 
-            m.TIME AS time,
-            m.TIMEUNIT AS time_unit,
-            m.LENGTH AS length,
-            m.LENGTHUNIT AS length_unit,
-            m.WEIGHT AS weight,
-            m.WEIGHTUNIT AS weight_unit,
-            m.amount AS amount
+            m.VALUE AS value,
+            m.UNIT AS unit
+
             FROM CONTEST AS ct
                 JOIN CONTESTRESULT as cr ON cr.CONTEST_ID = ?
                 JOIN METRIC as m ON m.ID = cr.METRIC_ID
@@ -67,16 +62,6 @@ pub async fn contest_get_results_by_id_handler(path: web::Path<String>, db: web:
             "message": e.to_string()
         }))
     }
-}
-
-// Assumes unit to be valid and lowercased
-fn get_field(result: &CreateContestResultContestView, unit: &String) -> f64 {
-    match unit.as_str() {
-        "kg" => result.weight,
-        "s"  => result.time,
-        "m"  => result.length,
-        _ => result.amount
-    }.unwrap()
 }
 
 struct PersonToResult {
@@ -138,62 +123,32 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
         PersonToResult {
             m_id,
             p_id: row.try_get("p_id").unwrap(),
-            value: get_field(body.results.iter().find( |result|
-                (*result).p_id == row.try_get::<String, _>("p_id").unwrap()).unwrap(),
-                             &unit.unit.to_lowercase())
+            value: body.results.iter().find( |result|
+                (*result).p_id == row.try_get::<String, _>("p_id").unwrap()).unwrap().value
         }}
         ).collect::<Vec<PersonToResult>>();
 
     let mut metrics_query = String::with_capacity(256);
 
-    let field_to_update = match unit.unit.to_lowercase().as_str() {
-        "kg" => Ok("WEIGHT = "),
-        "s"  => Ok("TIME = "),
-        "m"  => Ok("LENGTH = "),
-        _ => Err("Invalid unit")
-    };
-    if field_to_update.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "Unit to update error",
-        "message": field_to_update.unwrap_err().to_string()
-    })); };
-
     for result in &mut updates_to_do {
-        println!("Resultmid: {}", result.m_id);
         if result.m_id.is_empty() {
             let new_m_id = Uuid::new_v4().to_string();
             result.m_id = new_m_id.clone();
-            metrics_query += "INSERT INTO METRIC (ID,TIME,TIMEUNIT,LENGTH,LENGTHUNIT,WEIGHT,WEIGHTUNIT,AMOUNT) VALUES (\"";
+            metrics_query += "INSERT INTO METRIC (ID,VALUE,UNIT) VALUES ";
             metrics_query += new_m_id.as_str();
             metrics_query += "\",";
-
-            let to_push = if unit.unit.to_lowercase() == "s" { format!("{},", result.value.to_string())
-            } else { "NULL,".to_string() };
+            let to_push = format!("{},\"{}\");", result.value, unit.unit.clone());
             metrics_query += to_push.as_str();
-            metrics_query += if unit.unit.to_lowercase() == "s" {"\"s\","} else {"NULL,"};
 
-            let to_push = if unit.unit.to_lowercase() == "m" { format!("{},", result.value.to_string())
-            } else { "NULL,".to_string() };
-            metrics_query += to_push.as_str();
-            metrics_query += if unit.unit.to_lowercase() == "m" {"\"m\","} else {"NULL,"};
-
-            let to_push = if unit.unit.to_lowercase() == "kg" { format!("{},", result.value.to_string())
-            } else { "NULL,".to_string() };
-            metrics_query += to_push.as_str();
-            metrics_query += if unit.unit.to_lowercase() == "kg" {"\"kg\","} else {"NULL,"};
-
-            let to_push = if unit.unit.to_lowercase() == "" { format!("{});", result.value.to_string())
-            } else { "NULL);".to_string() };
-            metrics_query += to_push.as_str();
         } else {
-            metrics_query += "UPDATE METRIC SET ";
-            metrics_query += field_to_update.unwrap();
+            metrics_query += "UPDATE METRIC SET VALUE = CASE";
             metrics_query += result.value.to_string().as_str();
             metrics_query += " WHERE ID = \"";
             metrics_query += result.m_id.as_str();
             metrics_query += "\"; ";
         }
     }
-    println!("update query: {}", metrics_query);
+    println!("QUERY: {}", metrics_query);
     let mut tx = db.begin().await.expect("Failed to begin transaction");
     let metrics_query = sqlx::query(&metrics_query).execute(&mut *tx).await;
     if metrics_query.is_err() { return HttpResponse::InternalServerError().json(json!({
@@ -211,7 +166,6 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
         ctr_query += result.p_id.to_string().as_str();
         ctr_query += "\"; ";
     }
-    println!("ctr update query: {}", ctr_query);
     let ctr_query = sqlx::query(&ctr_query).execute(&mut *tx).await;
     if ctr_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Update ctr query error",
@@ -226,7 +180,7 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
 }
 
 #[post("/contests/{id}/contestresults")]
-pub async fn contests_create_results(body: web::Json<Vec<CreateContestResultContestView>>,
+pub async fn contests_create_results(body: web::Json<BatchContestResults>,
                                         path: web::Path<String>,
                                         db: web::Data<MySqlPool>)
                                              -> impl Responder
@@ -245,38 +199,22 @@ pub async fn contests_create_results(body: web::Json<Vec<CreateContestResultCont
     let unit = unit.unwrap();
 
     let mut build_metrics_query =
-        String::from("INSERT INTO METRIC (ID, TIME, TIMEUNIT, LENGTH, LENGTHUNIT, WEIGHT, WEIGHTUNIT, AMOUNT) VALUES ");
+        String::from("INSERT INTO METRIC (ID,VALUE,UNIT) VALUES ");
 
     let mut build_cr_query = String::from("INSERT INTO CONTESTRESULT (ID, PERSON_ID, CONTEST_ID, METRIC_ID) VALUES ");
 
-    let mut metric_parameters: Vec<(String, Option<f64>, String, Option<f64>, String, Option<f64>, String, Option<f64>)> = Vec::new();
+    let mut metric_parameters: Vec<Metric> = Vec::new();
     let mut cr_parameters : Vec<(String, String, String, String)> = Vec::new();
 
-    for info in &body.0
+    for info in &body.results
     {
-        let needed_unit_is_there = match unit.unit.to_lowercase().as_str() {
-            "s" => {info.time.is_some()},
-            "m" => {info.length.is_some()},
-            "kg" => {info.weight.is_some()},
-            _ => false
-        };
-        if !needed_unit_is_there { return HttpResponse::BadRequest().json(json!({
-                "status": format!("Need other unit in metrics! Need {}", unit.unit.clone()),
-        })); };
-
-
-        build_metrics_query += "(?, ?, ?, ?, ?, ?, ?, ?),";
+        build_metrics_query += "(?, ?, ?),";
         let new_metric_id = Uuid::new_v4().to_string();
-        metric_parameters.push((
-                new_metric_id.clone(),
-                info.time,
-                info.time_unit.clone().or(Some("s".to_string())).unwrap(),
-                info.length,
-                info.length_unit.clone().or(Some("m".to_string())).unwrap(),
-                info.weight,
-                info.weight_unit.clone().or(Some("kg".to_string())).unwrap(),
-                info.amount
-            ));
+        metric_parameters.push(Metric {
+            id: new_metric_id.clone(),
+            value: info.value,
+            unit: unit.unit.clone(),
+        });
         build_cr_query += "(?, ?, ?, ?),";
         let new_cr_id = Uuid::new_v4().to_string();
         cr_parameters.push((
@@ -291,8 +229,11 @@ pub async fn contests_create_results(body: web::Json<Vec<CreateContestResultCont
     build_cr_query.pop();
 
     let mut metrics_query_builder = sqlx::query(&build_metrics_query);
-    for (id, t, tu, l, lu, w, wu, a) in &metric_parameters {
-        metrics_query_builder = metrics_query_builder.bind(id).bind(t).bind(tu).bind(l).bind(lu).bind(w).bind(wu).bind(a);
+    for metric in &metric_parameters {
+        metrics_query_builder = metrics_query_builder
+                                .bind(metric.id.clone())
+                                .bind(metric.value.clone())
+                                .bind(metric.unit.clone());
     }
 
     let mut cr_query_builder = sqlx::query(&build_cr_query);
@@ -743,6 +684,5 @@ pub async fn contests_create_participants_handler(body: web::Json<CreateParticip
             "message": e.to_string()
         }))
     }
-
 }
 
