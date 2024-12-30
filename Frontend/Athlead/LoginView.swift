@@ -149,7 +149,6 @@ struct LoginView: View {
                             } else {
                                 SessionToken = resp.value(forHTTPHeaderField: "Set-Cookie").unsafelyUnwrapped.truncateUntilSemicolon();
                             }
-                            print("Everything worked: ", loginResponse, "ST ", SessionToken)
                         }
                     } else {
                         DispatchQueue.main.async {

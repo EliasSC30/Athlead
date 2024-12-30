@@ -82,17 +82,25 @@ class QRCodeScannerViewModel: NSObject, ObservableObject {
     }
 
     private func startScanning() {
-        if !captureSession.isRunning {
-            captureSession.startRunning()
+        DispatchQueue.global(qos: .userInitiated).async {
+            if !self.captureSession.isRunning {
+                self.captureSession.startRunning()
+            }
+            DispatchQueue.main.async {
+                self.isScanning = true
+            }
         }
-        isScanning = true
     }
 
     private func stopScanning() {
-        if captureSession.isRunning {
-            captureSession.stopRunning()
+        DispatchQueue.global(qos: .userInitiated).async {
+            if self.captureSession.isRunning {
+                self.captureSession.stopRunning()
+            }
+            DispatchQueue.main.async {
+                self.isScanning = false
+            }
         }
-        isScanning = false
     }
 }
 
@@ -105,7 +113,6 @@ extension QRCodeScannerViewModel: AVCaptureMetadataOutputObjectsDelegate {
         scannedCode = scannedValue
         print("Scanned QR Code: \(scannedValue)")
         
-        
     }
 }
 
@@ -114,16 +121,36 @@ struct CameraPreview: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UIView {
         let view = UIView(frame: .zero)
-        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer.videoGravity = .resizeAspectFill
-        previewLayer.frame = view.layer.bounds
-        view.layer.addSublayer(previewLayer)
+        context.coordinator.setupPreviewLayer(for: view, session: session)
         return view
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
-        if let previewLayer = uiView.layer.sublayers?.first as? AVCaptureVideoPreviewLayer {
-            previewLayer.frame = uiView.bounds
+        DispatchQueue.main.async {
+            if let previewLayer = context.coordinator.previewLayer {
+                previewLayer.frame = uiView.bounds
+            }
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    class Coordinator {
+        var previewLayer: AVCaptureVideoPreviewLayer?
+
+        func setupPreviewLayer(for view: UIView, session: AVCaptureSession) {
+            let previewLayer = AVCaptureVideoPreviewLayer(session: session)
+            previewLayer.videoGravity = .resizeAspectFill
+
+            DispatchQueue.main.async {
+                previewLayer.frame = view.bounds
+                view.layer.addSublayer(previewLayer)
+                self.previewLayer = previewLayer
+            }
         }
     }
 }
+
+

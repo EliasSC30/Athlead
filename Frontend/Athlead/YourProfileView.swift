@@ -28,18 +28,16 @@ struct YourProfileView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    NavigationLink(destination: ContentView()) {
-                        Button (action: {
-                            isLoggedIn = false;
-                            UserRole = "Contestant";
-                            UserId = "";
-                            SessionToken = "";
-                        }){
-                            Label("Log Out", systemImage: "arrowshape.turn.up.backward")
-                                .foregroundColor(.red)
-                                .fontWeight(.bold)
-                        }
-                    }.isDetailLink(false)
+                    Button (action: {
+                        isLoggedIn = false;
+                        UserRole = "Contestant";
+                        UserId = "";
+                        SessionToken = "";
+                    }){
+                        Label("Log Out", systemImage: "arrowshape.turn.up.backward")
+                            .foregroundColor(.red)
+                            .fontWeight(.bold)
+                    }
                 }
                 
                 // Achievements Section

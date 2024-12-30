@@ -17,6 +17,7 @@ pub struct ContestForJudge {
     pub ct_start: NaiveDateTime,
     pub ct_end: NaiveDateTime,
     pub ct_location_name: String,
+    pub ct_unit: String,
     pub sf_name: String,
 }
 

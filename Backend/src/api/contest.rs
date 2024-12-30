@@ -1,9 +1,11 @@
 use crate::model::contest::*;
-use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, patch, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web::rt::signal::ctrl_c;
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
-use crate::model::contestresult::{ContestResultContestView, CreateContestResultContestView};
+use crate::api::person::persons_create_batch_handler;
+use crate::model::contestresult::{ContestResultContestView, CreateContestResultContestView, PatchContestResults};
 use crate::model::person::{Participant, Person};
 
 pub async fn get_contest(id: String, db: &web::Data<MySqlPool>) -> Result<Contest, String>
@@ -27,7 +29,7 @@ pub async fn contest_get_results_by_id_handler(path: web::Path<String>, db: web:
     let master_query = sqlx::query_as!(
         ContestResultContestView,
         r#" SELECT
-            ct.ID AS CONTEST_ID,
+            ct.ID AS ct_id,
 
             p.ID AS p_id,
             p.ROLE AS p_role,
@@ -58,7 +60,6 @@ pub async fn contest_get_results_by_id_handler(path: web::Path<String>, db: web:
     match master_query {
         Ok(result) => HttpResponse::Ok().json(json!({
             "status": "success",
-            "results": result.len(),
             "data": serde_json::to_value(&result).unwrap(),
         })),
         Err(e) => HttpResponse::InternalServerError().json(json!({
@@ -66,6 +67,162 @@ pub async fn contest_get_results_by_id_handler(path: web::Path<String>, db: web:
             "message": e.to_string()
         }))
     }
+}
+
+// Assumes unit to be valid and lowercased
+fn get_field(result: &CreateContestResultContestView, unit: &String) -> f64 {
+    match unit.as_str() {
+        "kg" => result.weight,
+        "s"  => result.time,
+        "m"  => result.length,
+        _ => result.amount
+    }.unwrap()
+}
+
+struct PersonToResult {
+    pub p_id: String,
+    pub m_id: String,
+    pub value: f64
+}
+
+#[patch("/contests/{id}/contestresults")]
+pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
+                                     path: web::Path<String>,
+                                     db: web::Data<MySqlPool>)
+                                     -> impl Responder
+{
+    if body.results.is_empty() { return HttpResponse::BadRequest().json(json!({
+        "status": "No results to update error",
+        "message": "There were no results to update in the body"
+    })); };
+    let contest_id = path.into_inner();
+    let unit = sqlx::query_as!(UnitWrapper,
+        "SELECT ct_t.UNIT as unit FROM CONTEST as ct JOIN C_TEMPLATE as ct_t ON ct.C_TEMPLATE_ID = ct_t.ID WHERE ct.ID = ?",
+        contest_id.clone())
+        .fetch_one(db.as_ref())
+        .await;
+
+    if unit.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Find Contest Error",
+        "message": unit.unwrap_err().to_string()
+    })); };
+    let unit = unit.unwrap();
+
+    let mut person_to_result_query =
+        String::from(r#"SELECT ctr.PERSON_ID as p_id,
+                                  ctr.METRIC_ID as m_id
+                           FROM CONTESTRESULT as ctr WHERE ctr.CONTEST_ID = ""#);
+    person_to_result_query += contest_id.as_str();
+    person_to_result_query += r#"" AND ctr.PERSON_ID IN (""#;
+    for results in &body.results {
+        person_to_result_query += results.p_id.as_str().clone();
+        person_to_result_query += "\",\"";
+    }
+    person_to_result_query.truncate(person_to_result_query.len().saturating_sub(2));
+    person_to_result_query += ")";
+    println!("GETPE {}", person_to_result_query);
+    let person_to_result = sqlx::query(person_to_result_query.as_str()).fetch_all(db.as_ref()).await;
+    if person_to_result.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Get Person to Result error",
+        "message": person_to_result.unwrap_err().to_string()
+    })); };
+    let person_to_result = person_to_result.unwrap();
+    if person_to_result.len() != body.results.len() { return HttpResponse::BadRequest().json(json!({
+        "status": "Invalid person ids",
+        "message": format!("Only {} out of {} ids are valid", person_to_result.len(), body.results.len()),
+    })); };
+
+    let mut updates_to_do = person_to_result.into_iter().map(|row|{
+        let m_id = row.try_get("m_id");
+        let m_id = if m_id.is_err() {String::from("")} else {m_id.unwrap()};
+        PersonToResult {
+            m_id,
+            p_id: row.try_get("p_id").unwrap(),
+            value: get_field(body.results.iter().find( |result|
+                (*result).p_id == row.try_get::<String, _>("p_id").unwrap()).unwrap(),
+                             &unit.unit.to_lowercase())
+        }}
+        ).collect::<Vec<PersonToResult>>();
+
+    let mut metrics_query = String::with_capacity(256);
+
+    let field_to_update = match unit.unit.to_lowercase().as_str() {
+        "kg" => Ok("WEIGHT = "),
+        "s"  => Ok("TIME = "),
+        "m"  => Ok("LENGTH = "),
+        _ => Err("Invalid unit")
+    };
+    if field_to_update.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Unit to update error",
+        "message": field_to_update.unwrap_err().to_string()
+    })); };
+
+    for result in &mut updates_to_do {
+        println!("Resultmid: {}", result.m_id);
+        if result.m_id.is_empty() {
+            let new_m_id = Uuid::new_v4().to_string();
+            result.m_id = new_m_id.clone();
+            metrics_query += "INSERT INTO METRIC (ID,TIME,TIMEUNIT,LENGTH,LENGTHUNIT,WEIGHT,WEIGHTUNIT,AMOUNT) VALUES (\"";
+            metrics_query += new_m_id.as_str();
+            metrics_query += "\",";
+
+            let to_push = if unit.unit.to_lowercase() == "s" { format!("{},", result.value.to_string())
+            } else { "NULL,".to_string() };
+            metrics_query += to_push.as_str();
+            metrics_query += if unit.unit.to_lowercase() == "s" {"\"s\","} else {"NULL,"};
+
+            let to_push = if unit.unit.to_lowercase() == "m" { format!("{},", result.value.to_string())
+            } else { "NULL,".to_string() };
+            metrics_query += to_push.as_str();
+            metrics_query += if unit.unit.to_lowercase() == "m" {"\"m\","} else {"NULL,"};
+
+            let to_push = if unit.unit.to_lowercase() == "kg" { format!("{},", result.value.to_string())
+            } else { "NULL,".to_string() };
+            metrics_query += to_push.as_str();
+            metrics_query += if unit.unit.to_lowercase() == "kg" {"\"kg\","} else {"NULL,"};
+
+            let to_push = if unit.unit.to_lowercase() == "" { format!("{});", result.value.to_string())
+            } else { "NULL);".to_string() };
+            metrics_query += to_push.as_str();
+        } else {
+            metrics_query += "UPDATE METRIC SET ";
+            metrics_query += field_to_update.unwrap();
+            metrics_query += result.value.to_string().as_str();
+            metrics_query += " WHERE ID = \"";
+            metrics_query += result.m_id.as_str();
+            metrics_query += "\"; ";
+        }
+    }
+    println!("update query: {}", metrics_query);
+    let mut tx = db.begin().await.expect("Failed to begin transaction");
+    let metrics_query = sqlx::query(&metrics_query).execute(&mut *tx).await;
+    if metrics_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Update metrics error",
+        "message": metrics_query.unwrap_err().to_string()
+    })); };
+
+    let mut ctr_query = String::with_capacity(256);
+    for result in &updates_to_do {
+        ctr_query += "UPDATE CONTESTRESULT SET METRIC_ID = \"";
+        ctr_query += result.m_id.as_str();
+        ctr_query += "\" WHERE CONTEST_ID = \"";
+        ctr_query += contest_id.as_str();
+        ctr_query += "\" AND PERSON_ID = \"";
+        ctr_query += result.p_id.to_string().as_str();
+        ctr_query += "\"; ";
+    }
+    println!("ctr update query: {}", ctr_query);
+    let ctr_query = sqlx::query(&ctr_query).execute(&mut *tx).await;
+    if ctr_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Update ctr query error",
+        "message": ctr_query.unwrap_err().to_string()
+    })); };
+
+    tx.commit().await.expect("Failed to commit transaction");
+    HttpResponse::Ok().json(json!({
+        "status": "success",
+        "updated_fields": updates_to_do.len()
+    }))
 }
 
 #[post("/contests/{id}/contestresults")]
@@ -143,8 +300,9 @@ pub async fn contests_create_results(body: web::Json<Vec<CreateContestResultCont
         cr_query_builder = cr_query_builder.bind(cr_id).bind(p_id).bind(cont_id).bind(m_id);
     }
 
-    let metrics_res = metrics_query_builder.execute(db.as_ref()).await;
-    let cr_res = cr_query_builder.execute(db.as_ref()).await;
+    let mut tx = db.begin().await.expect("Failed to begin transaction");
+    let metrics_res = metrics_query_builder.execute(&mut *tx).await;
+    let cr_res = cr_query_builder.execute(&mut *tx).await;
 
     if metrics_res.is_err() {return HttpResponse::InternalServerError().json(json!({
         "status": "Metrics Error",
@@ -152,10 +310,12 @@ pub async fn contests_create_results(body: web::Json<Vec<CreateContestResultCont
     }))};
 
     match cr_res {
-        Ok(_) => HttpResponse::Ok().json(json!({
-            "status": "success",
-            "results": cr_parameters.len(),
-        })),
+        Ok(_) => { tx.commit().await.expect("Failed to commit transaction");
+                    HttpResponse::Ok().json(json!({
+                        "status": "success",
+                        "results": cr_parameters.len(),
+                    }))
+        },
         Err(e) => HttpResponse::InternalServerError().json(json!({
             "status": "ContestResult Error",
             "message": e.to_string()
@@ -326,6 +486,7 @@ pub async fn contests_participants_mycontests_handler(db: web::Data<MySqlPool>, 
                     dt.START as ct_start,
                     dt.END as ct_end,
                     lc.NAME as ct_location_name,
+                    ct_ct.UNIT as ct_unit,
                     sf_dt.NAME as sf_name
 
                     FROM CONTEST as ct
@@ -334,6 +495,7 @@ pub async fn contests_participants_mycontests_handler(db: web::Data<MySqlPool>, 
                     JOIN LOCATION as lc ON dt.LOCATION_ID = lc.ID
                     JOIN SPORTFEST as sf ON ct.SPORTFEST_ID = sf.ID
                     JOIN DETAILS as sf_dt ON sf_dt.ID = sf.DETAILS_ID
+                    JOIN C_TEMPLATE as ct_ct ON ct_ct.ID = ct.C_TEMPLATE_ID
                     WHERE ctr.PERSON_ID = ?",user.ID.clone())
         .fetch_all(db.as_ref())
         .await;
@@ -369,6 +531,7 @@ pub async fn contests_judge_mycontests_handler(db: web::Data<MySqlPool>, req: Ht
                     dt.START as ct_start,
                     dt.END as ct_end,
                     lc.NAME as ct_location_name,
+                    ct_ct.UNIT as ct_unit,
                     sf_dt.NAME as sf_name
 
                     FROM CONTEST as ct
@@ -376,6 +539,7 @@ pub async fn contests_judge_mycontests_handler(db: web::Data<MySqlPool>, req: Ht
                     JOIN LOCATION as lc ON dt.LOCATION_ID = lc.ID
                     JOIN SPORTFEST as sf ON ct.SPORTFEST_ID = sf.ID
                     JOIN DETAILS as sf_dt ON sf_dt.ID = sf.DETAILS_ID
+                    JOIN C_TEMPLATE as ct_ct ON ct_ct.ID = ct.C_TEMPLATE_ID
                     WHERE dt.CONTACTPERSON_ID = ?",user.ID.clone())
         .fetch_all(db.as_ref())
         .await;

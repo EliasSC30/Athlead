@@ -1,11 +1,11 @@
-POST http://localhost:8000/sportfests/c762cc82-1555-4aca-9fc1-6350d0b34188/contests
+POST http://localhost:8000/sportfests/9698d122-2332-4f7e-a1cf-56e9166b4f2a/contests
 Content-Type: application/json
 
 {
   "LOCATION_ID": "b2d13368-c5cc-4925-8664-a3e508d2a5e3",
-  "CONTACTPERSON_ID": "241815ef-7d06-4459-bf0e-da2c668aca19",
+  "CONTACTPERSON_ID": "8d0b2b6e-4820-444d-8116-cbe812401055",
   "C_TEMPLATE_ID" : "55e5580a-cd3b-4862-911f-3291974bcbb5",
-  "NAME": "100m Lauf X",
+  "NAME": "Weitsprung tschüsch",
   "START": "2025-12-02T15:30:00",
   "END": "2025-12-02T22:00:00",
   "HELPERS": []

@@ -77,9 +77,7 @@ struct ContentView: View {
                 
                 // <<< Remove to go back
                 
-                fetch(from: "\(apiURL)/loggedin",
-                      ofType: IsLoggedIn.self,
-                      method: "GET") { response in
+                fetch(from: "\(apiURL)/loggedin", ofType: IsLoggedIn.self) { response in
                     switch response {
                     case .success(let loggedIn):
                         isLoggedIn = loggedIn.is_logged_in;

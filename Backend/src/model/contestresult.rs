@@ -55,8 +55,13 @@ pub struct CreateContestResultContestView {
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
+pub struct PatchContestResults {
+    pub results: Vec<CreateContestResultContestView>,
+}
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
 pub struct ContestResultContestView {
-    pub CONTEST_ID: String,
+    pub ct_id: String,
 
     // Person Fields
     pub p_id: String,

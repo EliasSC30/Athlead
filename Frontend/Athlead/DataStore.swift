@@ -9,6 +9,9 @@ import Foundation
 
 var apiURL: String {
     get {
+        if ProcessInfo.processInfo.isiOSAppOnMac {
+            return "http://localhost:8000"
+        }
         #if targetEnvironment(simulator)
                 return "http://localhost:8000"
         #else
@@ -17,10 +20,11 @@ var apiURL: String {
     }
 }
 
-var STORE : [String:[ResultInfo]] = [:];
+var STORE : [String:[ContestResult]] = [:];
 var SessionToken: String?
 var UserId: String?
 var UserRole: String?
+var HasInternetConnection: Bool = true;
 
 struct RegisterData: Encodable {
     let email: String
@@ -50,11 +54,6 @@ struct LoginResponse: Codable {
     let role: String
     let status: String
     let id: String
-}
-
-struct ResultInfo {
-    let name: String
-    let metric: Metric
 }
 
 // Mock Data Structures
@@ -259,6 +258,7 @@ struct ContestForJudge: Codable, Identifiable {
     let ct_location_name: String
     let ct_name: String
     let ct_start: String
+    let ct_unit: String
     let sf_name: String
     
     var id: String { return self.ct_id; }
@@ -336,6 +336,32 @@ struct AssignContestSportFestCreate: Encodable {
     let HELPERS: [String]
 }
 
+struct ContestResult: Codable {
+    let ct_id: String
+
+    let p_id: String
+    let p_role: String
+    let p_firstname: String
+    let p_lastname: String
+    let p_email: String
+    let p_phone: String
+    let p_grade: String?
+    let p_birth_year: String?
+
+    let time: Float64?
+    let time_unit: String?
+    let length: Float64?
+    let length_unit: String?
+    let weight: Float64?
+    let weight_unit: String?
+    let amount: Float64?
+}
+
+struct ContestResultsResponse: Codable {
+    let status: String
+    let data: [ContestResult]
+}
+
 struct IsLoggedIn: Codable {
     let is_logged_in: Bool
     let role: String
@@ -377,7 +403,7 @@ func fetch<T: Codable>(
     ofType type: T.Type,
     cookies: [String: String]? = nil,
     body: [String: String]? = nil,
-    method: String,
+    method: String = "GET",
     completion: @escaping (MyResult<T, Error>) -> Void
 ) {
     guard let url = URL(string: urlString) else {

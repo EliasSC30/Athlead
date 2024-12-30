@@ -1,0 +1,11 @@
+PATCH http://localhost:8000/contests/281e456c-6d11-46e7-9032-759c697ea3d3/contestresults
+Content-Type: application/json
+
+{
+  "results": [
+    {
+      "p_id": "56baaaac-fe55-4908-a1d3-6216205c82d8",
+      "length": 1.123456789
+    }
+  ]
+}

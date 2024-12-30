@@ -19,22 +19,22 @@ extension String {
 }
 
 struct JudgeContestsView : View {
-    let competitions: [ContestForJudge]
+    let contests: [ContestForJudge]
     
     var body: some View {
         NavigationStack {
             VStack {
-                if competitions.isEmpty {
+                if contests.isEmpty {
                     Text("You have no competitions")
                         .padding()
                         .background(Color.white)
                         .shadow(radius: 5.0)
                 } else {
-                    ForEach(competitions.indices, id: \.self) { index in
-                        NavigationLink(destination: JudgeContestView(COMPETITION: competitions[index])) {
+                    ForEach(contests.indices, id: \.self) { index in
+                        NavigationLink(destination: JudgeContestView(contest: contests[index])) {
                             HStack {
                                 VStack(alignment: .leading) {
-                                    Text(competitions[index].ct_name)
+                                    Text(contests[index].ct_name)
                                         .font(.headline)
                                 }
                                 Spacer()
@@ -58,13 +58,13 @@ struct JudgeContestsView : View {
 }
 
 struct JudgeContestView : View {
-    let COMPETITION: ContestForJudge
+    let contest: ContestForJudge
     @State var participants: [Participant] = []
     
     var body: some View {
         NavigationStack {
             VStack {
-                NavigationLink(destination: JudgeEntryView(COMPETITION: COMPETITION)){
+                NavigationLink(destination: JudgeEntryView(contest: contest)){
                     Text("Ergebnisse eintragen")
                 }
                 .padding()
@@ -92,7 +92,7 @@ struct JudgeContestView : View {
                 .padding(.horizontal)
             }
         }.onAppear{
-            fetch(from: "\(apiURL)/contests/\(COMPETITION.ct_id)/participants", ofType: ParticipantsForJudge.self, method: "GET"){result in
+            fetch(from: "\(apiURL)/contests/\(contest.ct_id)/participants", ofType: ParticipantsForJudge.self){ result in
                 switch result {
                 case .success(let participantsResult): participants = participantsResult.data;
                 case .failure(let err): print(err);
@@ -123,9 +123,9 @@ struct JudgeParticipants : View {
 }
 
 struct JudgeEntryView : View {
-    let COMPETITION : ContestForJudge
+    let contest : ContestForJudge
     // Local results that update the results in the store when leaving
-    @State private var results: [ResultInfo] = []
+    @State private var contestResults: [ContestResult] = []
 
     // Variables for adding
     @State private var newParticipantName: String = ""
@@ -137,12 +137,20 @@ struct JudgeEntryView : View {
     @State private var metricToEdit: Metric = Metric()
     @State private var editingIndex: Int = 0
     
+    func getMetricField(contestResult: ContestResult, unit: String) -> Float64 {
+        switch unit.lowercased() {
+        case "m": return contestResult.length.unsafelyUnwrapped;
+        case "s": return contestResult.time.unsafelyUnwrapped;
+        case "kg": return contestResult.weight.unsafelyUnwrapped;
+        default: return contestResult.time.unsafelyUnwrapped;
+        }
+    }
+    
     var body: some View {
         VStack {
             ResultEntry(
-                COMPETITION: COMPETITION.ct_name,
+                contest: contest,
                 onNewResult: {
-                    results.append(ResultInfo(name:newParticipantName, metric:newMetric));
                     newParticipantName = ""
                     newMetric = Metric()
                 },
@@ -151,20 +159,20 @@ struct JudgeEntryView : View {
                 isEdit: false)
             .padding()
             
-            if(!results.isEmpty) {
+            if(!contestResults.isEmpty) {
                 List {
                     Section(header: Text("Eingetragene Ergebnisse").font(.headline)) {
-                        ForEach(results.indices, id: \.self) { index in
+                        ForEach(contestResults.indices, id: \.self) { index in
                             HStack {
-                                    Text("\(results[index].name) \(results[index].metric.time, specifier: "%.2f")\(results[index].metric.timeUnit)")
+                                Text("\(contestResults[index].p_firstname) \(contestResults[index].p_lastname) \(getMetricField(contestResult: contestResults[index], unit: contest.ct_unit), specifier: "%.2f")\(contest.ct_unit.lowercased())")
                                                                         .padding(.leading)
                                 Spacer()
 
                                 // Edit button
                                 Button(action: {
                                     self.editingIndex = index
-                                    self.metricToEdit = self.results[index].metric
-                                    self.nameToEdit = self.results[index].name
+                                    self.metricToEdit = self.contestResults[index].metric
+                                    self.nameToEdit = self.contestResults[index].p_firstname
                                     self.showEditSheet = true
                                 }) {
                                     Image(systemName: "pencil.circle.fill")
@@ -189,21 +197,32 @@ struct JudgeEntryView : View {
         } // VStack
         .onDisappear(){
             // We only write to the store when we leave
-            STORE[COMPETITION.ct_name] = results
+            STORE[contest.ct_name] = contestResults
+            
         }
-        .onAppear(){
-            if(STORE[COMPETITION.ct_name]) != nil {
-                results = STORE[COMPETITION.ct_name]!
+        .onAppear() {
+            if HasInternetConnection {
+                fetch(from: "\(apiURL)/contests/\(contest.ct_id)/contestresults", ofType: ContestResultsResponse.self){
+                    response in
+                    switch response {
+                    case .success(let resp):
+                        contestResults = resp.data;
+                    case .failure(let err): print("Error when fetching contestresults: ", err);
+                    }
+                }
+            } else {
+                if(STORE[contest.ct_name]) != nil { contestResults = STORE[contest.ct_name]! }
             }
+            
         }
         .sheet(isPresented: $showEditSheet) {
-            EditResultView(COMPETITION: COMPETITION.ct_name,
+            EditResultView(contest: contest,
                            nameToEdit: $nameToEdit,
                            metricToEdit: $metricToEdit,
                            onNewResult: {
                                 // Save the edited result back to the list
-                                if !results.isEmpty {
-                                    results[editingIndex] = ResultInfo(name: nameToEdit, metric: metricToEdit)
+                                if !contestResults.isEmpty {
+                                    contestResults[editingIndex] = ContestResult(name: nameToEdit, metric: metricToEdit)
                                 }
 
                                 showEditSheet = false
@@ -215,12 +234,12 @@ struct JudgeEntryView : View {
 
     // Handle deletion via swipe-to-delete
     private func delete(at offsets: IndexSet) {
-        results.remove(atOffsets: offsets)
+        contestResults.remove(atOffsets: offsets)
     }
 }
 
 struct EditResultView: View {
-    let COMPETITION: String
+    let contest: ContestForJudge
     @Binding var nameToEdit : String
     @Binding var metricToEdit: Metric
     var onNewResult: () -> Void
@@ -229,7 +248,7 @@ struct EditResultView: View {
             VStack {
                 Text("Ändere den Eintrag").font(.title).bold().padding(.top, 10).padding(.bottom, 15)
 
-                ResultEntry(COMPETITION:COMPETITION,
+                ResultEntry(contest: contest,
                             onNewResult : onNewResult,
                             name: $nameToEdit,
                             metric : $metricToEdit,
@@ -242,11 +261,29 @@ struct EditResultView: View {
 }
 
 struct ResultEntry: View {
-    let COMPETITION : String
+    let contest : ContestForJudge
     var onNewResult : () -> Void
     @Binding var name: String
     @Binding var metric : Metric
     let isEdit: Bool;
+    
+    func enterUnitText(unit: String) -> String {
+        switch unit.lowercased() {
+            case "m": return "Länge in Metern";
+            case "s": return "Zeit in Sekunden";
+            case "kg": return "Gewicht in Kilogramm";
+            default: return "Unknown unit";
+        }
+    }
+    
+    func getMetricFieldToEdit(metric: Binding<Metric>, unit: String) -> Binding<Float32> {
+        switch unit.lowercased() {
+            case "m": return metric.length;
+            case "s": return metric.time;
+            case "kg": return metric.weight;
+            default: return metric.time;
+        }
+    }
 
     var body: some View {
         VStack(spacing: 1) {
@@ -264,10 +301,10 @@ struct ResultEntry: View {
                 .frame(width: 300)
             
                 FloatInput(onNewResult: onNewResult,
-                           entryTitle: "Zeit in Sekunden",
+                           entryTitle: enterUnitText(unit: contest.ct_unit),
                            name: $name,
-                           value: $metric.time,
-                           startingInput: isEdit ? String(metric.time) : "")
+                           value: getMetricFieldToEdit(metric: $metric, unit: contest.ct_unit),
+                           startingInput: isEdit ? String(getMetricFieldToEdit(metric: $metric, unit: contest.ct_unit).wrappedValue) : "")
 
         }
         .padding()

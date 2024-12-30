@@ -11,15 +11,10 @@ struct JudgeOverviewView: View {
     @State var contests: [ContestForJudge] = [];
     var body: some View {
         VStack {
-                JudgeContestsView(competitions: contests)
+                JudgeContestsView(contests: contests)
             }.onAppear {
-            let cookies = [
-                "Token": """
-                akafbmoipljlmeilmbkiclgffffocdpgdeghnhabboghoffdaohijebiakalknnalipaedlkhegfaonjgbaiihcndeeolhmmecpcaljfjpnicckjjmddooohpadkhghcmfenaaaa
-                """,
-            ]
 
-            fetch(from: "\(apiURL)/contests/judge/mycontests", ofType: ContestForJudgeResponse.self, cookies: cookies, method: "GET") { result in
+            fetch(from: "\(apiURL)/contests/judge/mycontests", ofType: ContestForJudgeResponse.self) { result in
                 switch result {
                 case .success(let myData):
                     contests = myData.data;
