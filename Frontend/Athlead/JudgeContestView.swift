@@ -123,57 +123,46 @@ struct JudgeParticipants : View {
 }
 
 struct JudgeEntryView : View {
-    let contest : ContestForJudge
-    // Local results that update the results in the store when leaving
-    @State private var contestResults: [ContestResult] = []
-
-    // Variables for adding
-    @State private var newParticipantName: String = ""
-    @State private var newMetric: Metric = Metric()
+    @State var contest : ContestForJudge
+    
+    @State private var contestResults: [ContestResult] = [];
     
     // Variables for editing
-    @State private var showEditSheet: Bool = false
-    @State private var nameToEdit: String = ""
-    @State private var metricToEdit: Metric = Metric()
-    @State private var editingIndex: Int = 0
+    @State private var startingInput: String = "";
+    @State private var editingIndex: Int = 0;
     
-    func getMetricField(contestResult: ContestResult, unit: String) -> Float64 {
-        switch unit.lowercased() {
-        case "m": return contestResult.length.unsafelyUnwrapped;
-        case "s": return contestResult.time.unsafelyUnwrapped;
-        case "kg": return contestResult.weight.unsafelyUnwrapped;
-        default: return contestResult.time.unsafelyUnwrapped;
+    private func formattedString(ctr: ContestResult) -> String {
+        var ret = ctr.p_firstname + " " + ctr.p_lastname + " ";
+        if (ctr.value == nil) {
+            ret += "-";
+        } else {
+            ret += floatToString(val: ctr.value!)+contest.ct_unit.lowercased();
         }
+        return ret;
     }
     
     var body: some View {
         VStack {
-            ResultEntry(
-                contest: contest,
-                onNewResult: {
-                    newParticipantName = ""
-                    newMetric = Metric()
-                },
-                name: $newParticipantName,
-                metric: $newMetric,
-                isEdit: false)
-            .padding()
-            
             if(!contestResults.isEmpty) {
+                ResultEntry(
+                    contest: contest,
+                    startingInput: $startingInput,
+                    nameOfParticipant: (contestResults[editingIndex].p_firstname+" "+contestResults[editingIndex].p_lastname),
+                    onNewResult: { (value: Float64) -> Void in contestResults[editingIndex].value = value; }
+                    )
+                .padding()
+                
                 List {
                     Section(header: Text("Eingetragene Ergebnisse").font(.headline)) {
                         ForEach(contestResults.indices, id: \.self) { index in
                             HStack {
-                                Text("\(contestResults[index].p_firstname) \(contestResults[index].p_lastname) \(getMetricField(contestResult: contestResults[index], unit: contest.ct_unit), specifier: "%.2f")\(contest.ct_unit.lowercased())")
-                                                                        .padding(.leading)
+                                Text(formattedString(ctr: contestResults[index])).padding(.leading)
                                 Spacer()
 
                                 // Edit button
                                 Button(action: {
-                                    self.editingIndex = index
-                    
-                                    self.nameToEdit = self.contestResults[index].p_firstname
-                                    self.showEditSheet = true
+                                    self.editingIndex = index;
+                                    startingInput = (contestResults[editingIndex].value == nil) ? "" : String(format:"%.2f",contestResults[editingIndex].value.unsafelyUnwrapped);
                                 }) {
                                     Image(systemName: "pencil.circle.fill")
                                         .foregroundColor(.yellow)
@@ -194,43 +183,33 @@ struct JudgeEntryView : View {
                 Text("Keine Einträge bisher").bold().padding(.vertical, 10)
                 
             }
-        } // VStack
-        .onDisappear(){
-            // We only write to the store when we leave
-            STORE[contest.ct_name] = contestResults
-            
-        }
-        .onAppear() {
-            if HasInternetConnection {
-                fetch(from: "\(apiURL)/contests/\(contest.ct_id)/contestresults", ofType: ContestResultsResponse.self){
-                    response in
-                    switch response {
-                    case .success(let resp):
-                        contestResults = resp.data;
-                    case .failure(let err): print("Error when fetching contestresults: ", err);
-                    }
+        }.onAppear {
+            fetch(from: "\(apiURL)/contests/\(contest.ct_id)/contestresults", ofType: ContestResultsResponse.self){
+                response in
+                switch response {
+                case .success(let resp): contestResults = resp.data;
+                case .failure(let err): print(err);
                 }
-            } else {
-                if(STORE[contest.ct_name]) != nil { contestResults = STORE[contest.ct_name]! }
             }
-            
+        }.onDisappear {
+            var patch = PatchContestResults(results: []);
+            for contestResult in contestResults {
+                print(contestResult)
+                if contestResult.value != nil {
+                    patch.results.append(PatchContestResult(p_id: contestResult.p_id, value: contestResult.value.unsafelyUnwrapped))
+                }
+            }
+            fetch(from:"\(apiURL)/contests/\(contest.ct_id)/contestresults", ofType: PatchContestResultsResponse.self, body: patch, method: "PATCH"){
+                response in
+                switch response {
+                case .success(let resp): print(resp.status)
+                case .failure(let err): print(err)
+                }
+            }
         }
-        .sheet(isPresented: $showEditSheet) {
-            EditResultView(contest: contest,
-                           nameToEdit: $nameToEdit,
-                           metricToEdit: $metricToEdit,
-                           onNewResult: {
-                                // Save the edited result back to the list
-                                if !contestResults.isEmpty {
-                                    
-                                }
-
-                                showEditSheet = false
-                            })
-        }
-        .padding(.top, 10)
     }
-        
+    
+    private func floatToString(val: Float64) -> String { return String(format: "%.2f", val) }
 
     // Handle deletion via swipe-to-delete
     private func delete(at offsets: IndexSet) {
@@ -238,34 +217,11 @@ struct JudgeEntryView : View {
     }
 }
 
-struct EditResultView: View {
-    let contest: ContestForJudge
-    @Binding var nameToEdit : String
-    @Binding var metricToEdit: Metric
-    var onNewResult: () -> Void
-    
-    var body: some View {
-            VStack {
-                Text("Ändere den Eintrag").font(.title).bold().padding(.top, 10).padding(.bottom, 15)
-
-                ResultEntry(contest: contest,
-                            onNewResult : onNewResult,
-                            name: $nameToEdit,
-                            metric : $metricToEdit,
-                            isEdit: true)
-
-            }
-            .padding(.all, 10)
-            .cornerRadius(8)
-    }
-}
-
 struct ResultEntry: View {
     let contest : ContestForJudge
-    var onNewResult : () -> Void
-    @Binding var name: String
-    @Binding var metric : Metric
-    let isEdit: Bool;
+    @Binding var startingInput: String
+    let nameOfParticipant: String
+    var onNewResult : (Float64) -> Void
     
     func enterUnitText(unit: String) -> String {
         switch unit.lowercased() {
@@ -273,15 +229,6 @@ struct ResultEntry: View {
             case "s": return "Zeit in Sekunden";
             case "kg": return "Gewicht in Kilogramm";
             default: return "Unknown unit";
-        }
-    }
-    
-    func getMetricFieldToEdit(metric: Binding<Metric>, unit: String) -> Binding<Float32> {
-        switch unit.lowercased() {
-            case "m": return metric.length;
-            case "s": return metric.time;
-            case "kg": return metric.weight;
-            default: return metric.time;
         }
     }
 
@@ -292,20 +239,12 @@ struct ResultEntry: View {
                 .bold()
                 .padding(.top, 10)
                 .padding(.bottom, 15)
-            
-            Text("Teilnehmer")
 
-            TextField("Name des Teilnehmers", text: $name)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-                .frame(width: 300)
+            Text(nameOfParticipant).padding()
             
-                FloatInput(onNewResult: onNewResult,
-                           entryTitle: enterUnitText(unit: contest.ct_unit),
-                           name: $name,
-                           value: getMetricFieldToEdit(metric: $metric, unit: contest.ct_unit),
-                           startingInput: isEdit ? String(getMetricFieldToEdit(metric: $metric, unit: contest.ct_unit).wrappedValue) : "")
-
+            FloatInput(onNewResult: onNewResult,
+                       entryTitle: enterUnitText(unit: contest.ct_unit),
+                       startingInput: $startingInput)
         }
         .padding()
         .background(Color.white)
@@ -315,43 +254,44 @@ struct ResultEntry: View {
 }
 
 struct FloatInput : View {
-    var onNewResult: () -> Void
+    @State var onNewResult: (Float64) -> Void;
     let entryTitle : String
-    @Binding var name: String
-    @Binding var value: Float32
-    let startingInput: String
+    @State var value: Float64? = nil;
+    @Binding var startingInput: String
 
     @State private var valueInput : String = ""
     @State private var isValid : Bool = false;
 
     var body: some View {
-        Text(entryTitle)
-        
-        TextField("0.0", text: $valueInput)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            .keyboardType(.decimalPad)
-            .padding()
-            .multilineTextAlignment(.center)
-            .frame(width: 90)
-            .foregroundColor(isValid ? .black : .red)
-            .onAppear(){ valueInput = startingInput }
-            .onChange(of: valueInput) {
-                isValid = validateInput(input: valueInput);
-                if(isValid) { value = Float(valueInput.replacingOccurrences(of: ",", with: ".")).unsafelyUnwrapped }
-            }
-
-        Button(action: {
-            if(!name.isEmpty && validateInput(input: valueInput)) {
-                onNewResult();
-                valueInput.removeAll();
-            }
-        }) {
+        VStack {
+            Text(entryTitle)
             
-            Text("Bestätigen").foregroundColor((isValid && !name.isEmpty) ? Color.black : Color.gray)
+            TextField("", text: $valueInput)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .keyboardType(.decimalPad)
+                .padding()
+                .multilineTextAlignment(.center)
+                .frame(width: 90)
+                .foregroundColor(isValid ? .black : .red)
+                .onAppear(){ valueInput = startingInput; }
+                .onChange(of: startingInput){ valueInput = startingInput; }
+                .onChange(of: valueInput) {
+                    isValid = validateInput(input: valueInput);
+                    if(isValid) { self.value = Float64(valueInput.replacingOccurrences(of: ",", with: ".")).unsafelyUnwrapped }
+                }
+            
+            Button(action: {
+                if(validateInput(input: valueInput)) {
+                    valueInput.removeAll();
+                    onNewResult(value.unsafelyUnwrapped);
+                }
+            }) {
+                Text("Bestätigen").foregroundColor((isValid) ? Color.black : Color.gray)
+            }
+            .padding(.vertical, 10)
+            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+            .disabled(!isValid || value == nil)
         }
-        .padding(.vertical, 10)
-        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
-        .disabled(!isValid || name.isEmpty)
     }
     
     private func validateInput(input: String) -> Bool {

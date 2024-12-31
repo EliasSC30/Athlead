@@ -348,18 +348,31 @@ struct ContestResult: Codable {
     let p_grade: String?
     let p_birth_year: String?
 
-    let time: Float64?
-    let time_unit: String?
-    let length: Float64?
-    let length_unit: String?
-    let weight: Float64?
-    let weight_unit: String?
-    let amount: Float64?
+    var value: Float64?
+    var unit: String?
 }
 
 struct ContestResultsResponse: Codable {
     let status: String
     let data: [ContestResult]
+}
+
+struct PersonToResult: Codable {
+    let m_id: String
+    let p_id: String
+    let value: Float64
+}
+struct PatchContestResultsResponse: Codable {
+    let status: String
+    let updated_fields: Int
+}
+
+struct PatchContestResult: Codable {
+    let p_id: String
+    let value: Float64
+}
+struct PatchContestResults: Codable {
+    var results: [PatchContestResult]
 }
 
 struct IsLoggedIn: Codable {
@@ -402,7 +415,7 @@ func fetch<T: Codable>(
     from urlString: String,
     ofType type: T.Type,
     cookies: [String: String]? = nil,
-    body: [String: String]? = nil,
+    body: Encodable? = nil,
     method: String = "GET",
     completion: @escaping (MyResult<T, Error>) -> Void
 ) {

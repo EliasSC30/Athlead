@@ -1,11 +1,11 @@
-POST http://localhost:8000/sportfests/2768be44-a062-4576-9458-4f3dd3217e46/contests
+POST http://localhost:8000/sportfests/957baef5-fc4a-4af2-b208-e554202fc360/contests
 Content-Type: application/json
 
 {
-  "LOCATION_ID": "7ebe0324-714f-4496-8f9b-e0a3c0544ce0",
-  "CONTACTPERSON_ID": "f51b0f8e-65ae-4f62-96d4-f357ab12ba83",
-  "C_TEMPLATE_ID" : "90e670f3-bdf3-4469-8ba5-9ae0bb9943bc",
-  "NAME": "Hürdenlauf",
+  "LOCATION_ID": "981e9d27-9f7e-4181-ae42-f70a785d4bc3",
+  "CONTACTPERSON_ID": "64288101-68b1-469b-a918-ae33c1e514c7",
+  "C_TEMPLATE_ID" : "2c07b28d-4a21-47ca-9f5f-6ef4c4021603",
+  "NAME": "Weitsprung",
   "START": "2025-12-02T15:30:00",
   "END": "2025-12-02T22:00:00",
   "HELPERS": []

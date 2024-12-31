@@ -43,9 +43,10 @@ pub async fn contest_get_results_by_id_handler(path: web::Path<String>, db: web:
             m.UNIT AS unit
 
             FROM CONTEST AS ct
-                JOIN CONTESTRESULT as cr ON cr.CONTEST_ID = ?
-                JOIN METRIC as m ON m.ID = cr.METRIC_ID
+                JOIN CONTESTRESULT as cr ON cr.CONTEST_ID = ct.ID
                 JOIN PERSON as p ON p.ID = cr.PERSON_ID
+                LEFT JOIN METRIC as m ON m.ID = cr.METRIC_ID
+                WHERE ct.ID = ?
             "#,
         contest_id.clone()
     )
@@ -76,6 +77,7 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
                                      db: web::Data<MySqlPool>)
                                      -> impl Responder
 {
+    println!("Body: {:?}", body.0);
     if body.results.is_empty() { return HttpResponse::BadRequest().json(json!({
         "status": "No results to update error",
         "message": "There were no results to update in the body"
@@ -116,7 +118,7 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
         "status": "Invalid person ids",
         "message": format!("Only {} out of {} ids are valid", person_to_result.len(), body.results.len()),
     })); };
-
+println!("person_to_result: {:?}", person_to_result);
     let mut updates_to_do = person_to_result.into_iter().map(|row|{
         let m_id = row.try_get("m_id");
         let m_id = if m_id.is_err() {String::from("")} else {m_id.unwrap()};
@@ -154,7 +156,7 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
     metrics_query += ";";
     delete_query.truncate(delete_query.len().saturating_sub(1));
     delete_query += ");";
-
+println!("metrics_query: {:?}", metrics_query);println!("delete_query: {:?}", delete_query);
     let mut tx = db.begin().await.expect("Failed to begin transaction");
 
     let delete_query = sqlx::query(&delete_query).execute(&mut *tx).await;
@@ -190,7 +192,7 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
             "message": ctr_query.unwrap_err().to_string()
         })); };
     }
-
+println!("came to end");
     tx.commit().await.expect("Failed to commit transaction");
     HttpResponse::Ok().json(json!({
         "status": "success",

@@ -62,8 +62,8 @@ pub struct ContestResultContestView {
     pub p_birth_year: Option<String>,
 
     // Metric Fields
-    pub value: f64,
-    pub unit: String,
+    pub value: Option<f64>,
+    pub unit: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
