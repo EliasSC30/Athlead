@@ -105,7 +105,7 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
     }
     person_to_result_query.truncate(person_to_result_query.len().saturating_sub(2));
     person_to_result_query += ")";
-    println!("GETPE {}", person_to_result_query);
+
     let person_to_result = sqlx::query(person_to_result_query.as_str()).fetch_all(db.as_ref()).await;
     if person_to_result.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Get Person to Result error",
@@ -128,49 +128,68 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
         }}
         ).collect::<Vec<PersonToResult>>();
 
-    let mut metrics_query = String::with_capacity(256);
+    let mut metrics_query = String::from("INSERT INTO METRIC (ID,VALUE,UNIT) VALUES ");
+    let mut delete_query = String::from("DELETE FROM METRIC WHERE ID IN (");
+    let mut new_m_to_p_ids = Vec::<(String,String)>::with_capacity(12);
 
     for result in &mut updates_to_do {
+        let new_m_id = Uuid::new_v4().to_string();
         if result.m_id.is_empty() {
-            let new_m_id = Uuid::new_v4().to_string();
             result.m_id = new_m_id.clone();
-            metrics_query += "INSERT INTO METRIC (ID,VALUE,UNIT) VALUES ";
-            metrics_query += new_m_id.as_str();
-            metrics_query += "\",";
-            let to_push = format!("{},\"{}\");", result.value, unit.unit.clone());
-            metrics_query += to_push.as_str();
+            new_m_to_p_ids.push((new_m_id, result.p_id.clone()));
+        };
+        metrics_query += "(\"";
+        metrics_query += result.m_id.as_str();
+        metrics_query += "\",";
+        let to_push = format!("{},\"{}\"),", result.value, unit.unit.clone());
+        metrics_query += to_push.as_str();
 
-        } else {
-            metrics_query += "UPDATE METRIC SET VALUE = CASE";
-            metrics_query += result.value.to_string().as_str();
-            metrics_query += " WHERE ID = \"";
-            metrics_query += result.m_id.as_str();
-            metrics_query += "\"; ";
+        if !result.m_id.is_empty() {
+            delete_query += "\"";
+            delete_query += result.m_id.clone().as_str();
+            delete_query += "\",";
         }
     }
-    println!("QUERY: {}", metrics_query);
+    metrics_query.truncate(metrics_query.len().saturating_sub(1));
+    metrics_query += ";";
+    delete_query.truncate(delete_query.len().saturating_sub(1));
+    delete_query += ");";
+
     let mut tx = db.begin().await.expect("Failed to begin transaction");
+
+    let delete_query = sqlx::query(&delete_query).execute(&mut *tx).await;
+    if delete_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Delete metrics error",
+        "message": delete_query.unwrap_err().to_string()
+    })); };
+
     let metrics_query = sqlx::query(&metrics_query).execute(&mut *tx).await;
     if metrics_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Update metrics error",
         "message": metrics_query.unwrap_err().to_string()
     })); };
 
-    let mut ctr_query = String::with_capacity(256);
-    for result in &updates_to_do {
-        ctr_query += "UPDATE CONTESTRESULT SET METRIC_ID = \"";
-        ctr_query += result.m_id.as_str();
-        ctr_query += "\" WHERE CONTEST_ID = \"";
-        ctr_query += contest_id.as_str();
-        ctr_query += "\" AND PERSON_ID = \"";
-        ctr_query += result.p_id.to_string().as_str();
-        ctr_query += "\"; ";
+    if !new_m_to_p_ids.is_empty() {
+        let mut ctr_query = String::from("UPDATE CONTESTRESULT SET METRIC_ID = CASE ");
+        for new_m_to_p_id in new_m_to_p_ids {
+            ctr_query += "WHEN CONTEST_ID = \"";
+            ctr_query += contest_id.as_str();
+            ctr_query += "\" AND PERSON_ID = \"";
+            ctr_query += new_m_to_p_id.1.as_str();
+            ctr_query += "\" THEN \"";
+            ctr_query += new_m_to_p_id.0.as_str();
+            ctr_query += "\" ";
+
+        }
+        ctr_query += "ELSE METRIC_ID END;";
+
+        let ctr_query = sqlx::query(&ctr_query).execute(&mut *tx).await;
+        if ctr_query.is_err() {
+            return HttpResponse::InternalServerError().json(json!({
+            "status": "Update ctr query error",
+            "message": ctr_query.unwrap_err().to_string()
+        })); };
     }
-    let ctr_query = sqlx::query(&ctr_query).execute(&mut *tx).await;
-    if ctr_query.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "Update ctr query error",
-        "message": ctr_query.unwrap_err().to_string()
-    })); };
 
     tx.commit().await.expect("Failed to commit transaction");
     HttpResponse::Ok().json(json!({

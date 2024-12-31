@@ -1,10 +1,10 @@
-POST http://localhost:8000/sportfests/0bdf7e2e-728f-492c-b536-881142a62b87/contests
+POST http://localhost:8000/sportfests/2768be44-a062-4576-9458-4f3dd3217e46/contests
 Content-Type: application/json
 
 {
-  "LOCATION_ID": "79e10a6f-0636-4fa2-b457-d596f57dfb73",
-  "CONTACTPERSON_ID": "5cc5ee3c-f9d3-4db6-8ec4-212880001abb",
-  "C_TEMPLATE_ID" : "61652efd-9cd4-4753-a199-30152c1d45f7",
+  "LOCATION_ID": "7ebe0324-714f-4496-8f9b-e0a3c0544ce0",
+  "CONTACTPERSON_ID": "f51b0f8e-65ae-4f62-96d4-f357ab12ba83",
+  "C_TEMPLATE_ID" : "90e670f3-bdf3-4469-8ba5-9ae0bb9943bc",
   "NAME": "Hürdenlauf",
   "START": "2025-12-02T15:30:00",
   "END": "2025-12-02T22:00:00",

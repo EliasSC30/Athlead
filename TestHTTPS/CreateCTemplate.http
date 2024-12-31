@@ -2,9 +2,9 @@ POST http://localhost:8000/ctemplates
 Content-Type: application/json
 
 {
-  "NAME": "Ein Wettkampf",
+  "NAME": "Ein anderer Wettkampf",
   "DESCRIPTION": "Hier wird gewettkampftelt",
-  "GRADERANGE":"Nicht ganz alles erlaubt",
+  "GRADERANGE":"Nicht alles erlaubt",
   "EVALUATION": "ASCENDING",
   "UNIT": "M"
 }
