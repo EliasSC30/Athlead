@@ -705,7 +705,7 @@ pub async fn contests_create_participants_handler(body: web::Json<CreateParticip
     }
 }
 
-#[get("contests/{contest_id}/participants/{participant_id}")]
+#[get("/contests/{contest_id}/participants/{participant_id}")]
 pub async fn contests_check_participant_handler(path: web::Path<(String,String)>, db: web::Data<MySqlPool>) -> impl Responder {
     let (ct_id, p_id) = path.into_inner();
 

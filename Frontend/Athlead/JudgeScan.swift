@@ -4,20 +4,33 @@ import SwiftUI
 
 struct JudgeScanView : View {
     @State private var scannedCode: String? = ""
+    @State private var scannedAParticipant = false
     var body: some View {
         VStack {
+            if (scannedAParticipant){
+                Text("Participant").foregroundColor(Color.green)
+            } else {
+                Text("Not a participant").foregroundColor(Color.red)
+            }
+            
             ScanButton(scannedCode: $scannedCode)
         }.onChange(of: scannedCode){
             let split = scannedCode?.split(separator: ";");
             if split == nil { print("Scanned value was invalid - nil")}
             let unwrappedSplit = split.unsafelyUnwrapped;
             if unwrappedSplit.count != 2 { print("Scanned value was invalid - unexpected format") }
-            let contest_id = unwrappedSplit.first;
-            let user_id = unwrappedSplit.last;
+            let contest_id = unwrappedSplit.first.unsafelyUnwrapped;
+            let user_id = unwrappedSplit.last.unsafelyUnwrapped;
             print("Contest id: ", contest_id)
             print("User id: ", user_id)
             
-            fetch("\(apiURL)/")
+            fetch("\(apiURL)/contests/\(contest_id)/participants/\(user_id)", IsParticipantCheckResponse.self){
+                response in
+                switch response {
+                case .success(let res): scannedAParticipant = res.is_participant; print(res)
+                case .failure(let err): print(err)
+                }
+            }
         }
         
     }

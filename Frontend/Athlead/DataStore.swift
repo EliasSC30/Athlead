@@ -374,6 +374,11 @@ struct PatchContestResults: Codable {
     var results: [PatchContestResult]
 }
 
+struct IsParticipantCheckResponse: Codable {
+    let status: String
+    let is_participant: Bool
+}
+
 struct IsLoggedIn: Codable {
     let is_logged_in: Bool
     let role: String
