@@ -3,7 +3,7 @@ use actix_web::{get, patch, post, web, HttpMessage, HttpRequest, HttpResponse, R
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
-use crate::model::contestresult::{BatchContestResults, ContestResultContestView, CreateContestResultContestView, PatchContestResults};
+use crate::model::contestresult::{ContestResult,BatchContestResults, ContestResultContestView, CreateContestResultContestView, PatchContestResults};
 use crate::model::metric::Metric;
 use crate::model::person::{Participant, Person};
 
@@ -77,7 +77,6 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
                                      db: web::Data<MySqlPool>)
                                      -> impl Responder
 {
-    println!("Body: {:?}", body.0);
     if body.results.is_empty() { return HttpResponse::BadRequest().json(json!({
         "status": "No results to update error",
         "message": "There were no results to update in the body"
@@ -118,7 +117,7 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
         "status": "Invalid person ids",
         "message": format!("Only {} out of {} ids are valid", person_to_result.len(), body.results.len()),
     })); };
-println!("person_to_result: {:?}", person_to_result);
+
     let mut updates_to_do = person_to_result.into_iter().map(|row|{
         let m_id = row.try_get("m_id");
         let m_id = if m_id.is_err() {String::from("")} else {m_id.unwrap()};
@@ -156,7 +155,6 @@ println!("person_to_result: {:?}", person_to_result);
     metrics_query += ";";
     delete_query.truncate(delete_query.len().saturating_sub(1));
     delete_query += ");";
-println!("metrics_query: {:?}", metrics_query);println!("delete_query: {:?}", delete_query);
     let mut tx = db.begin().await.expect("Failed to begin transaction");
 
     let delete_query = sqlx::query(&delete_query).execute(&mut *tx).await;
@@ -192,7 +190,7 @@ println!("metrics_query: {:?}", metrics_query);println!("delete_query: {:?}", de
             "message": ctr_query.unwrap_err().to_string()
         })); };
     }
-println!("came to end");
+
     tx.commit().await.expect("Failed to commit transaction");
     HttpResponse::Ok().json(json!({
         "status": "success",
@@ -705,5 +703,27 @@ pub async fn contests_create_participants_handler(body: web::Json<CreateParticip
             "message": e.to_string()
         }))
     }
+}
+
+#[get("contests/{contest_id}/participants/{participant_id}")]
+pub async fn contests_check_participant_handler(path: web::Path<(String,String)>, db: web::Data<MySqlPool>) -> impl Responder {
+    let (ct_id, p_id) = path.into_inner();
+
+    let query =
+        sqlx::query_as!(ContestResult, "SELECT * FROM CONTESTRESULT WHERE CONTEST_ID = ? AND PERSON_ID = ?",
+        ct_id.clone(), p_id.clone()).fetch_all(db.as_ref()).await;
+    if query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Contest result query error",
+        "message": "Something went wrong, should not happen.."
+    })); };
+    let query = query.unwrap();
+    if query.len() != 1 { return HttpResponse::BadRequest().json(json!({
+        "status": "Not a Participant error",
+    })); };
+
+    HttpResponse::Ok().json(json!({
+        "status": "success",
+        "is_participant": true,
+    }))
 }
 
