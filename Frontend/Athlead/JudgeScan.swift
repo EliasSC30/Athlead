@@ -8,9 +8,9 @@ struct JudgeScanView : View {
     var body: some View {
         VStack {
             if (scannedAParticipant){
-                Text("Participant").foregroundColor(Color.green)
+                Text("Participant").foregroundColor(Color.green).padding()
             } else {
-                Text("Not a participant").foregroundColor(Color.red)
+                Text("Not a participant").foregroundColor(Color.red).padding()
             }
             
             ScanButton(scannedCode: $scannedCode)
