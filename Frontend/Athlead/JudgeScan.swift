@@ -5,45 +5,48 @@ struct JudgeScanView: View {
     @StateObject private var scannerViewModel = QRCodeScannerViewModel()
 
     var body: some View {
-        VStack {
+        ZStack {
             if scannerViewModel.isScanning {
                 CameraPreview(session: scannerViewModel.captureSession)
                     .edgesIgnoringSafeArea(.all)
             } else {
                 Text("QR Code Scanner")
-                    .font(.largeTitle)
                     .padding()
+                    .bold()
             }
 
-            Button(action: {
-                scannerViewModel.toggleScanning()
-            }) {
-                Text(scannerViewModel.isScanning ? "Stop Scanning" : "Start Scan")
-                    .font(.title2)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(scannerViewModel.isScanning ? Color.red : Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .padding(.horizontal)
+            VStack {
+                Spacer()
+
+                Button(action: {
+                    scannerViewModel.toggleScanning()
+                }) {
+                    Text(scannerViewModel.isScanning ? "Stop Scanning" : "Start Scan")
+                        .font(.title2)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(scannerViewModel.isScanning ? Color.red : Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                }
+                .padding(.bottom)
             }
+        }
+        .onAppear {
+            scannerViewModel.configureSession()
         }
     }
 }
 
-class QRCodeScannerViewModel: NSObject, ObservableObject {
+
+class QRCodeScannerViewModel: NSObject, ObservableObject, AVCaptureMetadataOutputObjectsDelegate {
     @Published var isScanning = false
     @Published var scannedCode: String? = nil
 
     let captureSession = AVCaptureSession()
-    private var videoPreviewLayer: AVCaptureVideoPreviewLayer?
 
-    override init() {
-        super.init()
-        setupSession()
-    }
-
-    private func setupSession() {
+    func configureSession() {
         guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else {
             print("No camera available.")
             return
@@ -64,7 +67,6 @@ class QRCodeScannerViewModel: NSObject, ObservableObject {
         let metadataOutput = AVCaptureMetadataOutput()
         if captureSession.canAddOutput(metadataOutput) {
             captureSession.addOutput(metadataOutput)
-
             metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
             metadataOutput.metadataObjectTypes = [.qr]
         } else {
@@ -102,17 +104,21 @@ class QRCodeScannerViewModel: NSObject, ObservableObject {
             }
         }
     }
-}
 
-extension QRCodeScannerViewModel: AVCaptureMetadataOutputObjectsDelegate {
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         guard let metadataObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
               let scannedValue = metadataObject.stringValue else {
             return
         }
-        scannedCode = scannedValue
-        print("Scanned QR Code: \(scannedValue)")
-        
+
+        // Handle the scanned value on the background thread
+            DispatchQueue.global(qos: .userInitiated).async {
+                // Process scanned value here if needed
+                DispatchQueue.main.async {
+                    self.scannedCode = scannedValue
+                    print("Scanned QR Code: \(scannedValue)")
+                }
+            }
     }
 }
 
@@ -121,36 +127,21 @@ struct CameraPreview: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UIView {
         let view = UIView(frame: .zero)
-        context.coordinator.setupPreviewLayer(for: view, session: session)
+        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
+        previewLayer.videoGravity = .resizeAspectFill
+        previewLayer.frame = view.bounds
+        view.layer.addSublayer(previewLayer)
         return view
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
-        DispatchQueue.main.async {
-            if let previewLayer = context.coordinator.previewLayer {
-                previewLayer.frame = uiView.bounds
-            }
-        }
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-
-    class Coordinator {
-        var previewLayer: AVCaptureVideoPreviewLayer?
-
-        func setupPreviewLayer(for view: UIView, session: AVCaptureSession) {
-            let previewLayer = AVCaptureVideoPreviewLayer(session: session)
-            previewLayer.videoGravity = .resizeAspectFill
-
-            DispatchQueue.main.async {
-                previewLayer.frame = view.bounds
-                view.layer.addSublayer(previewLayer)
-                self.previewLayer = previewLayer
-            }
+        if let previewLayer = uiView.layer.sublayers?.first as? AVCaptureVideoPreviewLayer {
+            previewLayer.frame = uiView.bounds
         }
     }
 }
+
+
+
 
 

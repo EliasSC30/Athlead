@@ -1,11 +1,11 @@
-POST http://localhost:8000/sportfests/957baef5-fc4a-4af2-b208-e554202fc360/contests
+POST http://45.81.234.175:8000/sportfests/8d05e1fd-0078-4a78-8ea0-35fdcab48021/contests
 Content-Type: application/json
 
 {
-  "LOCATION_ID": "981e9d27-9f7e-4181-ae42-f70a785d4bc3",
-  "CONTACTPERSON_ID": "64288101-68b1-469b-a918-ae33c1e514c7",
-  "C_TEMPLATE_ID" : "2c07b28d-4a21-47ca-9f5f-6ef4c4021603",
-  "NAME": "Weitsprung",
+  "LOCATION_ID": "de1513b0-8813-4bf7-90db-55dd8b91b1c0",
+  "CONTACTPERSON_ID": "32a31d9e-c9bd-4733-9980-38f6d93cd103",
+  "C_TEMPLATE_ID" : "8de28480-a532-42d8-8f00-d0304a45163e",
+  "NAME": "100m Lauf",
   "START": "2025-12-02T15:30:00",
   "END": "2025-12-02T22:00:00",
   "HELPERS": []

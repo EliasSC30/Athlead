@@ -1,6 +1,6 @@
-POST http://localhost:8000/contests/7ff9e469-f9e5-4373-bc9f-7cceab8716f8/participants
+POST http://45.81.234.175:8000/contests/1366a416-0e2b-4d31-ada5-8c98b5550d45/participants
 Content-Type: application/json
 
 {
-  "participant_ids": ["01cc0426-a436-4288-9437-342599b8ff9a","0cb627ae-5ed0-447b-ace7-e920459886bb","13725f2a-66dd-44ed-bd2e-5a51a0a0fd1d"]
+  "participant_ids": ["062f75b1-c87d-4068-aff5-98c15a2ef1ac","16c0f3ce-f0e9-469d-b2c3-a2292fb74b6e","1a2f93b9-db34-4ce2-a160-02aa03728dd4"]
 }

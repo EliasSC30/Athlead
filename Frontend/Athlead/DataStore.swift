@@ -20,7 +20,6 @@ var apiURL: String {
     }
 }
 
-var STORE : [String:[ContestResult]] = [:];
 var SessionToken: String?
 var UserId: String?
 var UserRole: String?
@@ -412,12 +411,12 @@ enum MyResult<Success, Failure: Error> {
 }
 
 func fetch<T: Codable>(
-    from urlString: String,
-    ofType type: T.Type,
-    cookies: [String: String]? = nil,
-    body: Encodable? = nil,
-    method: String = "GET",
-    completion: @escaping (MyResult<T, Error>) -> Void
+    _ urlString: String,
+    _ responseType: T.Type,
+    _ method: String = "GET",
+    _ cookies: [String: String]? = nil,
+    _ body: Encodable? = nil,
+    _ completion: @escaping (MyResult<T, Error>) -> Void
 ) {
     guard let url = URL(string: urlString) else {
         completion(.failure(NSError(domain: "InvalidURL", code: -1, userInfo: nil)))

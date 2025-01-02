@@ -92,7 +92,7 @@ struct JudgeContestView : View {
                 .padding(.horizontal)
             }
         }.onAppear{
-            fetch(from: "\(apiURL)/contests/\(contest.ct_id)/participants", ofType: ParticipantsForJudge.self){ result in
+            fetch("\(apiURL)/contests/\(contest.ct_id)/participants", ParticipantsForJudge.self){ result in
                 switch result {
                 case .success(let participantsResult): participants = participantsResult.data;
                 case .failure(let err): print(err);
@@ -136,7 +136,7 @@ struct JudgeEntryView : View {
         if (ctr.value == nil) {
             ret += "-";
         } else {
-            ret += floatToString(val: ctr.value!)+contest.ct_unit.lowercased();
+            ret += floatToString(ctr.value!)+contest.ct_unit.lowercased();
         }
         return ret;
     }
@@ -184,7 +184,7 @@ struct JudgeEntryView : View {
                 
             }
         }.onAppear {
-            fetch(from: "\(apiURL)/contests/\(contest.ct_id)/contestresults", ofType: ContestResultsResponse.self){
+            fetch("\(apiURL)/contests/\(contest.ct_id)/contestresults", ContestResultsResponse.self){
                 response in
                 switch response {
                 case .success(let resp): contestResults = resp.data;
@@ -199,17 +199,17 @@ struct JudgeEntryView : View {
                     patch.results.append(PatchContestResult(p_id: contestResult.p_id, value: contestResult.value.unsafelyUnwrapped))
                 }
             }
-            fetch(from:"\(apiURL)/contests/\(contest.ct_id)/contestresults", ofType: PatchContestResultsResponse.self, body: patch, method: "PATCH"){
+            fetch("\(apiURL)/contests/\(contest.ct_id)/contestresults", PatchContestResultsResponse.self, "PATCH", nil, patch){
                 response in
                 switch response {
-                case .success(let resp): print(resp.status)
+                case .success(let resp): print(resp)
                 case .failure(let err): print(err)
                 }
             }
         }
     }
     
-    private func floatToString(val: Float64) -> String { return String(format: "%.2f", val) }
+    private func floatToString(_ val: Float64) -> String { return String(format: "%.2f", val) }
 
     // Handle deletion via swipe-to-delete
     private func delete(at offsets: IndexSet) {
@@ -223,7 +223,7 @@ struct ResultEntry: View {
     let nameOfParticipant: String
     var onNewResult : (Float64) -> Void
     
-    func enterUnitText(unit: String) -> String {
+    func enterUnitText(_ unit: String) -> String {
         switch unit.lowercased() {
             case "m": return "Länge in Metern";
             case "s": return "Zeit in Sekunden";
@@ -243,7 +243,7 @@ struct ResultEntry: View {
             Text(nameOfParticipant).padding()
             
             FloatInput(onNewResult: onNewResult,
-                       entryTitle: enterUnitText(unit: contest.ct_unit),
+                       entryTitle: enterUnitText(contest.ct_unit),
                        startingInput: $startingInput)
         }
         .padding()

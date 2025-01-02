@@ -36,7 +36,7 @@ struct ParticipantView : View {
             }
         }.onAppear {
             print("Trying to fetch my contests with ")
-            fetch(from: "\(apiURL)/contests/participants/mycontests", ofType: ContestForJudgeResponse.self){ result in
+            fetch("\(apiURL)/contests/participants/mycontests", ContestForJudgeResponse.self){ result in
                 switch result {
                 case .success(let result): myContests = result.data;
                 case .failure(let err): print("Could not fetch my contests: ", err);

@@ -14,7 +14,7 @@ struct JudgeOverviewView: View {
                 JudgeContestsView(contests: contests)
             }.onAppear {
 
-            fetch(from: "\(apiURL)/contests/judge/mycontests", ofType: ContestForJudgeResponse.self) { result in
+            fetch("\(apiURL)/contests/judge/mycontests", ContestForJudgeResponse.self) { result in
                 switch result {
                 case .success(let myData):
                     contests = myData.data;
