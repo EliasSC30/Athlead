@@ -114,14 +114,15 @@ struct JudgeParticipants : View {
                     ForEach(participants){ participant in
                         HStack {
                             Text("\(participant.f_name) \(participant.l_name)")
+                            Spacer()
                             if (participant.pics == 1){
                                 Image(systemName: "camera")
                             } else {
                                 Image(systemName: "camera")
                                     .symbolVariant(.slash)
                                     .foregroundColor(Color.red)
+                                    .opacity(0.5)
                             }
-                            
                         }
                         .padding()
                         .background(Color.white)
