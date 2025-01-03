@@ -1,3 +1,5 @@
+extern crate core;
+
 //Jan ist besser
 mod api;
 mod model;
