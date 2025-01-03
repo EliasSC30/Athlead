@@ -393,6 +393,44 @@ struct IsLoggedInResponse: Codable {
     let user: Person
 }
 
+struct PersonWithPoint: Codable {
+    let p_f_name: String
+    let p_l_name: String
+    let p_email: String
+    let p_phone: String
+    let p_grade: String?
+    let p_birth_year: String?
+    let p_role: String
+    let p_gender: String
+    let p_pics: Int
+    let points: Int
+}
+struct PersonWithResult: Codable {
+    let p_f_name: String
+    let p_l_name: String
+    let p_email: String
+    let p_phone: String
+    let p_grade: String?
+    let p_birth_year: String?
+    let p_role: String
+    let p_gender: String
+    let p_pics: Int
+    let value: Float64
+    let unit: String
+    let points: Int
+}
+struct ContestWithResults: Codable {
+    let id: String
+    let unit: String
+    let results: [PersonWithResult]
+}
+
+struct SportfestResultMasterResponse: Codable {
+    let status: String
+    let contests: [ContestWithResults]
+    let contestants_totals: [PersonWithPoint]
+}
+
 extension String {
     func truncateUntilSemicolon() -> String {
         if let semicolonIndex = self.firstIndex(of: ";") {

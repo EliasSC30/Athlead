@@ -347,7 +347,8 @@ struct PersonAddView: View {
                             GRADE: grade,
                             ROLE: selectedRole,
                             PICS: 1,
-                            GENDER: "1"
+                            GENDER: "1",
+                            DISABILITIES: ""
                         );
                         onAdd(person: newPerson)
                         dismiss()
