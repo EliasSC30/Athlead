@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct YourProfileView: View {
+    let loggedOut: () -> Void
     var body: some View {
         NavigationView {
             List {
@@ -110,5 +111,7 @@ struct YourProfileView: View {
         
         // Clear HTTPCookieStorage (if applicable)
         HTTPCookieStorage.shared.cookies?.forEach(HTTPCookieStorage.shared.deleteCookie)
+        
+        loggedOut()
     }
 }

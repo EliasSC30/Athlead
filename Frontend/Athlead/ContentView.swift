@@ -48,7 +48,7 @@ struct ContentView: View {
                                 }
                         }
                         
-                        YourProfileView()
+                        YourProfileView(loggedOut: {() in User = nil; successfullLogin = false; print("Was here")})
                             .tabItem {
                                 Image(systemName: "person.fill")
                                 Text("Profil")
