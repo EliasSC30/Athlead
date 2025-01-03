@@ -59,19 +59,20 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            Task {
                 isLoading = true
-                
                 fetch("loggedin", IsLoggedInResponse.self) { response in
                     switch response {
                     case .success(let loggedIn):
-                        User = loggedIn.user;
-                    case .failure(let err): print(err);
+                        User = loggedIn.person
+                        successfullLogin = User != nil;
+                    case .failure(let err):
+                        User = nil;
+                        successfullLogin = false;
                     }
+                        
                 }
-            
                 isLoading = false
-            }
+            
         }
     }
 }

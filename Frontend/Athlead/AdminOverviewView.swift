@@ -37,8 +37,8 @@ struct AdminOverviewView: View {
                 
                 // Reports and Analytics Section
                 Section(header: Text("Reports & Analytics")) {
-                    NavigationLink(destination: Text("View Performance Reports")) {
-                        Label("Performance Reports", systemImage: "chart.bar")
+                    NavigationLink(destination: AdminSportfestStatsView()) {
+                        Label("View Sportfest reports", systemImage: "chart.bar")
                     }
                     NavigationLink(destination: Text("Generate Participation Statistics")) {
                         Label("Participation Stats", systemImage: "percent")

@@ -166,7 +166,7 @@ struct SportfestLocationCreateResponse: Decodable {
     let status: String
 }
 
-struct SportFestsResponse: Decodable {
+struct SportFestsResponse: Codable {
     let data: [SportfestData]
     let status: String
     
@@ -390,7 +390,7 @@ struct ParentsChildrenResponse: Codable {
 
 struct IsLoggedInResponse: Codable {
     let is_logged_in: Bool
-    let user: Person
+    let person: Person
 }
 
 struct PersonWithPoint: Codable {

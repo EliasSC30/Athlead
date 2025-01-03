@@ -132,11 +132,9 @@ func fetch<T: Codable>(
     
     if let cookieHeader = manualCookieStorage[url.host ?? ""] {
         request.addValue(cookieHeader, forHTTPHeaderField: "Cookie")
-    } else {
-        print("No manually stored cookies for \(url.host ?? "unknown host").")
     }
     
-    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+    let task = sharedSession.dataTask(with: request) { data, response, error in
         if let error = error {
             completion(.failure(error))
             return
@@ -159,6 +157,20 @@ func fetch<T: Codable>(
         
         do {
             let decodedData = try JSONDecoder().decode(T.self, from: data)
+            
+            if let headerFields = httpResponse.allHeaderFields as? [String: String] {
+                let cookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url)
+                
+                if !cookies.isEmpty {
+                    for cookie in cookies {
+                        if let name = cookie.name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed),
+                           let value = cookie.value.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
+                            manualCookieStorage[url.host ?? ""] = "\(name)=\(value)"
+                        }
+                    }
+                    savePersistentCookies()
+                }
+            }
             completion(.success(decodedData))
         } catch {
             completion(.failure(error))

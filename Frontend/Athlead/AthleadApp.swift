@@ -10,16 +10,9 @@ import SwiftUI
 @main
 struct AthleadApp: App {
     
-    init(){
-        #if targetEnvironment(simulator)
-        #else
-            loadPersistentCookies()
-        #endif
-    }
-    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView().onAppear(perform: loadPersistentCookies)
         }
     }
     

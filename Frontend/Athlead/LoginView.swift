@@ -128,55 +128,21 @@ struct LoginView: View {
 
     private func authenticateUser() async {
         print("Authenticating user with email: \(email) and password: \(password)")
-
-        let url = URL(string: "\(apiURL)/login")!
-
-        var request = URLRequest(url: url)
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpMethod = "POST"
+        loginError = ""
         
         let loginData = LoginData(email: email, password: password, token: nil)
-        guard let encodedData = try? JSONEncoder().encode(loginData) else {
-            loginError = "Failed to prepare login request. Please try again."
-            return
-        }
-        request.httpBody = encodedData
         
-        do {
-            let result = try await executeURLRequestAsync(request: request)
+        fetch("login", LoginResponse.self, "POST", nil, loginData) { result in
             switch result {
-            case .success(let resp, let data):
-                if let loginResponse = try? JSONDecoder().decode(LoginResponse.self, from: data) {
-                    if loginResponse.status == "success" {
-                        DispatchQueue.main.async {
-                            self.loginError = ""
-                            User = loginResponse.user
-                            loginAttemptHappened();
-                            
-                            if resp.value(forHTTPHeaderField: "Set-Cookie") == nil {
-                                print("Cookie is nil")
-                            } else {
-                                SessionToken = resp.value(forHTTPHeaderField: "Set-Cookie").unsafelyUnwrapped.truncateUntilSemicolon();
-                            }
-                        }
-                    } else {
-                        DispatchQueue.main.async {
-                            self.loginError = "Incorrect email or password. Please try again."
-                        }
-                    }
+            case .success(let loginResponse):
+                if loginResponse.status == "success" {
+                    User = loginResponse.user
+                    loginAttemptHappened()
                 } else {
-                    DispatchQueue.main.async {
-                        self.loginError = "Invalid server response. Please contact support."
-                    }
+                    loginError = "Incorrect email or password. Please try again."
                 }
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    self.loginError = "Network error: \(error.localizedDescription). Please try again."
-                }
-            }
-        } catch {
-            DispatchQueue.main.async {
-                self.loginError = "Unexpected error: \(error.localizedDescription). Please try again."
+            case .failure( _):
+                loginError = "Incorrect email or password. Please try again."
             }
         }
     }
