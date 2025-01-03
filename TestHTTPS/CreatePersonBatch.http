@@ -1,4 +1,4 @@
-POST http://45.81.234.175:8000/persons/batch
+POST http://localhost:8000/persons/batch
 Content-Type: application/json
 
 {

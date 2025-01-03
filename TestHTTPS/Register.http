@@ -1,16 +1,16 @@
-POST http://45.81.234.175:8000/register
+POST http://localhost:8000/register
 Content-Type: application/json
 
 {
-  "email": "contestant",
+  "email": "admin",
   "password": "pwd",
 
   "first_name": "Elias",
-  "last_name": "Contestant",
+  "last_name": "Admin",
   "phone": "String",
   "grade": "1a",
   "birth_year": "1999",
-  "role": "contestant",
+  "role": "admin",
   "gender": "male",
   "pics": 1,
   "disabilities": ""

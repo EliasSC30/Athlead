@@ -264,7 +264,7 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
 
     let mut passwords_and_emails = Vec::<(String,String)>::with_capacity(30);
 
-    let mut parents_query = String::from("INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE, GENDER, PICS, PASSWORD) VALUES ");
+    let mut parents_query = String::from("INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE, GENDER, PICS, PASSWORD, DISABILITIES) VALUES ");
     let mut index = 0;
     while body.csv.chars().nth(index).unwrap() != ';' {
         let parse = |length: usize, index: &mut usize, delimiter: char|-> String {
@@ -303,7 +303,7 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         append.push_str("0");
         append.push_str(", \"");
         append.push_str(password.as_str());
-        append.push_str("\"), ");
+        append.push_str("\",\"\"), ");
 
         passwords_and_emails.push((email, password));
         parents_query.push_str(append.as_str());
@@ -312,13 +312,13 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
 
     let parents_query = sqlx::query(&parents_query).execute(&mut *tx).await;
     if parents_query.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": format!("Insert Parents error\n{}", parents_query.unwrap_err().to_string()).as_str()
+        "status": format!("Insert Parents error {}", parents_query.unwrap_err().to_string()).as_str()
     })); };
 
     // End of parents, start of children
     index += 2;
 
-    let mut children_query = String::from("INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE, GENDER, PICS, PASSWORD) VALUES ");
+    let mut children_query = String::from("INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE, GENDER, PICS, PASSWORD, DISABILITIES) VALUES ");
 
     let mut parents_and_child = Vec::<(String,String, Option<String>)>::with_capacity(30);
     while index < body.csv.len() {
@@ -379,6 +379,7 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         append.push_str(pics.as_str());
         append.push_str(", \"");
         append.push_str(password.as_str());
+        append.push_str("\", \""); // empty string for disabilities
         append.push_str("\"), ");
 
         children_query.push_str(append.as_str());
