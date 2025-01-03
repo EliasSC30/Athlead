@@ -278,7 +278,8 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         let last_name = parse(10, &mut index, ',');
         let email = parse(24, &mut index, ',');
         let phone = parse(12, &mut index, '\n');
-        let password = generate(8, "abcdefghijklmnopqrstuvwxyz1234567890");
+        // let password = generate(8, "abcdefghijklmnopqrstuvwxyz1234567890");
+        let password = String::from("dev");
 
         let mut append = String::with_capacity(8+10+24+12+4+4+10+8+1+8+31);
         append.push_str("(\"");

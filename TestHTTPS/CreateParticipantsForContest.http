@@ -1,6 +1,6 @@
-POST http://45.81.234.175:8000/contests/1366a416-0e2b-4d31-ada5-8c98b5550d45/participants
+POST http://45.81.234.175:8000/contests/c9919ede-c625-4aa3-99ce-8885cd205aef/participants
 Content-Type: application/json
 
 {
-  "participant_ids": ["c6b6c5e9-b1ae-4a9b-aeb1-677f7f54e620"]
+  "participant_ids": ["0861ab1f-03fa-4f64-afa9-f1c79faf54b6","2b1cc9fc-a089-47ec-9d55-582f6c377b80","3e6c5401-a719-44ff-8b6b-fca29b3f6811"]
 }

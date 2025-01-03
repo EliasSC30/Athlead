@@ -10,7 +10,7 @@ Content-Type: application/json
   "phone": "String",
   "grade": "1a",
   "birth_year": "1999",
-  "role": "judge",
+  "role": "jduge",
   "gender": "male",
   "pics": 1,
   "disabilities": ""

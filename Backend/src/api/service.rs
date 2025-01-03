@@ -73,7 +73,9 @@ pub fn config(conf: &mut web::ServiceConfig) {
         .service(get_logged_in_handler)
 
         // Parents
-        .service(parents_get_children_handler);
+        .service(parents_get_children_handler)
+
+        ;
 
     conf.service(scope);
 }

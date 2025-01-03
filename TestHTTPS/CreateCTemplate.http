@@ -2,7 +2,7 @@ POST http://45.81.234.175:8000/ctemplates
 Content-Type: application/json
 
 {
-  "NAME": "Ein anderer Wettkampf",
+  "NAME": "Ein Wettkampf",
   "DESCRIPTION": "Hier wird gewettkampftelt",
   "GRADERANGE":"Nicht alles erlaubt",
   "EVALUATION": "ASCENDING",

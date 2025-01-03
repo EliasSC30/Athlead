@@ -1,18 +1,17 @@
-use actix_web::{get, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, patch, web, web::Json, web::Path, HttpMessage, HttpRequest, HttpResponse, Responder};
 use actix_web::web::Data;
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
+use crate::api::general::get_user_of_request;
 use crate::model::person::{Person};
-use crate::model::parent_children::{ParentChildren};
+use crate::model::parent_children::{ParentChildren, UpdateChild};
 
 #[get("/parents/children")]
 pub async fn parents_get_children_handler(req: HttpRequest, db: Data<MySqlPool>) -> impl Responder {
-    let container = req.extensions();
-    let user = container.get::<Person>();
-    if user.is_none() { return HttpResponse::InternalServerError().json(json!({
-        "status": "User was none error",
-        "message": "Should not happen..",
-    }))};
+    let user = get_user_of_request(req);
+    if user.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Invalid user error"
+    })); };
     let user = user.unwrap();
 
     let parents_query =
@@ -66,3 +65,36 @@ pub async fn parents_get_children_handler(req: HttpRequest, db: Data<MySqlPool>)
         "data": serde_json::to_value(children).unwrap()
     }))
 }
+
+#[patch("/parents/children/{child_id}")]
+pub async fn parents_children_patch_child_handler(path: Path<String>,
+                                                  db: Data<MySqlPool>,
+                                                  req: HttpRequest,
+                                                  body: Json<UpdateChild>
+) -> impl Responder {
+    let child_id = path.into_inner();
+    let user = get_user_of_request(req);
+    if user.is_err() { return HttpResponse::InternalServerError().json(json!({"status": "Invalid user error"})); };
+    let user = user.unwrap();
+
+    let parents_query =
+        sqlx::query_as!(ParentChildren, "SELECT * FROM PARENT WHERE PARENT_ID = ? AND CHILD_ID = ?",
+        user.ID, child_id.clone()).fetch_one(db.as_ref()).await;
+    if parents_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Internal server error",
+        "message": parents_query.unwrap_err().to_string()
+    })); };
+
+    let update_query = format!("UPDATE PERSON SET PICS = {} WHERE ID = \"{}\"", body.pics, child_id);
+    let update_query = sqlx::query(update_query.as_str()).execute(db.as_ref()).await;
+    if update_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Update person error",
+        "message": update_query.unwrap_err().to_string()
+    })); };
+
+    HttpResponse::Ok().json(json!({
+        "status": "success",
+        "pics_allowed": body.pics
+    }))
+}
+

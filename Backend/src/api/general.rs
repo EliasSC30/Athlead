@@ -1,6 +1,7 @@
-use actix_web::web;
+use actix_web::{web, HttpMessage, HttpRequest};
 use serde::{Deserialize, Serialize};
 use sqlx::MySqlPool;
+use crate::model::person::Person;
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 pub struct FieldWithValue {
@@ -8,11 +9,14 @@ pub struct FieldWithValue {
     pub value: String,
 }
 
-pub async fn optional_update_handler(table_name: &'static str,
-                                     fields: Vec<FieldWithValue>,where_key: String,
-                                        db: &MySqlPool
-) {
-
+pub fn get_user_of_request<'a>(req: HttpRequest) -> Result<Person, &'static str> {
+    let container = req.extensions();
+    let user = container.get::<Person>();
+    if user.is_none() {
+        Err("User not found")
+    } else {
+        Ok((*user.as_ref().unwrap()).clone())
+    }
 }
 pub async fn update_table_handler(table_name: &'static str,
                                   fields: Vec<FieldWithValue>,

@@ -1,0 +1,6 @@
+PATCH http://localhost:8000/parents/children/
+Content-Type: application/json
+
+{
+    "pics": 1
+}
