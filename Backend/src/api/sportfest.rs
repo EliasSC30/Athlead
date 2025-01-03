@@ -668,13 +668,14 @@ pub async fn create_contest_for_sf_handler(body: web::Json<CreateContestForFest>
         "message": format!("Only {}/{} helper have valid ids",helper.len(), body.HELPERS.len()).as_str()
     })); };
 
-    let mut helper_query = String::from("INSERT INTO HELPER (CONTEST_ID, HELPER_ID) VALUES ");
+    let mut helper_query = String::from("INSERT INTO HELPER (CONTEST_ID, HELPER_ID, DESCRIPTION) VALUES ");
 
     for helper in body.HELPERS.clone() {
         helper_query += "(\"";
         helper_query += contest_id.clone().to_string().as_str();
         helper_query += "\", \"";
         helper_query += helper.to_string().as_str();
+        helper_query += "\",\"";
         helper_query += "\"), ";
     }
     helper_query.truncate(helper_query.len().saturating_sub(2));

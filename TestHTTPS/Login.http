@@ -1,4 +1,4 @@
-POST http://localhost:8000/login
+POST http://45.81.234.175:8000/login
 Content-Type: application/json
 
 {

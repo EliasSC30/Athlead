@@ -2,7 +2,7 @@ POST http://45.81.234.175:8000/sportfests
 Content-Type: application/json
 
 {
-  "CONTACTPERSON_ID": "27a10bbc-5eac-4da5-a5a4-f678d1161d69",
+  "CONTACTPERSON_ID": "42d42f32-b297-477b-86fc-8ee7acc35898",
   "fest_name": "Sportfest",
   "fest_start": "2024-12-02T15:30:00",
   "fest_end": "2025-12-02T15:30:00",
