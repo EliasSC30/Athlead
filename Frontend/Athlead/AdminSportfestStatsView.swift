@@ -153,15 +153,18 @@ struct AdminSportfestStatsView: View {
     }
 }
 
+import Charts
+
 struct StatsViewForSportFestView: View {
-    
+
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
-    
     @State private var sportFestResults: SportfestResultMasterResponse? = nil
-    
-    var sportfest: SportfestData
-    
+    @State private var selectedGender: String = "All"
+    @State private var selectedGrade: String = "All"
+
+    let sportfest: SportfestData
+
     var body: some View {
         Group {
             if isLoading {
@@ -171,13 +174,56 @@ struct StatsViewForSportFestView: View {
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
             } else {
-                Text("Stats for \(sportfest.details_name)")
+                VStack {
+                    HStack {
+                        Picker("Gender", selection: $selectedGender) {
+                            Text("All").tag("All")
+                            Text("Male").tag("Male")
+                            Text("Female").tag("Female")
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .blur(radius: sportFestResults?.contests.isEmpty ?? true ? 2 : 0)
+                        
+                        
+                        Picker("Grade", selection: $selectedGrade) {
+                            Text("All").tag("All")
+                            ForEach(uniqueGrades(), id: \.self) { grade in
+                                Text(grade).tag(grade)
+                            }
+                        }.blur(radius: sportFestResults?.contests.isEmpty ?? true ? 2 : 0)
+                    }
+                    .padding()
+
+                    ZStack {
+                        Chart(filteredResults()) {
+                            BarMark(
+                                x: .value("Name", $0.p_f_name + " " + $0.p_l_name),
+                                y: .value("Points", $0.points)
+                            )
+                        }
+                        .padding()
+                        .blur(radius: sportFestResults?.contests.isEmpty ?? true ? 5 : 0)
+                        .overlay(
+                            sportFestResults?.contests.isEmpty ?? true ?
+                            Text("No data for this sportfest available")
+                                .foregroundColor(.black)
+                                .font(.headline)
+                                .multilineTextAlignment(.center)
+                                .background(Color.white.opacity(0.8))
+                                .cornerRadius(8)
+                                .padding()
+                            : nil
+                        )
+                    }
+                }
             }
-        }.onAppear {
+        }
+        .onAppear {
             loadData()
         }
+        .navigationTitle("Stats for \(sportfest.details_name)")
     }
-    
+
     func loadData() {
         isLoading = true
         let sportfest_id = sportfest.sportfest_id
@@ -185,16 +231,28 @@ struct StatsViewForSportFestView: View {
             switch result {
             case .success(let myData):
                 sportFestResults = myData
-                isLoading = false
                 errorMessage = nil
-            case .failure(let error):
                 isLoading = false
+            case .failure(let error):
                 errorMessage = error.localizedDescription
-                print("Error fetching data: \(error)")
+                isLoading = false
             }
         }
-            
     }
-    
-    
+
+    func filteredResults() -> [PersonWithResult] {
+        guard let sportFestResults = sportFestResults else { return [] }
+        let allResults = sportFestResults.contests.flatMap { $0.results }
+
+        return allResults.filter { result in
+            (selectedGender == "All" || result.p_gender == selectedGender) &&
+            (selectedGrade == "All" || result.p_grade == selectedGrade)
+        }
+    }
+
+    func uniqueGrades() -> [String] {
+        guard let sportFestResults = sportFestResults else { return [] }
+        let allGrades = sportFestResults.contests.flatMap { $0.results.compactMap { $0.p_grade } }
+        return Array(Set(allGrades)).sorted()
+    }
 }

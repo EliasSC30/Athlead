@@ -405,7 +405,7 @@ struct PersonWithPoint: Codable {
     let p_pics: Int
     let points: Int
 }
-struct PersonWithResult: Codable {
+struct PersonWithResult: Identifiable, Codable {
     let p_f_name: String
     let p_l_name: String
     let p_email: String
@@ -418,6 +418,8 @@ struct PersonWithResult: Codable {
     let value: Float64
     let unit: String
     let points: Int
+    
+    var id: String { return self.p_email }
 }
 struct ContestWithResults: Codable {
     let id: String
