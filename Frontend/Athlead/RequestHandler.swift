@@ -121,6 +121,8 @@ func fetch<T: Codable>(
         return
     }
     
+    
+    
     var request = URLRequest(url: url)
     request.httpMethod = method;
     request.setValue("application/json", forHTTPHeaderField: "Content-Type");

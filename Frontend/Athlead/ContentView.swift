@@ -29,6 +29,11 @@ struct ContentView: View {
                                     Image(systemName: "person.3.fill")
                                     Text("Administration")
                                 }
+                            JudgeOverviewView()
+                                .tabItem {
+                                    Image(systemName: "sportscourt")
+                                    Text("Wettkämpfe")
+                                }
                         } else if User.unsafelyUnwrapped.ROLE.uppercased() == "JUDGE" {
                             JudgeOverviewView()
                                 .tabItem {
@@ -65,14 +70,14 @@ struct ContentView: View {
                     case .success(let loggedIn):
                         User = loggedIn.person
                         successfullLogin = User != nil;
-                    case .failure(let err):
+                        isLoading = false
+                    case .failure( _):
                         User = nil;
                         successfullLogin = false;
+                        isLoading = false
                     }
                         
                 }
-                isLoading = false
-            
         }
     }
 }

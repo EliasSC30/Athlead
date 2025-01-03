@@ -127,7 +127,7 @@ struct LoginView: View {
     }
 
     private func authenticateUser() async {
-        print("Authenticating user with email: \(email) and password: \(password)")
+        isLoading = true
         loginError = ""
         
         let loginData = LoginData(email: email, password: password, token: nil)
@@ -141,8 +141,10 @@ struct LoginView: View {
                 } else {
                     loginError = "Incorrect email or password. Please try again."
                 }
+                isLoading = false
             case .failure( _):
                 loginError = "Incorrect email or password. Please try again."
+                isLoading = false
             }
         }
     }

@@ -28,7 +28,7 @@ struct YourProfileView: View {
                     }
                     Button (action: {
                         User = nil;
-                        clearCookies();
+                        logout()
                     }){
                         Label("Log Out", systemImage: "arrowshape.turn.up.backward")
                             .foregroundColor(.red)
@@ -92,16 +92,6 @@ struct YourProfileView: View {
             .listStyle(InsetGroupedListStyle())
         }
     }
-}
-
-struct LogoutView: View {
-
-    var body: some View {
-        Text("You have been logged out.")
-            .font(.title)
-            .onAppear(perform: logout)
-    }
-    
     func logout(){
         // Remove cookies stored in memory
         clearCookies()
