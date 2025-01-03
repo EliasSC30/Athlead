@@ -10,7 +10,7 @@ pub async fn get_logged_in_handler(req: HttpRequest) -> impl Responder {
     match user {
         Some(person) => HttpResponse::Ok().json(json!({
             "is_logged_in": true,
-            "role": person.ROLE
+            "person": serde_json::to_value(person).unwrap()
         })),
         None => HttpResponse::Ok().json(json!({
             "is_logged_in": false,

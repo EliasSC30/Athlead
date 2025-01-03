@@ -163,8 +163,7 @@ pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> 
 
     let mut res = HttpResponse::Ok().json(json!({
         "status": "success",
-        "id": user.ID.clone(),
-        "role": user.ROLE.clone()
+        "user": serde_json::to_value(user).unwrap(),
     }));
 
     res.add_cookie(&cookie);

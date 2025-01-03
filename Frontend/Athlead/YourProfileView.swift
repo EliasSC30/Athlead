@@ -33,6 +33,7 @@ struct YourProfileView: View {
                         UserRole = "Contestant";
                         UserId = "";
                         SessionToken = "";
+                        clearCookies();
                     }){
                         Label("Log Out", systemImage: "arrowshape.turn.up.backward")
                             .foregroundColor(.red)
