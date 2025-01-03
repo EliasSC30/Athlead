@@ -14,7 +14,7 @@ pub async fn get_logged_in_handler(req: HttpRequest) -> impl Responder {
         })),
         None => HttpResponse::Ok().json(json!({
             "is_logged_in": false,
-            "role": ""
+            "person": ""
         }))
     }
 }

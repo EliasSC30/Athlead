@@ -382,35 +382,14 @@ struct IsParticipantCheckResponse: Codable {
     let is_participant: Bool
 }
 
-struct IsLoggedIn: Codable {
-    let is_logged_in: Bool
-    let user: Person
+struct ParentsChildrenResponse: Codable {
+    let status: String
+    let children: [Person]
 }
 
-func isUserLoggedIn() async -> MyResult<Person, String> {
-    let url = URL(string: "\(apiURL)/loggedin")!
-    var request = URLRequest(url: url)
-    request.httpMethod = "GET"
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    
-    
-    let cookieHeader = "Token=\(SessionToken ?? "")"
-    request.addValue(cookieHeader, forHTTPHeaderField: "Cookie")
-    
-    do {
-        let result = try await executeURLRequestAsync(request: request)
-        switch result {
-        case .success(_, let data):
-            if let decodedResponse = try? JSONDecoder().decode(IsLoggedIn.self, from: data) {
-                return .success(decodedResponse.user)
-            }
-        default:
-            break
-        }
-    } catch {
-        print("Error during request: \(error)")
-    }
-    return .failure("Could not login");
+struct IsLoggedInResponse: Codable {
+    let is_logged_in: Bool
+    let user: Person
 }
 
 extension String {

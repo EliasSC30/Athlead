@@ -24,7 +24,7 @@ struct JudgeScanView : View {
             print("Contest id: ", contest_id)
             print("User id: ", user_id)
             
-            fetch("\(apiURL)/contests/\(contest_id)/participants/\(user_id)", IsParticipantCheckResponse.self){
+            fetch("contests/\(contest_id)/participants/\(user_id)", IsParticipantCheckResponse.self){
                 response in
                 switch response {
                 case .success(let res): scannedAParticipant = res.is_participant; print(res)

@@ -62,7 +62,7 @@ struct ContentView: View {
             Task {
                 isLoading = true
                 
-                fetch("\(apiURL)/loggedin", IsLoggedIn.self) { response in
+                fetch("loggedin", IsLoggedInResponse.self) { response in
                     switch response {
                     case .success(let loggedIn):
                         User = loggedIn.user;

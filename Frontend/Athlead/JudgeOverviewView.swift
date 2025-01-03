@@ -20,7 +20,7 @@ struct JudgeOverviewView: View {
             }
             }.onAppear {
                 isFetchingContests = true;
-                fetch("\(apiURL)/contests/judge/mycontests", ContestForJudgeResponse.self) { result in
+                fetch("contests/judge/mycontests", ContestForJudgeResponse.self) { result in
                     switch result {
                     case .success(let myData):
                         contests = myData.data;

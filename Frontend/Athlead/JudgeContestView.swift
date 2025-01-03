@@ -96,7 +96,7 @@ struct JudgeContestView : View {
                 .padding(.horizontal)
             }
         }.onAppear {
-            fetch("\(apiURL)/contests/\(contest.ct_id)/participants", ParticipantsForJudge.self){ result in
+            fetch("contests/\(contest.ct_id)/participants", ParticipantsForJudge.self){ result in
                 switch result {
                 case .success(let participantsResult): participants = participantsResult.data;
                 case .failure(let err): print(err);
@@ -199,7 +199,7 @@ struct JudgeEntryView : View {
                 
             }
         }.onAppear {
-            fetch("\(apiURL)/contests/\(contest.ct_id)/contestresults", ContestResultsResponse.self){
+            fetch("contests/\(contest.ct_id)/contestresults", ContestResultsResponse.self){
                 response in
                 switch response {
                 case .success(let resp): contestResults = resp.data;

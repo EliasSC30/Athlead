@@ -116,7 +116,7 @@ func fetch<T: Codable>(
     _ body: Encodable? = nil,
     _ completion: @escaping (MyResult<T, Error>) -> Void
 ) {
-    guard let url = URL(string: urlString) else {
+    guard let url = URL(string: "\(apiURL)/\(urlString)") else {
         completion(.failure(NSError(domain: "InvalidURL", code: -1, userInfo: nil)))
         return
     }
