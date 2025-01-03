@@ -1,4 +1,4 @@
-PATCH http://localhost:8000/parents/children/
+PATCH http://45.81.234.175:8000/parents/child/a5f0d053-07fd-47d7-9392-252df88be9ac
 Content-Type: application/json
 
 {
