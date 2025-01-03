@@ -67,7 +67,7 @@ pub async fn create_person(body: CreatePerson, db: &web::Data<MySqlPool>) -> Res
     let new_person_id = Uuid::new_v4();
 
     let query = sqlx::query(
-        "INSERT INTO PERSON (ID, FIRSTNAME, LASTNAME, EMAIL, PHONE, GRADE, BIRTH_YEAR, ROLE, GENDER, PICS, PASSWORD) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+        "INSERT INTO PERSON (ID,FIRSTNAME,LASTNAME,EMAIL,PHONE,GRADE,BIRTH_YEAR,ROLE,GENDER,PICS,PASSWORD,DISABILITIES) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
         .bind(&new_person_id.to_string())
         .bind(body.first_name.clone())
         .bind(body.last_name.clone())
@@ -79,6 +79,7 @@ pub async fn create_person(body: CreatePerson, db: &web::Data<MySqlPool>) -> Res
         .bind(body.gender.clone())
         .bind(body.pics)
         .bind(body.password.clone())
+        .bind(body.disabilities.clone())
         .execute(db.as_ref())
         .await;
 
