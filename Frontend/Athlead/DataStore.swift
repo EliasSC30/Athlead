@@ -102,7 +102,7 @@ struct PersonCreate: Encodable {
     let role: String
 }
 
-struct PersonCreateResponse: Decodable {
+struct PersonCreateResponse: Codable {
     let data: Person
     let status: String
 }

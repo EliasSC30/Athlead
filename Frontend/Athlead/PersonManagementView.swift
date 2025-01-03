@@ -159,38 +159,15 @@ struct PersonManagementView: View {
         isLoading = true
         errorMessageLoad = nil
         
-        let url = URL(string: "\(apiURL)/persons")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            
-            if let error = error {
-                print("Error \(error)")
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.errorMessageLoad = "Failed to fetch persons"
-                }
-                return
-            }
-            guard let data = data, let personResponse = try? JSONDecoder().decode(PersonsResponse.self, from: data) else {
-                print("Couldn't decode")
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.errorMessageLoad = "Failed to fetch persons"
-                }
-                return
-            }
-            
-            let personData = personResponse.data;
-            DispatchQueue.main.async {
-                for person in personData {
-                    if person.ROLE.uppercased() == "ADMIN" {
+        fetch("persons", PersonsResponse.self) { result in
+            switch result {
+            case .success(let persons):
+                for person in persons.data {
+                    if person.ROLE.lowercased() == "admin" {
                         if !personsAdmins.contains(person) {
                             personsAdmins.append(person)
                         }
-                    } else if person.ROLE.uppercased() == "JUDGE" {
+                    } else if person.ROLE.lowercased() == "judge" {
                         if !personsJudges.contains(person) {
                             personsJudges.append(person)
                         }
@@ -200,10 +177,14 @@ struct PersonManagementView: View {
                         }
                     }
                 }
-                self.isLoading = false
-                self.errorMessageLoad = nil
+                isLoading = false
+            case .failure(let error):
+                print("Error fetching persons: \(error)")
+                isLoading = false
+                errorMessageLoad = "Failed to fetch persons"
             }
-        }.resume()
+            
+        }
     }
     
     private func deletePerson(at offsets: IndexSet) {
@@ -260,12 +241,9 @@ struct PersonAddView: View {
     var onAddVoid: (Person) -> Void
     
     private func onAdd(person: Person) {
-        let url = URL(string: "\(apiURL)/persons")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let personToCreate = PersonCreate(first_name: person.FIRSTNAME,
+        
+        let person = PersonCreate(first_name: person.FIRSTNAME,
                                           last_name: person.LASTNAME,
                                           email: person.EMAIL,
                                           phone: person.PHONE,
@@ -273,30 +251,14 @@ struct PersonAddView: View {
                                           grade: person.GRADE,
                                           role: person.ROLE.uppercased());
         
-        guard let encoded = try? JSONEncoder().encode(personToCreate) else {
-            print("Couldn't decode by contactinfo")
-            return
+        fetch("persons", PersonCreateResponse.self, "POST", nil, person) { result in
+            switch result {
+            case .success(let person):
+                onAddVoid(person.data)
+            case .failure(let error):
+                print("Error adding person: \(error)")
+            }
         }
-        
-        request.httpBody = encoded
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error \(error)")
-                return
-            }
-            
-            guard let data = data, let response = try? JSONDecoder().decode(PersonCreateResponse.self, from: data) else {
-                print("Couldn't decode")
-                DispatchQueue.main.async {
-                    print("Person added")
-                    onAddVoid(person)
-                }
-                return
-            }
-            
-        }.resume()
-        
     }
     
     var body: some View {
