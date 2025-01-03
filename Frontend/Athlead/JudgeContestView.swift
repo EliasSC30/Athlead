@@ -110,12 +110,22 @@ struct JudgeParticipants : View {
             if participants.isEmpty{
                 Text("Bisher keine Teilnehmer")
             } else {
-                ForEach(participants){ participant in
-                    HStack {
-                        Text("\(participant.f_name) \(participant.l_name)")
+                List {
+                    ForEach(participants){ participant in
+                        HStack {
+                            Text("\(participant.f_name) \(participant.l_name)")
+                            if (participant.pics == 1){
+                                Image(systemName: "camera")
+                            } else {
+                                Image(systemName: "camera")
+                                    .symbolVariant(.slash)
+                                    .foregroundColor(Color.red)
+                            }
+                            
+                        }
+                        .padding()
+                        .background(Color.white)
                     }
-                    .padding()
-                    .background(Color.white)
                 }
             }
         }
