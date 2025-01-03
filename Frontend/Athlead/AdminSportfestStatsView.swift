@@ -162,6 +162,10 @@ struct StatsViewForSportFestView: View {
     @State private var sportFestResults: SportfestResultMasterResponse? = nil
     @State private var selectedGender: String = "All"
     @State private var selectedGrade: String = "All"
+    @State private var selectedParallelClassGroup: String = "All"
+    @State private var selectedDisplayMetric: String = "Points" // Default metric
+    @State private var isSettingsSheetPresented: Bool = false // State for showing settings sheet
+
 
     let sportfest: SportfestData
 
@@ -174,46 +178,19 @@ struct StatsViewForSportFestView: View {
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
             } else {
-                VStack {
-                    HStack {
-                        Picker("Gender", selection: $selectedGender) {
-                            Text("All").tag("All")
-                            Text("Male").tag("Male")
-                            Text("Female").tag("Female")
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                        .blur(radius: sportFestResults?.contests.isEmpty ?? true ? 2 : 0)
-                        
-                        
-                        Picker("Grade", selection: $selectedGrade) {
-                            Text("All").tag("All")
-                            ForEach(uniqueGrades(), id: \.self) { grade in
-                                Text(grade).tag(grade)
+                ScrollView {
+                    VStack {
+                        if let contests = sportFestResults?.contests {
+                            ForEach(contests, id: \.id) { contest in
+                                ContestChartView(
+                                    contest: contest,
+                                    selectedGender: selectedGender,
+                                    selectedGrade: selectedGrade,
+                                    selectedParallelClassGroup: selectedParallelClassGroup,
+                                    selectedDisplayMetric: selectedDisplayMetric
+                                )
                             }
-                        }.blur(radius: sportFestResults?.contests.isEmpty ?? true ? 2 : 0)
-                    }
-                    .padding()
-
-                    ZStack {
-                        Chart(filteredResults()) {
-                            BarMark(
-                                x: .value("Name", $0.p_f_name + " " + $0.p_l_name),
-                                y: .value("Points", $0.points)
-                            )
                         }
-                        .padding()
-                        .blur(radius: sportFestResults?.contests.isEmpty ?? true ? 5 : 0)
-                        .overlay(
-                            sportFestResults?.contests.isEmpty ?? true ?
-                            Text("No data for this sportfest available")
-                                .foregroundColor(.black)
-                                .font(.headline)
-                                .multilineTextAlignment(.center)
-                                .background(Color.white.opacity(0.8))
-                                .cornerRadius(8)
-                                .padding()
-                            : nil
-                        )
                     }
                 }
             }
@@ -222,8 +199,58 @@ struct StatsViewForSportFestView: View {
             loadData()
         }
         .navigationTitle("Stats for \(sportfest.details_name)")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    isSettingsSheetPresented.toggle()
+                }) {
+                    Image(systemName: "gearshape")
+                        .imageScale(.large)
+                }
+            }
+        }
+        .sheet(isPresented: $isSettingsSheetPresented) {
+            SettingsSheet(
+                selectedGender: $selectedGender,
+                selectedGrade: $selectedGrade,
+                selectedParallelClassGroup: $selectedParallelClassGroup,
+                selectedDisplayMetric: $selectedDisplayMetric,
+                isPresented: $isSettingsSheetPresented,
+                uniqueGrades: uniqueGrades(),
+                uniqueParallelClassGroups: uniqueParallelClassGroups()
+            )
+        }
+    }
+    
+    // MARK: - Filters Section
+    @ViewBuilder
+    private func filtersSection() -> some View {
+        HStack {
+            Picker("Gender", selection: $selectedGender) {
+                Text("All").tag("All")
+                Text("Male").tag("Male")
+                Text("Female").tag("Female")
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            
+            Picker("Grade", selection: $selectedGrade) {
+                Text("All").tag("All")
+                ForEach(uniqueGrades(), id: \.self) { grade in
+                    Text(grade).tag(grade)
+                }
+            }
+            
+            Picker("Group", selection: $selectedParallelClassGroup) {
+                Text("All").tag("All")
+                ForEach(uniqueParallelClassGroups(), id: \.self) { group in
+                    Text("Grade \(group)").tag(group)
+                }
+            }
+        }
+        .padding()
     }
 
+    // MARK: - Data Loading
     func loadData() {
         isLoading = true
         let sportfest_id = sportfest.sportfest_id
@@ -240,19 +267,113 @@ struct StatsViewForSportFestView: View {
         }
     }
 
-    func filteredResults() -> [PersonWithResult] {
-        guard let sportFestResults = sportFestResults else { return [] }
-        let allResults = sportFestResults.contests.flatMap { $0.results }
-
-        return allResults.filter { result in
-            (selectedGender == "All" || result.p_gender == selectedGender) &&
-            (selectedGrade == "All" || result.p_grade == selectedGrade)
-        }
-    }
-
+    // MARK: - Helpers
     func uniqueGrades() -> [String] {
         guard let sportFestResults = sportFestResults else { return [] }
         let allGrades = sportFestResults.contests.flatMap { $0.results.compactMap { $0.p_grade } }
         return Array(Set(allGrades)).sorted()
+    }
+
+    func uniqueParallelClassGroups() -> [String] {
+        guard let sportFestResults = sportFestResults else { return [] }
+        let allGroups = sportFestResults.contests.flatMap { $0.results.compactMap { grade in
+            grade.p_grade?.prefix(while: { $0.isNumber })
+        }}
+        return Array(Set(allGroups)).sorted(by: { $0.localizedStandardCompare($1) == .orderedAscending }).map { String($0) }
+    }
+}
+
+struct ContestChartView: View {
+    let contest: ContestWithResults
+    let selectedGender: String
+    let selectedGrade: String
+    let selectedParallelClassGroup: String
+    let selectedDisplayMetric: String
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("Contest: \(contest.id) (\(contest.unit))")
+                .font(.headline)
+                .padding()
+            
+            Chart(filteredResults()) { result in
+                if selectedDisplayMetric == "Points" {
+                    BarMark(
+                        x: .value("Name", result.p_f_name + " " + result.p_l_name),
+                        y: .value("Points", result.points)
+                    )
+                } else {
+                    BarMark(
+                        x: .value("Name", result.p_f_name + " " + result.p_l_name),
+                        y: .value("Value", result.value)
+                    )
+                }
+            }
+            .padding()
+        }
+        .background(Color(.systemGray6))
+        .cornerRadius(10)
+        .padding(.horizontal)
+    }
+
+    func filteredResults() -> [PersonWithResult] {
+        return contest.results.filter { result in
+            (selectedGender.lowercased() == "all" || result.p_gender.lowercased() == selectedGender.lowercased()) &&
+            (selectedGrade.lowercased() == "all" || result.p_grade?.lowercased() == selectedGrade.lowercased()) &&
+            (selectedParallelClassGroup == "All" ||
+             (result.p_grade!.prefix(while: { $0.isNumber }) == selectedParallelClassGroup))
+        }
+    }
+}
+struct SettingsSheet: View {
+    @Binding var selectedGender: String
+    @Binding var selectedGrade: String
+    @Binding var selectedParallelClassGroup: String
+    @Binding var selectedDisplayMetric: String
+    @Binding var isPresented: Bool
+    
+    
+    let uniqueGrades: [String]
+    let uniqueParallelClassGroups: [String]
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("Filters")) {
+                    Picker("Gender", selection: $selectedGender) {
+                        Text("All").tag("All")
+                        Text("Male").tag("Male")
+                        Text("Female").tag("Female")
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+
+                    Picker("Grade", selection: $selectedGrade) {
+                        Text("All").tag("All")
+                        ForEach(uniqueGrades, id: \.self) { grade in
+                            Text(grade).tag(grade)
+                        }
+                    }
+
+                    Picker("Group", selection: $selectedParallelClassGroup) {
+                        Text("All").tag("All")
+                        ForEach(uniqueParallelClassGroups, id: \.self) { group in
+                            Text("Grade \(group)").tag(group)
+                        }
+                    }
+                }
+
+                Section(header: Text("Display Metric")) {
+                    Picker("Metric", selection: $selectedDisplayMetric) {
+                        Text("Points").tag("Points")
+                        Text("Value").tag("Value")
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                }
+            }
+            .navigationTitle("Settings")
+            .navigationBarItems(trailing: Button("Done") {
+                isPresented = false
+            })
+        }
     }
 }
