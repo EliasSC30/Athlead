@@ -416,7 +416,7 @@ pub fn placing_points(placing: usize) -> u32
     }
 }
 
-pub fn evaluate_contest(mut contest: Vec<ContestEvaluation>) -> Vec<PersonWithPoint>
+pub fn evaluate_contest(mut contest: Vec<ContestEvaluation>) -> Vec<PersonWithResult>
 {
     let asc = contest.get(0).unwrap().evaluation == "ASCENDING";
     contest.sort_by(|lhs,rhs| {
@@ -424,11 +424,11 @@ pub fn evaluate_contest(mut contest: Vec<ContestEvaluation>) -> Vec<PersonWithPo
         else { rhs.m_value.partial_cmp(&lhs.m_value).unwrap() }
     });
 
-    let mut points_for_contestants = Vec::<PersonWithPoint>::with_capacity(contest.len());
+    let mut points_for_contestants = Vec::<PersonWithResult>::with_capacity(contest.len());
     for index in 0..contest.len() {
         let info = contest.get(index).unwrap();
         points_for_contestants.push(
-            PersonWithPoint {
+            PersonWithResult {
                 p_f_name: info.p_f_name.clone(),
                 p_l_name: info.p_l_name.clone(),
                 p_email: info.p_email.clone(),
@@ -438,10 +438,27 @@ pub fn evaluate_contest(mut contest: Vec<ContestEvaluation>) -> Vec<PersonWithPo
                 p_role: info.p_role.clone(),
                 p_gender: info.p_gender.clone(),
                 p_pics: info.p_pics.clone(),
+                value: info.m_value,
+                unit: info.m_unit.clone(),
                 points: placing_points(index)});
     }
 
     points_for_contestants
+}
+
+pub fn person_result_to_person_point(p: PersonWithResult) -> PersonWithPoint {
+    PersonWithPoint{
+        p_f_name: p.p_f_name.clone(),
+        p_l_name: p.p_l_name.clone(),
+        p_email: p.p_email.clone(),
+        p_phone: p.p_phone.clone(),
+        p_grade: p.p_grade.clone(),
+        p_birth_year: p.p_birth_year.clone(),
+        p_role: p.p_role.clone(),
+        p_gender: p.p_gender.clone(),
+        p_pics: p.p_pics.clone(),
+        points: p.points,
+    }
 }
 
 #[get("/sportfests/{id}/results")]
@@ -526,7 +543,7 @@ pub async fn sportfests_get_results_by_id_handler(db: web::Data<MySqlPool>,
                     points: prev_entry.points + result.points};
                 total_points.insert(result.p_email.clone(), updated);
             } else {
-                total_points.insert(result.p_email.clone(), result.clone());
+                total_points.insert(result.p_email.clone(), person_result_to_person_point(result));
             }
         });
     });
