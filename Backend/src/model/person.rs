@@ -13,7 +13,8 @@ pub struct Person {
     pub ROLE: String,
     pub GENDER: String,
     pub PICS: u8,
-    pub PASSWORD: String
+    pub PASSWORD: String,
+    pub DISABILITIES: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
@@ -29,6 +30,7 @@ pub struct Participant {
     pub role: String,
     pub gender: String,
     pub pics: u8,
+    pub disabilities: String,
 }
 
 impl Person {
@@ -44,7 +46,8 @@ impl Person {
             ROLE: self.ROLE.clone(),
             GENDER: self.GENDER.clone(),
             PICS: self.PICS.clone(),
-            PASSWORD: self.PASSWORD.clone()
+            PASSWORD: self.PASSWORD.clone(),
+            DISABILITIES: self.DISABILITIES.clone()
         }
     }
 }
@@ -66,7 +69,8 @@ pub struct CreatePerson {
     pub role: String,
     pub gender: String,
     pub pics: u8,
-    pub password: String
+    pub password: String,
+    pub disabilities: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

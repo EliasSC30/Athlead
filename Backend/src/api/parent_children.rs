@@ -57,6 +57,8 @@ pub async fn parents_get_children_handler(req: HttpRequest, db: Data<MySqlPool>)
         GENDER: row.try_get("GENDER").unwrap(),
         PICS: row.try_get("PICS").unwrap(),
         PASSWORD: "".to_string(),
+        DISABILITIES: row.try_get("DISABILITIES").unwrap(),
+
     } ).collect::<Vec<Person>>();
 
     HttpResponse::Ok().json(json!({

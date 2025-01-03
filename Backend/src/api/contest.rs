@@ -409,7 +409,8 @@ pub async fn contests_get_participants_handler(path: web::Path<String>, db: web:
                   p.BIRTH_YEAR as birth_year,
                   p.ROLE as role,
                   p.GENDER as gender,
-                  p.PICS as pics
+                  p.PICS as pics,
+                  p.DISABILITIES as disabilities
 
                   FROM CONTEST as ct
                   JOIN CONTESTRESULT as ctr ON ct.ID = ctr.CONTEST_ID

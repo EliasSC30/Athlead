@@ -94,7 +94,8 @@ pub async fn create_person(body: CreatePerson, db: &web::Data<MySqlPool>) -> Res
             ROLE: body.role.clone(),
             GENDER: body.gender.clone(),
             PICS: body.pics,
-            PASSWORD: body.password.clone()
+            PASSWORD: body.password.clone(),
+            DISABILITIES: body.disabilities.clone()
         }),
         Err(e) => Err(e.to_string())
     }

@@ -53,7 +53,8 @@ pub async fn register_handler(body: web::Json<Register>, db: web::Data<MySqlPool
         birth_year: body.birth_year.clone(),
         gender: body.gender.clone(),
         pics: body.pics,
-        password: hashed_password.to_string()
+        password: hashed_password.to_string(),
+        disabilities: body.disabilities.clone()
     };
 
     let create_person = create_person(person_for_create, &db).await;

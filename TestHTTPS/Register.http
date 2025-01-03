@@ -12,5 +12,6 @@ Content-Type: application/json
   "birth_year": "1999",
   "role": "contestant",
   "gender": "male",
-  "pics": 1
+  "pics": 1,
+  "disabilities": ""
 }

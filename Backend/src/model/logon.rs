@@ -15,6 +15,7 @@ pub struct Register {
     pub role: String,
     pub gender: String,
     pub pics: u8,
+    pub disabilities: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
