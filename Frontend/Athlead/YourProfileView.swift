@@ -7,8 +7,6 @@
 import SwiftUI
 
 struct YourProfileView: View {
-    @Binding var isLoggedIn: Bool
-    
     var body: some View {
         NavigationView {
             List {
@@ -29,10 +27,7 @@ struct YourProfileView: View {
                         }
                     }
                     Button (action: {
-                        isLoggedIn = false;
-                        UserRole = "Contestant";
-                        UserId = "";
-                        SessionToken = "";
+                        User = nil;
                         clearCookies();
                     }){
                         Label("Log Out", systemImage: "arrowshape.turn.up.backward")

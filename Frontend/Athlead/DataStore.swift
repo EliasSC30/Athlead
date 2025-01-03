@@ -21,9 +21,13 @@ var apiURL: String {
 }
 
 var SessionToken: String?
-var UserId: String?
-var UserRole: String?
+var User: Person?
 var HasInternetConnection: Bool = true;
+
+enum MyResult<Success, Failure> {
+    case success(Success)
+    case failure(Failure)
+}
 
 struct RegisterData: Encodable {
     let email: String
@@ -50,9 +54,8 @@ struct LoginData: Encodable {
 }
 
 struct LoginResponse: Codable {
-    let role: String
     let status: String
-    let id: String
+    let user: Person
 }
 
 // Mock Data Structures
@@ -381,10 +384,10 @@ struct IsParticipantCheckResponse: Codable {
 
 struct IsLoggedIn: Codable {
     let is_logged_in: Bool
-    let role: String
+    let user: Person
 }
 
-func isUserLoggedIn() async -> IsLoggedIn {
+func isUserLoggedIn() async -> MyResult<Person, String> {
     let url = URL(string: "\(apiURL)/loggedin")!
     var request = URLRequest(url: url)
     request.httpMethod = "GET"
@@ -399,7 +402,7 @@ func isUserLoggedIn() async -> IsLoggedIn {
         switch result {
         case .success(_, let data):
             if let decodedResponse = try? JSONDecoder().decode(IsLoggedIn.self, from: data) {
-                return decodedResponse
+                return .success(decodedResponse.user)
             }
         default:
             break
@@ -407,12 +410,7 @@ func isUserLoggedIn() async -> IsLoggedIn {
     } catch {
         print("Error during request: \(error)")
     }
-    return IsLoggedIn(is_logged_in: false, role: "User")
-}
-
-enum MyResult<Success, Failure: Error> {
-    case success(Success)
-    case failure(Failure)
+    return .failure("Could not login");
 }
 
 extension String {

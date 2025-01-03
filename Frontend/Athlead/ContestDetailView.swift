@@ -52,7 +52,7 @@ struct ContestDetailView: View {
         
         VStack {
             if contest != nil {
-                NavigationLink(destination: QRCodeGeneratorView(qrString: contest!.ct_id + ";" + (UserId ?? ""))){
+                NavigationLink(destination: QRCodeGeneratorView(qrString: contest!.ct_id + ";" + (User == nil ? "": User.unsafelyUnwrapped.ID))){
                     Text("Checke für \(contest!.ct_name) ein")
                 }
                 .padding()

@@ -7,9 +7,8 @@
 import SwiftUI
 
 struct ContentView: View {
-    
-    @State private var isLoggedIn = false // Status for authentication
     @State private var isLoading = true // Loading status
+    @State private var successfullLogin = User != nil;
 
     var body: some View {
         Group {
@@ -17,26 +16,26 @@ struct ContentView: View {
                 ProgressView("Athlead wird geladen...")
             } else {
                 TabView {
-                    if isLoggedIn {
+                    if successfullLogin {
                         MainPageView()
                             .tabItem {
                                 Image(systemName: "house.fill")
                                 Text("Hauptseite")
                             }
                         
-                        if UserRole!.uppercased() == "ADMIN" {
+                        if User.unsafelyUnwrapped.ROLE.uppercased() == "ADMIN" {
                             AdminOverviewView()
                                 .tabItem {
                                     Image(systemName: "person.3.fill")
                                     Text("Administration")
                                 }
-                        } else if UserRole!.uppercased() == "JUDGE" {
+                        } else if User.unsafelyUnwrapped.ROLE.uppercased() == "JUDGE" {
                             JudgeOverviewView()
                                 .tabItem {
                                     Image(systemName: "sportscourt")
                                     Text("Wettkämpfe")
                                 }
-                        } else if UserRole!.uppercased() == "CONTESTANT" {
+                        } else if User.unsafelyUnwrapped.ROLE.uppercased() == "CONTESTANT" {
                             ParticipantView()
                                 .tabItem {
                                     Image(systemName: "sportscourt")
@@ -44,13 +43,13 @@ struct ContentView: View {
                                 }
                         }
                         
-                        YourProfileView(isLoggedIn: $isLoggedIn)
+                        YourProfileView()
                             .tabItem {
                                 Image(systemName: "person.fill")
                                 Text("Profil")
                             }
                     } else {
-                        LoginView(isLoggedIn: $isLoggedIn)
+                        LoginView(loginAttemptHappened:{() -> Void in successfullLogin = User != nil; })
                             .tabItem {
                                 Image(systemName: "person.fill")
                                 Text("Login")
@@ -62,36 +61,17 @@ struct ContentView: View {
         .onAppear {
             Task {
                 isLoading = true
-
-                /* <<< Uncomment to go back
-                let isLogged = await isUserLoggedIn();
-                
-                if isLogged.is_logged_in {
-                    isLoggedIn = isLogged.is_logged_in
-                    role = isLogged.role.uppercased()
-                } else {
-                    isLoggedIn = false
-                    role = "User"
-                }
-                  <<< Uncomment to go back */
-                
-                // <<< Remove to go back
                 
                 fetch("\(apiURL)/loggedin", IsLoggedIn.self) { response in
                     switch response {
                     case .success(let loggedIn):
-                        isLoggedIn = loggedIn.is_logged_in;
-                        UserRole = loggedIn.role.uppercased();
+                        User = loggedIn.user;
                     case .failure(let err): print(err);
                     }
                 }
-                // <<< Remove to go back
             
                 isLoading = false
             }
         }
     }
-}
-#Preview {
-    ContentView()
 }

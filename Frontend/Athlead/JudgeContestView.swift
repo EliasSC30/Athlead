@@ -19,37 +19,41 @@ extension String {
 }
 
 struct JudgeContestsView : View {
-    let contests: [ContestForJudge]
+    @Binding var isFetchingContests: Bool
+    @Binding var contests: [ContestForJudge]
     
     var body: some View {
         NavigationStack {
             VStack {
-                if contests.isEmpty {
-                    Text("You have no competitions")
-                        .padding()
-                        .background(Color.white)
-                        .shadow(radius: 5.0)
-                } else {
-                    ForEach(contests.indices, id: \.self) { index in
-                        NavigationLink(destination: JudgeContestView(contest: contests[index])) {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(contests[index].ct_name)
-                                        .font(.headline)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.gray)
-                                
-                            }
+                if isFetchingContests {Text("Loading Contests..")}
+                else {
+                    if contests.isEmpty {
+                        Text("You have no competitions")
                             .padding()
                             .background(Color.white)
-                            .cornerRadius(10)
-                            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
-                            .padding(.horizontal)
+                            .shadow(radius: 5.0)
+                    } else {
+                        ForEach(contests.indices, id: \.self) { index in
+                            NavigationLink(destination: JudgeContestView(contest: contests[index])) {
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text(contests[index].ct_name)
+                                            .font(.headline)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(.gray)
+                                    
+                                }
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(10)
+                                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+                                .padding(.horizontal)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 4)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 4)
                     }
                 }
             }
@@ -91,7 +95,7 @@ struct JudgeContestView : View {
                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
                 .padding(.horizontal)
             }
-        }.onAppear{
+        }.onAppear {
             fetch("\(apiURL)/contests/\(contest.ct_id)/participants", ParticipantsForJudge.self){ result in
                 switch result {
                 case .success(let participantsResult): participants = participantsResult.data;
