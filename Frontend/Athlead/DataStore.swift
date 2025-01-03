@@ -118,6 +118,7 @@ struct Person: Identifiable, Hashable, Codable {
     let ROLE: String
     let PICS: Int
     let GENDER: String
+    let DISABILITIES: String
     
     var id: String { return self.ID }
 }
