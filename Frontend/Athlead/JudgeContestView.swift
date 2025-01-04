@@ -235,7 +235,7 @@ struct JudgeParticipants: View {
         .padding(.horizontal, 16)
         .padding(.top, 16)
         .background(Color(UIColor.systemBackground))
-        .navigationTitle("Participants")
+        .navigationTitle("\(participants.count) Participants")
     }
 }
 
@@ -330,13 +330,6 @@ struct JudgeEntryView: View {
                     }
                 }
             }
-<<<<<<< ours
-            fetch("contests/\(contest.ct_id)/contestresults", PatchContestResultsResponse.self, "PATCH", nil, patch){
-                response in
-                switch response {
-                case .success(let resp): print(resp)
-                case .failure(let err): print(err)
-=======
         }
         .listStyle(InsetGroupedListStyle())
         .background(Color.clear)
@@ -405,7 +398,6 @@ struct JudgeEntryView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.red)
->>>>>>> theirs
                 }
             }
         }
