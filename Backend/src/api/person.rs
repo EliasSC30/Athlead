@@ -433,7 +433,7 @@ pub async fn persons_create_batch_handler(body: web::Json<PersonBatch>, db: web:
         id_and_emails.iter().for_each(|info| { if info.1 == child_email {child_id = info.0.clone()} });
         let mut first_parent_id = String::from("");
         id_and_emails.iter().for_each(|info| { if info.1 == first_parent_email {first_parent_id = info.0.clone()} });
-        let mut second_parent_id: Option<String> = if second_parent_email.is_some() {
+        let second_parent_id: Option<String> = if second_parent_email.is_some() {
                 let mut ret: Option<String> = None;
                 id_and_emails.iter().for_each(|info| {
                     if info.1 == second_parent_email.clone().unwrap() {

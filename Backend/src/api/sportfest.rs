@@ -12,7 +12,7 @@ use crate::model::contest::{Contest, ContestEvaluation};
 use crate::model::contestresult::ContestResult;
 use crate::model::sportfest::CreateContestForFest;
 use crate::model::details::{CreateDetails};
-use crate::model::location::{CreateLocation, Location};
+use crate::model::location::{CreateLocation};
 use crate::model::person::Person;
 
 #[patch("/sportfests/{id}")]
@@ -40,7 +40,7 @@ pub async fn sportfests_patch_handler(path: web::Path<String>, db: web::Data<MyS
         "updated_fields": serde_json::to_value(updated_fields).unwrap()
     })); };
 
-    let mut updated_details_fields = update_table_handler("DETAILS",
+    let updated_details_fields = update_table_handler("DETAILS",
                                               fields_to_update,
                                               format!("ID = \"{}\"", sf_query.unwrap().DETAILS_ID),
                                               db.as_ref()).await;
@@ -230,9 +230,9 @@ pub async fn get_sf_masterview(sf_id: String, user: Person, db: &web::Data<MySql
         let all_participating_people = contestresult_query.unwrap().into_iter().map(|row|{
             (row.try_get("PERSON_ID").unwrap(), row.try_get("CONTEST_ID").unwrap())
         }).collect::<Vec<(String,String)>>();
-        let contests_of_user = all_participating_people.iter().filter(|(p_id, ct_id)|{
+        let contests_of_user = all_participating_people.iter().filter(|(p_id, _)|{
             *p_id == user.ID.clone()
-        }).map(|(p_id,ct_id)| ct_id.clone()).collect::<Vec<String>>();
+        }).map(|(_,ct_id)| ct_id.clone()).collect::<Vec<String>>();
 
         contests_of_sf.into_iter().map(|ct| {
             ContestWithPartFlag {
@@ -289,10 +289,10 @@ pub async fn sportfests_get_masterview_handler(
     }))};
 
     match get_sf_masterview(sf_id, (*user.unwrap()).clone(), &db).await {
-        Ok(Sf_wa) => {
+        Ok(sf_wa) => {
             HttpResponse::Ok().json(json!({
                 "status": "success",
-                "data": serde_json::to_value(Sf_wa).unwrap()
+                "data": serde_json::to_value(sf_wa).unwrap()
             }))
         },
         Err(e) => {

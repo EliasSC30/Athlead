@@ -1,4 +1,4 @@
-use actix_web::{web, HttpMessage, HttpRequest};
+use actix_web::{HttpMessage, HttpRequest};
 use serde::{Deserialize, Serialize};
 use sqlx::MySqlPool;
 use crate::model::person::Person;
@@ -37,7 +37,7 @@ pub async fn update_table_handler(table_name: &'static str,
     let query = sqlx::query(&query).execute(db).await;
 
     match query {
-        Ok(rows) => Ok(fields),
+        Ok(_) => Ok(fields),
         Err(err) => Err(err.to_string())
     }
 }

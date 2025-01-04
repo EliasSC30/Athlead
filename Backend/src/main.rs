@@ -5,15 +5,13 @@ mod api;
 mod model;
 
 use std::ops::Add;
-use std::time;
 use actix_cors::Cors;
 use actix_web::middleware::Logger;
-use actix_web::{cookie, http::header, web, App, HttpMessage, HttpRequest, HttpResponse, HttpServer};
+use actix_web::{cookie, http::header, web, App, HttpMessage, HttpServer};
 use dotenv::dotenv;
 use sqlx::mysql::{MySqlPool, MySqlPoolOptions};
 use actix_web::middleware::{self, Next};
-use actix_web::{dev::{ServiceRequest, ServiceResponse},web::Path, Error, cookie::Cookie, body::MessageBody};
-use actix_web::cookie::Expiration;
+use actix_web::{dev::{ServiceRequest, ServiceResponse}, Error, cookie::Cookie, body::MessageBody};
 use actix_web::error::{ErrorBadGateway, ErrorBadRequest};
 use actix_web::http::Method;
 use crate::api::logon::check_token;

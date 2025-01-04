@@ -1,5 +1,5 @@
 use crate::model::contestresult::*;
-use actix_web::{post, get, patch, web, HttpResponse, Responder};
+use actix_web::{get, patch, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::MySqlPool;

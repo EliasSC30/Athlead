@@ -1,12 +1,8 @@
-use rand::Rng;
-use num_bigint::{ToBigInt};
-
 
 pub mod encryption
 {
     use std::fmt;
     use std::mem::swap;
-    use std::ops::{Add, Mul};
     use rand::Rng;
 
     pub struct BigInt {
@@ -32,11 +28,6 @@ pub mod encryption
         }
     }
 
-    pub fn add_with_carry(a:u32, b:u32) -> (u32, u32)
-    {
-        // This is a+b = Max + carry <=> carry = a - (Max - b) to get the carry, if there is any
-        if (u32::MAX - b) > a { (a+b,0) } else { (a.wrapping_add(b), 1) }
-    }
     pub fn u32_to_parsable_chars(number: u32) -> String
     {
         let fst_char = (number & 0xF) as u8 +97;
@@ -423,7 +414,7 @@ pub mod encryption
             let mut high_guess = BigInt { parts: vec![u32::MAX; highest_power_of_first_guess] };
             let mut low_guess = BigInt { parts: vec![0u32; highest_power_of_first_guess] };
 
-            let mut next_guess = BigInt::one();
+            let mut next_guess;
 
             loop
             {
@@ -648,7 +639,7 @@ pub mod encryption
         let mut random = BigInt{parts:vec![0u32;random_part_len as usize]};
         random.parts.iter_mut().for_each(|part|{*part = rng.random()});
         let large_n = BigInt{parts:vec![rand::random::<u32>().saturating_add(1); 3]};
-        let mut random_before_div = random.clone();
+        let mut random_before_div;
 
         for _ in 0..nr_of_test_runs {
             random_before_div = random.clone();
@@ -660,9 +651,9 @@ pub mod encryption
     }
 
     pub fn run_tests() {
-        let mut zero = BigInt{parts:vec![0u32]};
-        let mut one = BigInt{parts:vec![1u32]};
-        let mut two = BigInt{parts:vec![2u32]};
+        let zero = BigInt{parts:vec![0u32]};
+        let one = BigInt{parts:vec![1u32]};
+        let two = BigInt{parts:vec![2u32]};
         assert_eq!(1, zero.parts.len());
         assert_eq!(0, zero.parts[0]);
         assert_eq!(1, one.parts.len());

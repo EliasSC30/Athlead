@@ -22,13 +22,18 @@ pub struct CreateCTemplate {
 }
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
-#[allow(non_snake_case)]
 pub struct UpdateCTemplate {
+    #[allow(non_snake_case)]
     pub ID: Option<String>,
+    #[allow(non_snake_case)]
     pub NAME: Option<String>,
+    #[allow(non_snake_case)]
     pub DESCRIPTION: Option<String>,
+    #[allow(non_snake_case)]
     pub GRADERANGE: Option<String>,
+    #[allow(non_snake_case)]
     pub EVALUATION: Option<String>,
+    #[allow(non_snake_case)]
     pub UNIT: Option<String>
 }
 

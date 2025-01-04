@@ -15,7 +15,6 @@ const TIME_OFFSET: u64 = 1734269586u64;
 const TIMESTAMP_LENGTH: usize = 8;
 const ID_LENGTH: usize = 36;
 const DECRYPT_TOKEN_LENGTH: usize = ID_LENGTH+TIMESTAMP_LENGTH;
-const ENCRYPT_TOKEN_LENGTH: usize = 136;
 
 fn our_time_now() -> u32 { (SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() - TIME_OFFSET) as u32 }
 
@@ -66,7 +65,7 @@ pub async fn register_handler(body: web::Json<Register>, db: web::Data<MySqlPool
     let mut to_crypt = create_person.as_ref().unwrap().ID.clone();
     to_crypt.push_str(encryption::u32_to_parsable_chars(our_time_now()).as_str());
     let new_token = crypt_str(&to_crypt, &keys.1, &keys.2);
-    let mut new_token = encryption::BigInt::non_a7_u32_vec_to_exp_string(&new_token.parts);
+    let new_token = encryption::BigInt::non_a7_u32_vec_to_exp_string(&new_token.parts);
     HttpResponse::Ok().json(json!({
             "status": "success",
             "data": new_token,
@@ -81,7 +80,7 @@ pub async fn check_token(token: String, db: &web::Data<MySqlPool>) -> Result<(St
     let token = token.unwrap().split("=").collect::<Vec<&str>>();
     if token.len() != 2 { return Err(String::from("Token is invalid")); };
     if !token.get(0).unwrap().eq(&"Token") { return Err(String::from("Token is invalid")); };
-    let mut token = (*token.get(1).unwrap()).to_string();
+    let token = (*token.get(1).unwrap()).to_string();
 
     if token.chars().any(|c| (c as u32) >(97+15) || (c as u32) < 97) { return Err(String::from("Invalid Token")); };
     let token_to_decrypt = encryption::BigInt { parts: encryption::BigInt::exp_str_to_u32_vec(&token) };
@@ -115,14 +114,6 @@ pub async fn check_token(token: String, db: &web::Data<MySqlPool>) -> Result<(St
     new_token.push_str(encryption::u32_to_parsable_chars(now).as_str());
     let encrypted = encryption::BigInt::non_a7_u32_vec_to_exp_string(&crypt_str(&new_token, &keys.1, &keys.2).parts);
     Ok((encrypted, auth_query.unwrap()))
-}
-
-pub async fn login_with_token(token: Option<String>, data: &web::Data<MySqlPool>) -> Result<(String, String, String), String>
-{
-    if token.is_none() { return Err(String::from("No valid login data was send")); };
-
-    let token = token.unwrap();
-    check_token(token, data).await.map(|t_and_p| (t_and_p.0,t_and_p.1.ID, t_and_p.1.ROLE))
 }
 
 #[post("/login")]
@@ -167,7 +158,7 @@ pub async fn login_handler(body: web::Json<Login>, db: web::Data<MySqlPool>) -> 
         "user": serde_json::to_value(user).unwrap(),
     }));
 
-    res.add_cookie(&cookie);
+    let err = res.add_cookie(&cookie);
+    if err.is_err() { return HttpResponse::InternalServerError().json(json!({"status": "Cookies could not be added"})); };
     res
-
 }

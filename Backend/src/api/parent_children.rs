@@ -1,4 +1,4 @@
-use actix_web::{get, patch, web, web::Json, web::Path, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, patch, web::Json, web::Path, HttpRequest, HttpResponse, Responder};
 use actix_web::web::Data;
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
@@ -79,7 +79,7 @@ pub async fn parents_children_patch_child_handler(path: Path<String>,
 
     if body.pics.is_none() && body.disabilities.is_none() {
         return HttpResponse::BadRequest().json(json!({
-            "status": "Neither e senti"
+            "status": "Neither pics or disabilities sent"
         }));
     } ;
 
@@ -94,11 +94,13 @@ pub async fn parents_children_patch_child_handler(path: Path<String>,
     let mut update_query = String::from("UPDATE PERSON ");
 
     if body.pics.is_some() {
-        update_query += format!("SET PICS = {}", body.pics.as_ref().clone().unwrap()).as_str();
+        update_query += format!("SET PICS = {}, ", body.pics.as_ref().clone().unwrap()).as_str();
     }
     if body.disabilities.is_some() {
-        update_query += format!("SET PICS = {}", body.disabilities.as_ref().clone().unwrap()).as_str();
+        update_query += format!("SET DISABILITIES = \"{}\", ", body.disabilities.as_ref().clone().unwrap()).as_str();
     }
+    update_query.truncate(update_query.len() - 2);
+    update_query += format!(" WHERE ID = \"{}\"", child_id).as_str();
 
     let update_query = sqlx::query(update_query.as_str()).execute(db.as_ref()).await;
     if update_query.is_err() { return HttpResponse::InternalServerError().json(json!({
@@ -108,7 +110,6 @@ pub async fn parents_children_patch_child_handler(path: Path<String>,
 
     HttpResponse::Ok().json(json!({
         "status": "success",
-        "pics_allowed": body.pics
     }))
 }
 

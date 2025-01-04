@@ -3,7 +3,7 @@ use actix_web::{get, patch, post, web, HttpMessage, HttpRequest, HttpResponse, R
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
-use crate::model::contestresult::{ContestResult,BatchContestResults, ContestResultContestView, CreateContestResultContestView, PatchContestResults};
+use crate::model::contestresult::{ContestResult,BatchContestResults, ContestResultContestView, PatchContestResults};
 use crate::model::metric::Metric;
 use crate::model::person::{Participant, Person};
 
@@ -101,7 +101,7 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
     person_to_result_query += contest_id.as_str();
     person_to_result_query += r#"" AND ctr.PERSON_ID IN (""#;
     for results in &body.results {
-        person_to_result_query += results.p_id.as_str().clone();
+        person_to_result_query += results.p_id.as_str();
         person_to_result_query += "\",\"";
     }
     person_to_result_query.truncate(person_to_result_query.len().saturating_sub(2));
