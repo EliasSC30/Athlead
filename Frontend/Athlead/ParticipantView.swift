@@ -17,28 +17,22 @@ struct ParticipantView : View {
     var body: some View {
         VStack{
             Text("Meine Wettkämpfe")
-            if children.isEmpty {
-                NavigationLink(destination: ParentView(children: $children)){
-                    Text("Meine Kinder")
-                }
+            if myContests.isEmpty {
+                Text("Keine Wettkämpfe")
             } else {
-                if myContests.isEmpty {
-                    Text("Keine Wettkämpfe")
-                } else {
-                    NavigationStack {
-                        ForEach(myContests) { contest in
-                            NavigationLink(destination: ContestDetailView(contest: contest)) {
-                                HStack {
-                                    Text("\(contest.ct_name)")
-                                }
-                                .padding(4.0)
+                NavigationStack {
+                    ForEach(myContests) { contest in
+                        NavigationLink(destination: ContestDetailView(contest: contest)) {
+                            HStack {
+                                Text("\(contest.ct_name)")
                             }
-                            .padding(1.0)
-                            .background(Color.white)
-                            .shadow(radius: 5.0)
-                            .cornerRadius(1.0, antialiased: false)
-                            .foregroundColor(Color.black)
+                            .padding(4.0)
                         }
+                        .padding(1.0)
+                        .background(Color.white)
+                        .shadow(radius: 5.0)
+                        .cornerRadius(1.0, antialiased: false)
+                        .foregroundColor(Color.black)
                     }
                 }
             }
@@ -50,12 +44,7 @@ struct ParticipantView : View {
                 }
             }
             
-            fetch("parents/children", ParentsChildrenResponse.self){ result in
-                switch result {
-                case .success(let resp): children = resp.children
-                case .failure(let err): print(err);
-                }
-            }
+
             
             isFetching = false;
         }
