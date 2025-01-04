@@ -2,15 +2,15 @@ POST http://45.81.234.175:8000/register
 Content-Type: application/json
 
 {
-  "email": "helper",
+  "email": "admin",
   "password": "pwd",
 
   "first_name": "Elias",
-  "last_name": "Helper",
+  "last_name": "Admin",
   "phone": "String",
   "grade": "1a",
   "birth_year": "1999",
-  "role": "judge",
+  "role": "admin",
   "gender": "male",
   "pics": 1,
   "disabilities": ""

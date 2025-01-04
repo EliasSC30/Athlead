@@ -81,27 +81,27 @@ pub async fn parents_children_patch_child_handler(path: Path<String>,
         return HttpResponse::BadRequest().json(json!({
             "status": "Neither pics or disabilities sent"
         }));
-    } ;
+    };
 
     let parents_query =
         sqlx::query_as!(ParentChildren, "SELECT * FROM PARENT WHERE PARENT_ID = ? AND CHILD_ID = ?",
         user.ID, child_id.clone()).fetch_one(db.as_ref()).await;
     if parents_query.is_err() { return HttpResponse::InternalServerError().json(json!({
-        "status": "Internal server error",
+        "status": "Parent query error",
         "message": parents_query.unwrap_err().to_string()
     })); };
 
-    let mut update_query = String::from("UPDATE PERSON ");
+    let mut update_query = String::from("UPDATE PERSON SET ");
 
     if body.pics.is_some() {
-        update_query += format!("SET PICS = {}, ", body.pics.as_ref().clone().unwrap()).as_str();
+        update_query += format!("PICS = {}, ", body.pics.as_ref().clone().unwrap()).as_str();
     }
     if body.disabilities.is_some() {
-        update_query += format!("SET DISABILITIES = \"{}\", ", body.disabilities.as_ref().clone().unwrap()).as_str();
+        update_query += format!("DISABILITIES = \"{}\", ", body.disabilities.as_ref().clone().unwrap()).as_str();
     }
     update_query.truncate(update_query.len() - 2);
     update_query += format!(" WHERE ID = \"{}\"", child_id).as_str();
-
+    println!("Update query: {}", update_query);
     let update_query = sqlx::query(update_query.as_str()).execute(db.as_ref()).await;
     if update_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Update person error",

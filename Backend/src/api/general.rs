@@ -9,7 +9,7 @@ pub struct FieldWithValue {
     pub value: String,
 }
 
-pub fn get_user_of_request<'a>(req: HttpRequest) -> Result<Person, &'static str> {
+pub fn get_user_of_request(req: HttpRequest) -> Result<Person, &'static str> {
     let container = req.extensions();
     let user = container.get::<Person>();
     if user.is_none() {

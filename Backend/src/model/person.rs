@@ -77,3 +77,9 @@ pub struct CreatePerson {
 pub struct UpdatePerson {
     pub ROLE: Option<String>
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct PatchHelper {
+    pub description: String
+}
+

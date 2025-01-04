@@ -12,4 +12,5 @@ mod encryption;
 pub(crate) mod logon;
 mod loggedin;
 mod parent_children;
-mod general;
+pub(crate) mod general;
+mod helper;
