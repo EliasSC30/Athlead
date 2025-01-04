@@ -10,6 +10,7 @@ pub struct ParentChildren {
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
 pub struct UpdateChild {
-    pub pics: u8
+    pub pics: Option<u8>,
+    pub disabilities: Option<String>
 }
 

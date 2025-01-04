@@ -522,7 +522,8 @@ pub async fn sportfests_get_results_by_id_handler(db: web::Data<MySqlPool>,
         all_contests.into_iter().map(|ct_eval|{
             let unit = ct_eval.get(0).unwrap().unit.clone();
             let id = ct_eval.get(0).unwrap().ct_id.clone();
-            ContestWithResults{ id, unit, results: evaluate_contest(ct_eval)}
+            let contest_name = ct_eval.get(0).unwrap().contest_name.clone();
+            ContestWithResults{ id, contest_name, unit, results: evaluate_contest(ct_eval)}
         })
             .collect::<Vec<ContestWithResults>>();
 

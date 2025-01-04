@@ -50,7 +50,6 @@ pub fn config(conf: &mut web::ServiceConfig) {
 
 
         // Contests
-        // No getters since all fields are ids, only complex getters are useful
         .service(contest_get_results_by_id_handler)
         .service(contests_create_results)
         .service(contests_create_handler)

@@ -115,6 +115,7 @@ pub struct PersonWithPoint{
 #[allow(non_snake_case)]
 pub struct ContestWithResults{
     pub id: String,
+    pub contest_name: String,
     pub unit: String,
     pub results: Vec<PersonWithResult>
 }
