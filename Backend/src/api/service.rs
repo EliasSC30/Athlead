@@ -4,6 +4,7 @@ use crate::api::contest::{contests_create_results, contest_get_results_by_id_han
 use crate::api::contestresult::{contestresults_patch_handler};
 use crate::api::ctemplate::{ctemplate_create_handler, ctemplates_get_by_id_handler, ctemplates_get_all_handler};
 use crate::api::details::{details_create_handler, details_get_by_id_handler, details_get_all_handler, details_update_handler};
+use crate::api::helper::contests_helper_patch;
 use crate::api::location::{locations_create_handler, locations_get_by_id_handler, locations_get_all_handler, locations_update_handler};
 use crate::api::loggedin::get_logged_in_handler;
 use crate::api::logon::{login_handler, register_handler};
@@ -60,6 +61,7 @@ pub fn config(conf: &mut web::ServiceConfig) {
         .service(contests_participants_mycontests_handler)
         .service(contests_patch_results)
         .service(contests_check_participant_handler)
+        .service(contests_helper_patch)
 
         // ContestResults
         .service(contestresults_patch_handler)

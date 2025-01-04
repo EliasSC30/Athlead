@@ -1,13 +1,13 @@
-POST http://45.81.234.175:8000/sportfests/21eaa274-8c86-45b0-a88d-6f59ccae7263/contests
+POST http://localhost:8000/sportfests/f11ab600-bf9d-45e8-9c00-78518c1d6dc4/contests
 Content-Type: application/json
 
 {
-  "LOCATION_ID": "0de892f3-921d-472a-9b07-a941dabcd728",
-  "CONTACTPERSON_ID": "e8550544-470e-4b13-a69d-d6b578484317",
-  "C_TEMPLATE_ID" : "35abeaca-a201-4e8d-8e5e-aeee70c96838",
+  "LOCATION_ID": "2250e202-c5c3-427d-a7af-b092b51a0621",
+  "CONTACTPERSON_ID": "03a8d488-f35f-46d8-80eb-66bdd8b2842a",
+  "C_TEMPLATE_ID" : "bee5ae5c-7275-4b97-ae32-ca6af690442e",
   "NAME": "Contest4",
   "START": "2025-12-02T15:30:00",
   "END": "2025-12-02T22:00:00",
-  "HELPERS": ["a7f7cf04-a2e2-409f-a6e7-5e726f091ad9"],
+  "HELPERS": ["8f018fb0-9e45-4d24-97d9-38bc258a54cf"],
   "DESCRIPTION": ""
 }

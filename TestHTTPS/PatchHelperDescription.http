@@ -1,0 +1,6 @@
+PATCH http://localhost:8000/contests/b5855ba6-c114-4817-93a3-7bca520f1b11/helper/8f018fb0-9e45-4d24-97d9-38bc258a54cf
+Content-Type: application/json
+
+{
+  "description":""
+}

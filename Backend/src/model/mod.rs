@@ -9,3 +9,4 @@ pub(crate) mod contest;
 pub(crate) mod ctemplate;
 pub(crate) mod logon;
 pub(crate) mod parent_children;
+pub(crate) mod helper;
