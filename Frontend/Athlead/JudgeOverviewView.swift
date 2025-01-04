@@ -9,26 +9,36 @@ import SwiftUI
 
 struct JudgeOverviewView: View {
     @State var contests: [ContestForJudge] = [];
-    @State private var isFetchingContests = true;
+    @State private var isLoading = false;
+    @State private var errorMessage: String?
     
     var body: some View {
-        VStack {
-            if isFetchingContests {
-                Text("Loading contests..")
-            } else {
-                JudgeContestsView(isFetchingContests: $isFetchingContests, contests: $contests)
-            }
-            }.onAppear {
-                isFetchingContests = true;
-                fetch("contests/judge/mycontests", ContestForJudgeResponse.self) { result in
-                    switch result {
-                    case .success(let myData):
-                        contests = myData.data;
-                    case .failure(let error):
-                        print("Error fetching data: \(error)")
-                    }
+        NavigationView {
+            Group {
+                if isLoading {
+                    ProgressView("Loading contests...")
+                } else if let error = errorMessage {
+                    Text("Error: \(error)")
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
+                } else {
+                    JudgeContestsView(contests: contests)
                 }
-                isFetchingContests = false;
-        };
+            }.navigationTitle("My Contests")
+        }.onAppear(perform: loadContests)
+    }
+    
+    func loadContests() {
+        isLoading = true;
+        errorMessage = nil;
+        fetch("contests/judge/mycontests", ContestForJudgeResponse.self) { result in
+            switch result {
+            case .success(let myData):
+                contests = myData.data;
+            case .failure(let error):
+                errorMessage = error.localizedDescription;
+            }
+            isLoading = false;
+        }
     }
 }

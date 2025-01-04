@@ -40,7 +40,7 @@ struct AdminOverviewView: View {
                     NavigationLink(destination: AdminSportfestStatsView()) {
                         Label("View Sportfest reports", systemImage: "chart.bar")
                     }
-                    NavigationLink(destination: Text("Generate Participation Statistics")) {
+                    NavigationLink(destination: AdminParticipationStatsView()) {
                         Label("Participation Stats", systemImage: "percent")
                     }
                     NavigationLink(destination: Text("Certificate Generation")) {
@@ -53,10 +53,7 @@ struct AdminOverviewView: View {
                     NavigationLink(destination: PersonManagementView()) {
                         Label("User Management", systemImage: "person.3")
                     }
-                    NavigationLink(destination: Text("System Settings")) {
-                        Label("System Settings", systemImage: "gear")
-                    }
-                    NavigationLink(destination: Text("Audit Logs")) {
+                    NavigationLink(destination: AdminAuditLogView()) {
                         Label("Audit Logs", systemImage: "doc.plaintext")
                     }
                 }

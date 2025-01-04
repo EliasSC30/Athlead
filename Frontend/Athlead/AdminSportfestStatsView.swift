@@ -181,14 +181,21 @@ struct StatsViewForSportFestView: View {
                 ScrollView {
                     VStack {
                         if let contests = sportFestResults?.contests {
-                            ForEach(contests, id: \.id) { contest in
-                                ContestChartView(
-                                    contest: contest,
-                                    selectedGender: selectedGender,
-                                    selectedGrade: selectedGrade,
-                                    selectedParallelClassGroup: selectedParallelClassGroup,
-                                    selectedDisplayMetric: selectedDisplayMetric
-                                )
+                            if !contests.isEmpty {
+                                ForEach(contests, id: \.id) { contest in
+                                    ContestChartView(
+                                        contest: contest,
+                                        selectedGender: selectedGender,
+                                        selectedGrade: selectedGrade,
+                                        selectedParallelClassGroup: selectedParallelClassGroup,
+                                        selectedDisplayMetric: selectedDisplayMetric
+                                    )
+                                }
+                            } else {
+                                Text("No contests available")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                    .padding()
                             }
                         }
                     }
@@ -206,7 +213,7 @@ struct StatsViewForSportFestView: View {
                 }) {
                     Image(systemName: "gearshape")
                         .imageScale(.large)
-                }
+                }.disabled(isLoading || sportFestResults == nil || sportFestResults?.contests.isEmpty ?? true)
             }
         }
         .sheet(isPresented: $isSettingsSheetPresented) {

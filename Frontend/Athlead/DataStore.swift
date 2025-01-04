@@ -443,4 +443,15 @@ extension String {
 }
 
 
+extension String {
+    func truncated(to length: Int) -> String {
+        if self.count > length {
+            let endIndex = self.index(self.startIndex, offsetBy: length)
+            return self[self.startIndex..<endIndex] + "..."
+        } else {
+            return self
+        }
+    }
+}
+
 
