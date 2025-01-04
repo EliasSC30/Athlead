@@ -26,6 +26,7 @@ pub struct ContestForJudge {
 pub struct ContestEvaluation {
     pub ct_id: String,
     pub ct_details_id: String,
+    pub contest_name: String,
     pub evaluation: String,
     pub unit: String,
     pub p_f_name: String,

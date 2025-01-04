@@ -472,6 +472,7 @@ pub async fn sportfests_get_results_by_id_handler(db: web::Data<MySqlPool>,
         sqlx::query_as!(ContestEvaluation, r#"SELECT
                                     ct.ID as ct_id,
                                     ct.DETAILS_ID as ct_details_id,
+                                    ct_d.NAME as contest_name,
                                     ct_t.EVALUATION as evaluation,
                                     ct_t.UNIT as unit,
 
@@ -493,6 +494,7 @@ pub async fn sportfests_get_results_by_id_handler(db: web::Data<MySqlPool>,
                                     JOIN CONTESTRESULT as ct_res ON ct.ID = ct_res.CONTEST_ID
                                     JOIN METRIC as m ON ct_res.METRIC_ID = m.ID
                                     JOIN PERSON as p ON p.ID = ct_res.PERSON_ID
+                                    JOIN DETAILS as ct_d ON ct_d.ID = ct.DETAILS_ID
                                     WHERE SPORTFEST_ID = ?
                                     ORDER BY ct.ID ASC
                                     "#
