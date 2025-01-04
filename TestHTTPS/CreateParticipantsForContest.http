@@ -1,6 +1,6 @@
-POST http://45.81.234.175:8000/contests/c9919ede-c625-4aa3-99ce-8885cd205aef/participants
+POST http://45.81.234.175:8000/contests/ed8587ab-ac91-4297-9cec-ffffbb3cea97/participants
 Content-Type: application/json
 
 {
-  "participant_ids": ["0861ab1f-03fa-4f64-afa9-f1c79faf54b6","2b1cc9fc-a089-47ec-9d55-582f6c377b80","3e6c5401-a719-44ff-8b6b-fca29b3f6811"]
+  "participant_ids": ["34102190-8a67-4389-addf-e65559950ddb","351ecb58-168d-4b55-a444-e03887029d67","4097b647-42cf-4f85-ab3a-b0fae08b6e20","4eaf4df0-ad3e-442e-8e7a-f38296a050e8","792ce784-5236-4eb3-8bf0-2cdd263962a0","8595c926-e791-4396-b176-8a04a74c0251","9dbc356a-330b-4733-a1cd-99bbe61438bc","a30c6bd2-6ee1-4781-bc14-82242693ec53","bc8b4b4a-9786-4f61-af45-577bcf381b2f","cb8d601e-ed06-498d-993d-db7d3cd6803d"]
 }

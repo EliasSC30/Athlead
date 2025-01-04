@@ -1,15 +1,15 @@
-### POST request to create person
-POST http://localhost:8000/persons
+POST http://45.81.234.175:8000/persons
 Content-Type: application/json
 
 {
-  "first_name": "Mama",
-  "last_name": "AdminG",
-  "email": "johd.doe@web.com",
+  "first_name": "Contestant",
+  "last_name": "Number20",
+  "email": "email20@web.com",
   "phone": "123456789",
-  "role": "ADMIN",
-  "grade": "2c",
+  "role": "contestant",
+  "grade": "4a",
   "gender": "female",
   "pics": 1,
-  "password": "Elias"
+  "password": "pwd",
+  "disabilities": ""
 }

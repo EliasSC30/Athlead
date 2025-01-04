@@ -1,13 +1,13 @@
-POST http://45.81.234.175:8000/sportfests/caa215c0-ff4c-4d5a-9619-22247d799d7a/contests
+POST http://45.81.234.175:8000/sportfests/21eaa274-8c86-45b0-a88d-6f59ccae7263/contests
 Content-Type: application/json
 
 {
-  "LOCATION_ID": "75abb10e-e42b-42cf-8a65-515347be553a",
-  "CONTACTPERSON_ID": "0cbdf267-1251-4759-9553-9f027d54e777",
-  "C_TEMPLATE_ID" : "44c69120-b003-4b01-b928-6bdbd5b15ff4",
-  "NAME": "100m Lauf",
+  "LOCATION_ID": "0de892f3-921d-472a-9b07-a941dabcd728",
+  "CONTACTPERSON_ID": "e8550544-470e-4b13-a69d-d6b578484317",
+  "C_TEMPLATE_ID" : "35abeaca-a201-4e8d-8e5e-aeee70c96838",
+  "NAME": "Contest4",
   "START": "2025-12-02T15:30:00",
   "END": "2025-12-02T22:00:00",
-  "HELPERS": ["08d4d74a-11a7-4c01-adb6-cef248ee959d"],
+  "HELPERS": ["a7f7cf04-a2e2-409f-a6e7-5e726f091ad9"],
   "DESCRIPTION": ""
 }

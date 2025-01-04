@@ -214,7 +214,7 @@ struct JudgeEntryView : View {
                     patch.results.append(PatchContestResult(p_id: contestResult.p_id, value: contestResult.value.unsafelyUnwrapped))
                 }
             }
-            fetch("\(apiURL)/contests/\(contest.ct_id)/contestresults", PatchContestResultsResponse.self, "PATCH", nil, patch){
+            fetch("contests/\(contest.ct_id)/contestresults", PatchContestResultsResponse.self, "PATCH", nil, patch){
                 response in
                 switch response {
                 case .success(let resp): print(resp)
