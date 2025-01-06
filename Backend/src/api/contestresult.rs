@@ -1,20 +1,26 @@
+use actix::Addr;
 use crate::model::contestresult::*;
 use actix_web::{get, patch, web, HttpResponse, Responder};
+use actix_web_actors::ws;
+use actix_web_actors::ws::Message;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::MySqlPool;
 use uuid::Uuid;
 use crate::api::general::{update_table_handler, FieldWithValue};
 use crate::api::metric::create_metric;
+use crate::api::websocket::{ClientActorMessage, Lobby, WsMessage};
 use crate::model::metric::CreateMetric;
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
-pub struct UpdateWrapper{ pub unit: String, pub metric_id: Option<String> }
+pub struct UpdateWrapper{ pub unit: String, pub metric_id: Option<String>, pub ct_id: String }
 #[patch("/contestresults/{id}")]
 pub async fn contestresults_patch_handler(path: web::Path<String>,
                                           body: web::Json<UpdateContestResult>,
-                                          db: web::Data<MySqlPool>) ->impl Responder {
+                                          db: web::Data<MySqlPool>,
+                                          socket: web::Data<Addr<Lobby>>
+) ->impl Responder {
     let ctr_id = path.into_inner();println!("ctr_id: {}", ctr_id);
     let ctr_query =
         sqlx::query_as!(ContestResult, "SELECT * FROM CONTESTRESULT WHERE ID = ?", ctr_id.clone())
@@ -26,7 +32,7 @@ pub async fn contestresults_patch_handler(path: web::Path<String>,
     })); };
 
     let unit_query = sqlx::query_as!(UpdateWrapper,
-        r#"SELECT ct_t.UNIT as unit, ctr.METRIC_ID as metric_id
+        r#"SELECT ct_t.UNIT as unit, ctr.METRIC_ID as metric_id, ct.ID as ct_id
                                             FROM CONTESTRESULT as ctr
                                             JOIN CONTEST as ct ON ct.ID = ctr.CONTEST_ID
                                             JOIN C_TEMPLATE as ct_t ON ct_t.ID = ct.C_TEMPLATE_ID
@@ -66,6 +72,12 @@ pub async fn contestresults_patch_handler(path: web::Path<String>,
     if updated_fields.len() != 1 { return HttpResponse::InternalServerError().json(json!({
         "status": "Update Metric error 2",
     })); };
+
+    socket.send(ClientActorMessage{
+        id: Uuid::new_v4(),
+        msg: String::from("Elias ist der Beste"),
+        room_id: Uuid::parse_str(update_info.ct_id.as_str()).unwrap()
+    }).await;
 
     HttpResponse::Ok().json(json!({
         "status": "success",

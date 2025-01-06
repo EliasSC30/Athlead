@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use actix::{fut, ActorContext, ActorFutureExt, AsyncContext, Context};
 use actix_web_actors::ws;
-use actix::{Actor, ActorFuture, Addr, ContextFutureSpawner, Running, StreamHandler, WrapFuture};
+use actix::{Actor, Addr, ContextFutureSpawner, Running, StreamHandler, WrapFuture};
 use actix::{Handler};
 use std::time::{Duration, Instant};
 use uuid::Uuid;
@@ -53,7 +53,7 @@ impl Default for Lobby {
 }
 
 impl Lobby {
-    fn send_message(&self, message: &str, id_to: &Uuid) {
+    pub fn send_message(&self, message: &str, id_to: &Uuid) {
         if let Some(socket_recipient) = self.sessions.get(id_to) {
             let _ = socket_recipient.do_send(WsMessage(message.to_owned()));
         } else {
@@ -99,7 +99,6 @@ impl Handler<Connect> for Lobby {
         self.send_message(&format!("Your id is {}", msg.self_id), &msg.self_id);
     }
 }
-
 
 impl Handler<ClientActorMessage> for Lobby {
     type Result = ();
