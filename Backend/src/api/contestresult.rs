@@ -75,9 +75,9 @@ pub async fn contestresults_patch_handler(path: web::Path<String>,
 
     socket.send(ClientActorMessage{
         id: Uuid::new_v4(),
-        msg: String::from("Elias ist der Beste"),
+        msg: format!("contest_id:{}, result_id:{}", update_info.ct_id, ctr_id.clone()),
         room_id: Uuid::parse_str(update_info.ct_id.as_str()).unwrap()
-    }).await;
+    }).await.expect("Socket error!");
 
     HttpResponse::Ok().json(json!({
         "status": "success",
