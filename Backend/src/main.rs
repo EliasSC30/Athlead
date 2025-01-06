@@ -5,6 +5,7 @@ mod api;
 mod model;
 
 use std::ops::Add;
+use actix::Actor;
 use actix_cors::Cors;
 use actix_web::middleware::Logger;
 use actix_web::{cookie, http::header, web, App, HttpMessage, HttpServer};
@@ -16,6 +17,8 @@ use actix_web::error::{ErrorBadGateway, ErrorBadRequest};
 use actix_web::http::Method;
 use crate::api::logon::check_token;
 use crate::model::person::Person;
+use crate::api::websocket;
+use crate::api::websocket::Lobby;
 
 const ADMIN_REQUESTS: [(&'static str, &'static str);1] = [("GET", "")];
 const JUDGE_REQUESTS: [(&'static str, &'static str);1] = [("GET", "")];
@@ -115,6 +118,8 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::init();
 
+    let websocket_server = Lobby::default().start();
+
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = match MySqlPoolOptions::new()
         .max_connections(10)
@@ -151,6 +156,7 @@ async fn main() -> std::io::Result<()> {
             .supports_credentials();
         App::new()
             .app_data(web::Data::new(pool.clone()))
+            .app_data(web::Data::new(websocket_server.clone()))
             .wrap(middleware::from_fn(authorization_check))
             .configure(api::service::config)
             .wrap(cors)

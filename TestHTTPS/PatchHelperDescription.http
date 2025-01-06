@@ -1,6 +1,6 @@
-PATCH http://localhost:8000/contests/b5855ba6-c114-4817-93a3-7bca520f1b11/helper/8f018fb0-9e45-4d24-97d9-38bc258a54cf
+PATCH http://45.81.234.175:8000/contests/b7af58c6-8778-43c3-ad20-8f8b0c0f1db9/helper/a7f7cf04-a2e2-409f-a6e7-5e726f091ad9
 Content-Type: application/json
 
 {
-  "description":""
+  "description": "Aufbau"
 }

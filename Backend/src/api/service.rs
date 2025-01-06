@@ -11,6 +11,7 @@ use crate::api::logon::{login_handler, register_handler};
 use crate::api::parent_children::{parents_children_patch_child_handler, parents_get_children_handler};
 use crate::api::person::{persons_create_handler, persons_get_by_id_handler, persons_get_all_handler, persons_create_batch_handler};
 use crate::api::sportfest::{create_contest_for_sf_handler, sportfests_create_handler, sportfests_create_with_location_handler, sportfests_get_masterview_handler, sportfests_get_results_by_id_handler, sportfests_list_handler, sportfests_patch_handler};
+use crate::api::websocket::ws_connect_handler;
 
 pub fn config(conf: &mut web::ServiceConfig) {
     let scope = web::scope("")
@@ -76,6 +77,10 @@ pub fn config(conf: &mut web::ServiceConfig) {
         // Parents
         .service(parents_get_children_handler)
         .service(parents_children_patch_child_handler)
+
+        // Websocket
+        .service(ws_connect_handler)
+
         ;
 
     conf.service(scope);

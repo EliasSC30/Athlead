@@ -1,6 +1,7 @@
-PATCH http://45.81.234.175:8000/parents/children/b1a5b78c-0945-4d20-a1cd-e987979d2e11
+PATCH http://45.81.234.175:8000/parents/children/a5f0d053-07fd-47d7-9392-252df88be9ac
 Content-Type: application/json
 
 {
-    "disabilities": "Something"
+    "disabilities": "",
+    "pics": 0
 }
