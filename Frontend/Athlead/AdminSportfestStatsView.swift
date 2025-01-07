@@ -299,9 +299,17 @@ struct ContestChartView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Contest: \(contest.id) (\(contest.unit))")
-                .font(.headline)
-                .padding()
+            VStack(alignment: .leading) {
+                Text("Contest: \(contest.contest_name)")
+                    .font(.headline)
+                if selectedDisplayMetric.lowercased() == "value" {
+                    Text("Unit: \(contest.unit)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }.padding()
+                
+                
             
             Chart(filteredResults()) { result in
                 if selectedDisplayMetric == "Points" {

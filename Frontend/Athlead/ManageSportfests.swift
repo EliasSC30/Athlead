@@ -12,7 +12,7 @@ struct ManageSportfests: View {
     @State var currentSportFests: [SportfestData] = []
     @State var newSportfests: [SportfestData] = []
     
-    @State private var isLoading: Bool = true
+    @State private var isLoading: Bool = false
     @State private var errorMessageLoad: String?
     
     private let cacheKey = "cachedSportfests"

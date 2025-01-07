@@ -65,6 +65,7 @@ struct JudgeContestsView: View {
 
 struct JudgeContestView: View {
     let contest: ContestForJudge
+    
     @State private var participants: [Participant] = []
     @State private var isLoading: Bool = false
     @State private var errorMessage: String? = nil
@@ -91,7 +92,7 @@ struct JudgeContestView: View {
                     
                     NavigationButton(
                         title: "Teilnehmer",
-                        destination: JudgeParticipants(participants: $participants),
+                        destination: JudgeParticipants(participants: $participants, contestID: contest.ct_id),
                         systemImage: "person.2.fill"
                     )
                     .padding(.horizontal, 16)
@@ -103,13 +104,18 @@ struct JudgeContestView: View {
                     )
                     .padding(.horizontal, 16)
                     
+                    NavigationButton(
+                        title: "Alle Helfer (Deine Beteiligung)",
+                        destination: Text("Alle Helfer anzeigen mit deren Tätigkeiten"),
+                        systemImage: "person.3.fill"
+                    )
+                    .padding(.horizontal, 16)
+                    
                     Spacer()
                 }
                 .padding(.top, 16)
             }
-        }.onAppear {
-            fetchParticipants()
-        }
+        }.onAppear(perform: fetchParticipants)
     }
     
     // MARK: - Components
@@ -172,6 +178,15 @@ struct JudgeContestView: View {
 struct JudgeParticipants: View {
     @Binding var participants: [Participant]
     
+    var contestID: String
+    
+    @State private var availableParticipants: [Person] = []
+    @State private var showAddParticipantsSheet = false
+    @State private var selectedParticipants: Set<String> = []
+    
+    @State private var isLoading: Bool = false
+    @State private var errorMessage: String? = nil
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if participants.isEmpty {
@@ -222,7 +237,7 @@ struct JudgeParticipants: View {
                             
                             Spacer()
                             
-                            Image(systemName: participant.pics == 1 ? "camera" : "camera.slash")
+                            Image(systemName: participant.pics == 1 ? "camera" : "person.slash.fill")
                                 .foregroundColor(participant.pics == 1 ? .blue : .red.opacity(0.6))
                                 .font(.title3)
                         }
@@ -236,6 +251,104 @@ struct JudgeParticipants: View {
         .padding(.top, 16)
         .background(Color(UIColor.systemBackground))
         .navigationTitle("\(participants.count) Participants")
+        .toolbar {
+            Button(action: {
+                showAddParticipantsSheet.toggle()
+            }) {
+                Image(systemName: "plus.circle.fill")
+            }
+        }
+        .sheet(isPresented: $showAddParticipantsSheet) {
+            Group {
+                if isLoading {
+                    ProgressView("Loading participants...")
+                } else if let errorMessage = errorMessage {
+                    Text("Error: \(errorMessage)")
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
+                } else {
+                    VStack {
+                        Text("Select Participants to Add")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .padding(.bottom, 16)
+                        
+                        List(availableParticipants, id: \.ID) { participant in
+                            HStack {
+                                Text("\(participant.FIRSTNAME) \(participant.LASTNAME)")
+                                    .font(.headline)
+                                
+                                Spacer()
+                                
+                                if selectedParticipants.contains(participant.ID) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                } else {
+                                    Image(systemName: "circle")
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                if selectedParticipants.contains(participant.ID) {
+                                    selectedParticipants.remove(participant.ID)
+                                } else {
+                                    selectedParticipants.insert(participant.ID)
+                                }
+                            }
+                        }
+                        .listStyle(InsetGroupedListStyle())
+                        
+                        Button("Add Selected Participants") {
+                            addParticipants()
+                            showAddParticipantsSheet.toggle()
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(8)
+                        .padding(.top, 16)
+                    }
+                    .padding()
+                }
+            }.onAppear(perform: loadParticipants)
+                
+        }
+    }
+    
+    func loadParticipants() {
+        isLoading = true
+        errorMessage = nil
+        fetch("persons", PersonsResponse.self) { result in
+            switch result {
+            case .success(let personsResult):
+                let persons = personsResult.data
+                var contestParticipants = persons.filter { $0.ROLE.lowercased() == "contestant" }
+                contestParticipants.removeAll(where: { person in
+                    participants.contains(where: { $0.id == person.ID })
+                })
+                availableParticipants = contestParticipants
+                isLoading = false
+            case .failure(let error):
+                errorMessage = error.localizedDescription
+                isLoading = false
+            }
+        }
+    }
+    
+    func addParticipants() {
+        let newParticipants = PersonToContest(participant_ids: Array(selectedParticipants))
+    
+        
+        fetch("contests/\(contestID)/participants", PersonToContestResponse.self, "POST", nil, newParticipants) { result in
+            switch result {
+            case .success(let response):
+                print("Added participants: \(response)")
+            case .failure(let error):
+                print("Error adding participants: \(error)")
+            }
+        }
     }
 }
 
@@ -250,8 +363,10 @@ struct JudgeEntryView: View {
     @State private var startingInput: String = ""
     @State private var editingIndex: Int?
     @State private var isEditing: Bool = false
+    @State private var isEditingError: Bool = false;
+    @State private var wasSuccessful: Bool?
     @State private var updatedInput: String = ""
-    
+
     var body: some View {
         Group {
             if isLoading {
@@ -261,10 +376,11 @@ struct JudgeEntryView: View {
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
             } else {
-                
+
                 VStack(alignment: .leading, spacing: 16) {
                     HeaderView()
                         .padding(.horizontal, 16)
+
                     
                     if !contestResults.isEmpty {
                         ResultsListView()
@@ -273,7 +389,7 @@ struct JudgeEntryView: View {
                         EmptyStateView()
                             .padding(.horizontal, 16)
                     }
-                    
+
                     Spacer()
                 }
                 .padding(.top, 16)
@@ -282,8 +398,22 @@ struct JudgeEntryView: View {
         .onAppear(perform: fetchContestResults)
         .sheet(isPresented: $isEditing) {
             EditEntrySheet()
+                .onAppear {
+                    if let index = editingIndex {
+                        startingInput = String(contestResults[index].value ?? 0)
+                        let locale = Locale.current
+                        let formatter = NumberFormatter()
+                        formatter.locale = locale
+                        formatter.numberStyle = .decimal
+                        updatedInput = formatter.string(from: NSNumber(value: contestResults[index].value ?? 0)) ?? ""
+                    } else {
+                        startingInput = ""
+                        updatedInput = ""
+                    }
+                }
         }
     }
+
     
     // MARK: - Components
     
@@ -305,6 +435,13 @@ struct JudgeEntryView: View {
     @ViewBuilder
     private func ResultsListView() -> some View {
         List {
+            if let success = wasSuccessful {
+                if success {
+                    Text("Result successfully updated")
+                        .foregroundColor(.green)
+                        .multilineTextAlignment(.center)
+                }
+            }
             Section(header: Text("Eingetragene Ergebnisse").font(.headline)) {
                 ForEach(contestResults.indices, id: \.self) { index in
                     HStack {
@@ -323,7 +460,6 @@ struct JudgeEntryView: View {
                             isEditing = true
                         }) {
                             Image(systemName: "pencil.circle.fill")
-                                .foregroundColor(.yellow)
                                 .font(.title2)
                                 .padding(.trailing)
                         }
@@ -366,35 +502,87 @@ struct JudgeEntryView: View {
     
     @ViewBuilder
     private func EditEntrySheet() -> some View {
+        var isValid = true;
         VStack(spacing: 20) {
-            Text("Edit Entry")
+            Label("Edit Entry", systemImage: "pencil")
                 .font(.title)
                 .fontWeight(.bold)
-            
+
             if let index = editingIndex {
-                Text("Editing: \(contestResults[index].p_firstname) \(contestResults[index].p_lastname)")
+                VStack(spacing: 10) {
+                    Label(
+                        "Editing: \(contestResults[index].p_firstname) \(contestResults[index].p_lastname)",
+                        systemImage: "person"
+                    )
                     .font(.headline)
                     .multilineTextAlignment(.center)
-                
-                TextField("Enter new value", text: $updatedInput)
-                    .keyboardType(.decimalPad)
-                    .textFieldStyle(.roundedBorder)
-                    .padding(.horizontal)
-                
-                HStack(spacing: 20) {
-                    Button("Confirm") {
-                        if let newValue = Double(updatedInput) {
-                            print("Old Value: \(startingInput)")
-                            print("New Value: \(updatedInput)")
-                            contestResults[index].value = newValue
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Enter New Value")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        HStack {
+                            Image(systemName: "number")
+                                .foregroundColor(.blue)
+                            
+                            TextField("e.g., 123.45", text: $updatedInput)
+                                .keyboardType(.decimalPad)
+                                .textFieldStyle(.plain)
+                                .padding(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(isValid ? Color.blue : Color.red, lineWidth: 1)
+                                )
+                            
+                            Text(contest.ct_unit)
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                                .padding(.leading, 8)
                         }
-                        isEditing = false
+                        if isEditingError {
+                            Text("Error updating result. Please try again.")
+                                .foregroundColor(.red)
+                                .font(.footnote)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+
+                HStack(spacing: 20) {
+                    Button(action: {
+                        isValid = true
+                        
+                        let locale = Locale.current
+                        let formatter = NumberFormatter()
+                        formatter.locale = locale
+                        formatter.numberStyle = .decimal
+                        
+                        guard let updatedInput = formatter.number(from: updatedInput)?.doubleValue else {
+                            isValid = false
+                            return
+                        }
+                        
+                        
+                        print("Updating result for \(contestResults[index].p_firstname) \(contestResults[index].p_lastname) to \(updatedInput)")
+                        print("Index: \(index)")
+                        
+                        updateContestResult(
+                            contestResults[index].p_id,
+                            contest.ct_id,
+                            updatedInput,
+                            index)
+                        
+                    }) {
+                        Label("Confirm", systemImage: "checkmark.circle")
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.green)
-                    
-                    Button("Cancel") {
+
+                    Button(action: {
                         isEditing = false
+                    }) {
+                        Label("Cancel", systemImage: "xmark.circle")
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.red)
@@ -404,11 +592,20 @@ struct JudgeEntryView: View {
         .padding()
     }
 
+
+    
     
     // MARK: - Helpers
     
     private func formattedString(_ ctr: ContestResult) -> String {
-        var result = "\(ctr.p_firstname.prefix(1)). \(ctr.p_lastname) "
+        let charAmount = ctr.p_firstname.count + ctr.p_lastname.count + 1
+        let maxChars = 30;
+        
+        var result = "\(ctr.p_firstname) \(ctr.p_lastname) "
+        
+        if charAmount > maxChars {
+            result = "\(ctr.p_firstname.prefix(1)). \(ctr.p_lastname) "
+        }
         if let value = ctr.value {
             result += "\(floatToString(value)) \(contest.ct_unit.lowercased())"
         } else {
@@ -430,11 +627,39 @@ struct JudgeEntryView: View {
             switch response {
             case .success(let resp):
                 contestResults = resp.data
+                contestResults.sort { $0.p_lastname < $1.p_lastname }
                 isLoading = false
             case .failure(let error):
                 print("Error fetching contest results: \(error)")
                 errorMEssage = error.localizedDescription
                 isLoading = false
+            }
+        }
+    }
+    
+    // MARK: - Update Contest Result
+    
+    private func updateContestResult(_ contestantID: String, _ contestID: String, _ newValue: Float64, _ index: Int) {
+        isEditingError = false
+        wasSuccessful = nil
+        
+        let updatedResult = UpdateContestantResultOuter(results: [UpdateContestantResultInner(p_id: contestantID, value: newValue)])
+        
+        fetch("contests/\(contestID)/contestresults", UpdateContestantResultResponse.self, "PATCH", nil, updatedResult) { result in
+            switch result {
+            case .success(let response):
+                print("Updated result: \(response)")
+                isEditing = false
+                wasSuccessful = true
+                contestResults[index].value = newValue
+                DispatchQueue.main.asyncAfter(deadline: .now() + 7) {
+                    wasSuccessful = nil
+                }
+                
+            case .failure(let error):
+                print("Error updating result: \(error)")
+                isEditingError = true
+                
             }
         }
     }

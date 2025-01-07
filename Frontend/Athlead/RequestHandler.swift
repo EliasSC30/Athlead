@@ -56,7 +56,7 @@ private var sessionConfiguration: URLSessionConfiguration = {
     return config
 }()
 
-private var sharedSession: URLSession = {
+var sharedSession: URLSession = {
     URLSession(configuration: sessionConfiguration)
 }()
 
@@ -181,5 +181,4 @@ func fetch<T: Codable>(
     
     task.resume()
 }
-
 

@@ -399,7 +399,7 @@ struct IsParticipantCheckResponse: Codable {
 
 struct ParentsChildrenResponse: Codable {
     let status: String
-    let children: [Person]
+    let data: [Person]
 }
 
 struct IsLoggedInResponse: Codable {
@@ -437,6 +437,7 @@ struct PersonWithResult: Identifiable, Codable {
 }
 struct ContestWithResults: Codable {
     let id: String
+    let contest_name: String
     let unit: String
     let results: [PersonWithResult]
 }
@@ -445,6 +446,37 @@ struct SportfestResultMasterResponse: Codable {
     let status: String
     let contests: [ContestWithResults]
     let contestants_totals: [PersonWithPoint]
+}
+
+struct PersonToContest: Codable {
+    let participant_ids: [String]
+}
+
+struct PersonToContestResponse: Codable {
+    let status: String
+    let added_persons: Int
+}
+
+struct UpdateContestantResultInner: Codable {
+    let p_id: String
+    let value: Float64
+}
+    
+struct UpdateContestantResultOuter: Codable {
+    let results: [UpdateContestantResultInner]
+}
+struct UpdateContestantResultResponse: Codable {
+    let status: String
+    let updated_fields: Int
+}
+
+struct ChildUpdate: Codable {
+    let disabilities: String?
+    let pics: Int?
+}
+
+struct ChildUpdateResponse: Codable {
+    let status: String
 }
 
 extension String {

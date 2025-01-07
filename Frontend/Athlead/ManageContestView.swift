@@ -12,7 +12,7 @@ struct ManageContestView: View {
     
     
     @State private var contests: [CTemplate] = []
-    @State private var isLoading: Bool = true
+    @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     
     var body: some View {

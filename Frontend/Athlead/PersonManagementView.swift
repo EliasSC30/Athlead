@@ -18,7 +18,7 @@ struct PersonManagementView: View {
     @State private var showAddPersonSheet = false
     @State private var personToEdit: Person? = nil
     
-    @State private var isLoading: Bool = true
+    @State private var isLoading: Bool = false
     @State private var errorMessageLoad: String?
     
     var body: some View {
