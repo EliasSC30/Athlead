@@ -108,9 +108,14 @@ impl Handler<ClientActorMessage> for Lobby {
                 self.send_message(&msg.msg, &Uuid::parse_str(id_to).unwrap());
             }
         } else {
-            self.rooms.get(&msg.room_id).unwrap().iter().for_each(|client| {
-                self.send_message(&msg.msg, client);
-            })
+            if self.rooms.contains_key(&msg.room_id) {
+                self.rooms.get(&msg.room_id).unwrap().iter().for_each(|client| {
+                    self.send_message(&msg.msg, client);
+                })
+            } else {
+                println!("No such rooms yet registered: {}", msg.room_id);
+            }
+
         }
     }
 }
@@ -226,6 +231,7 @@ impl Handler<WsMessage> for WsConn {
 
 #[get("/ws/{group_id}")]
 pub async fn ws_connect_handler(path: Path<String>, req: HttpRequest, stream: Payload, srv: Data<Addr<Lobby>>) -> impl Responder {
+
     let group_id = path.into_inner();
     let group_id = group_id.parse::<Uuid>();
     if group_id.is_err() {

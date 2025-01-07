@@ -15,3 +15,4 @@ mod parent_children;
 pub(crate) mod general;
 mod helper;
 pub(crate) mod websocket;
+mod photos;

@@ -1,9 +1,13 @@
+use actix::Addr;
 use crate::model::contest::*;
 use actix_web::{get, patch, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web::web::Data;
+use actix_web_actors::ws::Message;
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
 use uuid::{Uuid};
-use crate::model::contestresult::{ContestResult,BatchContestResults, ContestResultContestView, PatchContestResults};
+use crate::api::websocket::{ClientActorMessage, Lobby};
+use crate::model::contestresult::{ContestResult, BatchContestResults, ContestResultContestView, PatchContestResults};
 use crate::model::metric::Metric;
 use crate::model::person::{Participant, Person};
 
@@ -73,9 +77,11 @@ struct PersonToResult {
 
 #[patch("/contests/{id}/contestresults")]
 pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
-                                     path: web::Path<String>,
-                                     db: web::Data<MySqlPool>)
-                                     -> impl Responder
+                                    path: web::Path<String>,
+                                    db: Data<MySqlPool>,
+                                    socket: Data<Addr<Lobby>>
+)
+    -> impl Responder
 {
     if body.results.is_empty() { return HttpResponse::BadRequest().json(json!({
         "status": "No results to update error",
@@ -192,6 +198,13 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
     }
 
     tx.commit().await.expect("Failed to commit transaction");
+
+    socket.send(ClientActorMessage{
+        id: Uuid::new_v4(),
+        msg: format!("contest_id:{} had updates", contest_id.clone()),
+        room_id: Uuid::parse_str(contest_id.as_str()).unwrap()
+    }).await.expect("Socket error!");
+
     HttpResponse::Ok().json(json!({
         "status": "success",
         "updated_fields": updates_to_do.len()

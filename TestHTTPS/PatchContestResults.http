@@ -1,15 +1,11 @@
-PATCH http://localhost:8000/contests/c661e3cc-32f3-44df-ae9f-84acc2b3e061/contestresults
+PATCH http://localhost:8000/contests/b5855ba6-c114-4817-93a3-7bca520f1b11/contestresults
 Content-Type: application/json
 
 {
   "results": [
     {
-      "p_id": "2098da32-00ff-48b5-9cdf-adf3653216c2",
+      "p_id": "09f6f219-bc8b-4eb8-93e3-71b657714417",
       "value": 1999.912
-    },
-    {
-      "p_id": "0f520bdc-b0b8-485b-a262-789b994fa0ef",
-      "value": 56789
     }
   ]
 }

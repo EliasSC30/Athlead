@@ -101,7 +101,6 @@ pub async fn parents_children_patch_child_handler(path: Path<String>,
     }
     update_query.truncate(update_query.len() - 2);
     update_query += format!(" WHERE ID = \"{}\"", child_id).as_str();
-    println!("Update query: {}", update_query);
     let update_query = sqlx::query(update_query.as_str()).execute(db.as_ref()).await;
     if update_query.is_err() { return HttpResponse::InternalServerError().json(json!({
         "status": "Update person error",
