@@ -29,6 +29,20 @@ enum MyResult<Success, Failure> {
     case failure(Failure)
 }
 
+
+struct UploadPhoto: Codable {
+    let name: String
+    let data: String
+}
+
+struct UploadPhotoResponse: Codable {
+    let status: String
+}
+
+struct Photo: Codable {
+    let data: String
+}
+
 struct RegisterData: Encodable {
     let email: String
     let password: String

@@ -6,6 +6,10 @@
 //
 import SwiftUI
 
+
+
+
+
 struct ContentView: View {
     @State private var isLoading = true // Loading status
     @State private var successfullLogin = User != nil;
@@ -48,7 +52,7 @@ struct ContentView: View {
                                 }
                         }
                         
-                        YourProfileView(loggedOut: {() in User = nil; successfullLogin = false; print("Was here")})
+                        YourProfileView(loggedOut: {() in User = nil; successfullLogin = false; })
                             .tabItem {
                                 Image(systemName: "person.fill")
                                 Text("Profil")
@@ -78,6 +82,7 @@ struct ContentView: View {
                     }
                         
                 }
+            
         }
     }
 }

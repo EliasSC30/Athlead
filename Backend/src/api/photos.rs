@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::{Read, Write};
 use actix_web::{post, get, HttpResponse, Responder};
-use actix_web::web::Json;
+use actix_web::web::{Json, Path};
 use serde_json::json;
 use crate::model::photos::{PhotoUpload, Photoname};
 
@@ -28,9 +28,10 @@ pub async fn photos_post_handler(body: Json<PhotoUpload>) -> impl Responder {
     HttpResponse::Ok().json(json!({ "status": "success" }))
 }
 
-#[get("/photos")]
-pub async fn photos_get_handler(body: Json<Photoname>) -> impl Responder {
-    let file_path = format!("{}/{}", SAVE_DIR, body.name);
+#[get("/photos/{id}")]
+pub async fn photos_get_handler(path: Path<String>) -> impl Responder {
+    let user_id = path.into_inner();
+    let file_path = format!("{}/{}", SAVE_DIR, user_id);
 
     let mut file = File::open(&file_path);
     if file.is_err() {
@@ -38,16 +39,18 @@ pub async fn photos_get_handler(body: Json<Photoname>) -> impl Responder {
     };
     let mut file = file.unwrap();
 
-    let mut buffer = Vec::new();
-    if let Err(_) = file.read_to_end(&mut buffer) {
+    let mut data = String::with_capacity(10 * 1024);
+    let res = file.read_to_string(&mut data);
+    if res.is_err() {
         return HttpResponse::InternalServerError().json(json!({
             "status": "Couldn't read file"
         }));
     };
 
+
     HttpResponse::Ok().json(json!({
         "status": "success",
-        "data": serde_json::to_value(&buffer).unwrap()
+        "data": data
     }))
 }
 
