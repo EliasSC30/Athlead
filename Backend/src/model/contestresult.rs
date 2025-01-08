@@ -73,3 +73,19 @@ pub struct CreateContestResults {
     pub PERSON_ID: Vec<String>,
     pub METRIC_ID: Vec<String>,
 }
+
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
+pub struct WsMsg {
+    pub msg_type: String,
+    pub data: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[allow(non_snake_case)]
+pub struct WsCRMsg {
+    pub contest_id: String,
+    pub contestant_id: String,
+    pub value: String,
+}
+

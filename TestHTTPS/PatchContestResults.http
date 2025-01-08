@@ -5,7 +5,7 @@ Content-Type: application/json
   "results": [
     {
       "p_id": "09f6f219-bc8b-4eb8-93e3-71b657714417",
-      "value": 1999.912
+      "value": 10
     }
   ]
 }

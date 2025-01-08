@@ -1,22 +1,29 @@
 const WebSocket = require("ws");
 
-const ws = new WebSocket("ws://localhost:8000/ws/b5855ba6-c114-4817-93a3-7bca520f1b11");
+
+const cookies = "Token=hnpcagapjjbnpkngieabdbmhmigijcapfdofoifggilonmlcfmgmjjbldikokigefbchmhpbbcifehhegipnpbackobhcfigpkjlagppahimpjiogelcaodpllbdoffiieecbaaa;";
+
+const socket = new WebSocket("ws://localhost:8000/ws/b5855ba6-c114-4817-93a3-7bca520f1b11", {
+    headers: {
+        Cookie: cookies
+    }
+});
 
 
-ws.on("open", () => {
+
+socket.on("open", () => {
     console.log("Connected to WebSocket server");
-    ws.send("Hello from Node.js!");
 });
 
-ws.on("message", (message) => {
-    console.log("Message from server:", message);
+socket.on("message",(msg)=>{
+    console.log("Received a message :) : ", msg)
 });
 
-ws.on("close", (code, reason) => {
-    console.log(`WebSocket closed: code=${code}, reason=${reason}`);
+socket.on('pong', () => {
+    console.log("Pong received from server.");
 });
 
-ws.on("error", (error) => {
-    console.error("WebSocket error:", error);
+socket.addEventListener('close', (event) => {
+    console.log("WebSocket closed:", event.code, event.reason);
 });
 

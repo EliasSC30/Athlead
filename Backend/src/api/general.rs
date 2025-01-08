@@ -9,6 +9,15 @@ pub struct FieldWithValue {
     pub value: String,
 }
 
+impl FieldWithValue {
+    pub(crate) fn clone(&self) -> FieldWithValue {
+        FieldWithValue{
+            name: self.name,
+            value: self.value.clone(),
+        }
+    }
+}
+
 pub fn get_user_of_request(req: HttpRequest) -> Result<Person, &'static str> {
     let container = req.extensions();
     let user = container.get::<Person>();

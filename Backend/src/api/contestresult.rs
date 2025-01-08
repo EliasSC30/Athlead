@@ -14,7 +14,7 @@ use crate::model::metric::CreateMetric;
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 #[allow(non_snake_case)]
-pub struct UpdateWrapper{ pub unit: String, pub metric_id: Option<String>, pub ct_id: String }
+pub struct UpdateWrapper{ pub unit: String, pub metric_id: Option<String>, pub ct_id: String, pub contestant_id: String }
 #[patch("/contestresults/{id}")]
 pub async fn contestresults_patch_handler(path: web::Path<String>,
                                           body: web::Json<UpdateContestResult>,
@@ -32,7 +32,7 @@ pub async fn contestresults_patch_handler(path: web::Path<String>,
     })); };
 
     let unit_query = sqlx::query_as!(UpdateWrapper,
-        r#"SELECT ct_t.UNIT as unit, ctr.METRIC_ID as metric_id, ct.ID as ct_id
+        r#"SELECT ct_t.UNIT as unit, ctr.METRIC_ID as metric_id, ct.ID as ct_id, ctr.PERSON_ID as contestant_id
                                             FROM CONTESTRESULT as ctr
                                             JOIN CONTEST as ct ON ct.ID = ctr.CONTEST_ID
                                             JOIN C_TEMPLATE as ct_t ON ct_t.ID = ct.C_TEMPLATE_ID
@@ -62,7 +62,7 @@ pub async fn contestresults_patch_handler(path: web::Path<String>,
 
     let field = FieldWithValue{ name: "VALUE", value: body.value.to_string()};
     let updated_fields = update_table_handler("METRIC",
-                                             vec![field],
+                                             vec![field.clone()],
                                              format!("ID = \"{}\"", update_info.metric_id.unwrap()),
                                              db.as_ref()).await;
     if updated_fields.is_err() { return HttpResponse::InternalServerError().json(json!({
@@ -73,9 +73,13 @@ pub async fn contestresults_patch_handler(path: web::Path<String>,
         "status": "Update Metric error 2",
     })); };
 
+    let ws_update_msg = WsCRMsg{ contest_id: update_info.ct_id.clone(),
+                                 contestant_id: update_info.contestant_id.clone(),
+                                 value: field.value
+    };
     socket.send(ClientActorMessage{
         id: Uuid::new_v4(),
-        msg: format!("contest_id:{}, result_id:{}", update_info.ct_id, ctr_id.clone()),
+        msg: serde_json::to_value(WsMsg{msg_type: "CR_UPDATE".to_string(), data: serde_json::to_value(ws_update_msg).unwrap().to_string()}).unwrap().to_string(),
         room_id: Uuid::parse_str(update_info.ct_id.as_str()).unwrap()
     }).await.expect("Socket error!");
 

@@ -10,6 +10,7 @@ use actix_web::{get, HttpRequest, HttpResponse, Responder};
 use actix_web::web::{Data, Path, Payload};
 use actix_web_actors::ws::ProtocolError;
 use serde_json::json;
+use crate::model::contestresult::WsMsg;
 
 #[derive(Message)]
 #[rtype(result = "()")]
@@ -70,9 +71,10 @@ impl Handler<Disconnect> for Lobby {
     type Result = ();
     fn handle(&mut self, msg: Disconnect, _: &mut Self::Context) -> () {
         if self.sessions.remove(&msg.id).is_some() {
+            let disconnect_msg = serde_json::to_value(WsMsg{msg_type: String::from("DISCONNECT"), data: String::from("")}).unwrap();
             self.rooms.get(&msg.room_id).unwrap()
                 .iter().filter(|conn_id| *conn_id.to_owned() != msg.id)
-                .for_each(|user_id| self.send_message(&format!("{} Disconnected", &msg.id), user_id));
+                .for_each(|user_id| self.send_message(disconnect_msg.as_str().unwrap(), user_id));
         }
 
         if let Some(lobby) = self.rooms.get_mut(&msg.room_id) {
@@ -89,14 +91,19 @@ impl Handler<Connect> for Lobby {
     type Result = ();
     fn handle(&mut self, msg: Connect, _: &mut Self::Context) -> Self::Result {
         self.rooms.entry(msg.lobby_id).or_insert_with(HashSet::new).insert(msg.self_id);
+        /*
         self.rooms.get(&msg.lobby_id).unwrap().iter().filter(|conn_id|{
             *conn_id.to_owned() != msg.self_id
         }).for_each(|conn_id| {
             self.send_message(&format!("{} joined", msg.self_id), conn_id)
-        });
+        });*/
 
         self.sessions.insert(msg.self_id, msg.addr);
-        self.send_message(&format!("Your id is {}", msg.self_id), &msg.self_id);
+        let ws_msg = serde_json::to_string(&WsMsg{
+            msg_type: "CONNECT".to_string(),
+            data: String::from("")
+        }).unwrap();
+        self.send_message(ws_msg.as_str(), &msg.self_id);
     }
 }
 
@@ -122,8 +129,8 @@ impl Handler<ClientActorMessage> for Lobby {
 
 
 
-const HEARTBEAT_INTERVAL : Duration = Duration::from_secs(5);
-const CLIENT_TIMEOUT : Duration = Duration::from_secs(10);
+const HEARTBEAT_INTERVAL : Duration = Duration::from_secs(500);
+const CLIENT_TIMEOUT : Duration = Duration::from_secs(1000);
 
 
 
@@ -240,6 +247,7 @@ pub async fn ws_connect_handler(path: Path<String>, req: HttpRequest, stream: Pa
     let group_id = group_id.unwrap();
 
     let ws = WsConn::new(group_id, srv.get_ref().clone());
+    println!("Connecting to {}", group_id);
 
     ws::start(ws, &req, stream).expect("Reason")
 }
