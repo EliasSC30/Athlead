@@ -111,7 +111,7 @@ struct YourProfileView: View {
 
                     }
                     .listStyle(InsetGroupedListStyle())
-                    .navigationTitle("Athlead")
+                    .navigationTitle("Profil")
                 }
             }
         }.onAppear(perform: loadData)

@@ -225,7 +225,7 @@ struct SportfestData: Identifiable, Hashable, Codable {
     
     var id: String { return self.sportfest_id }
 }
-struct ContestData: Codable, Identifiable {
+struct ContestData: Codable, Identifiable, Hashable {
     let C_TEMPLATE_ID: String
     let ct_city: String
     let ct_cp_birth_year: String

@@ -36,7 +36,7 @@ struct ParticipantView: View {
                         LazyVStack(spacing: 20) {
                             ForEach(allSportFests) { sportfest in
                                 NavigationLink(destination: SportfestParticipantDetailView(sportfest: sportfest)) {
-                                    SportfestCard(sportfest: sportfest)
+                                    SportfestCard(isNextSportfest: allSportFests.firstIndex(where: { $0.id == sportfest.id }) == 0, sportfest: sportfest)
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
@@ -69,12 +69,19 @@ struct ParticipantView: View {
 
 // Sportfest Card View
 struct SportfestCard: View {
+    var isNextSportfest: Bool
     let sportfest: SportfestData
     @State private var timerValue: Int = 45 * 60 // 45 minutes in seconds
     @State private var timerText: String = "45:00"
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let contestStates: [String] = ["checkmark.circle.fill", "x.circle.fill", "questionmark.circle.fill"]
+    
+    @State private var userContests: [ContestData] = []
+    
+    let currentTime = Date()
+    
+    @State private var nextContest: ContestData?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -89,22 +96,24 @@ struct SportfestCard: View {
                 Spacer()
                 
                 // Timer Section
-                VStack(alignment: .trailing) {
-                    Text("Weitsprung in")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                    Text(timerText)
-                        .font(.headline)
-                        .foregroundColor(.red)
-                        .onReceive(timer) { _ in
-                            if timerValue > 0 {
-                                timerValue -= 1
-                                timerText = formatTime(timerValue)
+                if nextContest != nil {
+                    VStack(alignment: .trailing) {
+                        Text("\(nextContest!.ct_details_name) in")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        Text(timerText)
+                            .font(.headline)
+                            .foregroundColor(.red)
+                            .onReceive(timer) { _ in
+                                if timerValue > 0 {
+                                    timerValue -= 1
+                                    timerText = formatTime(timerValue)
+                                }
                             }
-                        }
-                    Text("Location: \(sportfest.location_name)")
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                        Text("Location: \(sportfest.location_name)")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
                 }
             }
             
@@ -136,11 +145,16 @@ struct SportfestCard: View {
                 Text("Contests:")
                     .font(.headline)
                 
-                ForEach(["Weitsprung", "100m Lauf", "Speerwurf"], id: \.self) { contest in
+                ForEach(userContests, id: \.self) { contest in
                     HStack {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                        Text(contest)
+                        if stringToDate(contest.ct_details_end) < currentTime {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                        } else {
+                            Image(systemName: "x.circle.fill")
+                                .foregroundColor(.red)
+                        }
+                        Text(contest.ct_details_name)
                             .font(.subheadline)
                     }
                 }
@@ -150,13 +164,40 @@ struct SportfestCard: View {
         .background(Color(.secondarySystemBackground))
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .onAppear(perform: fetchContests)
     }
     
     // Timer functionality
     func formatTime(_ totalSeconds: Int) -> String {
-        let minutes = totalSeconds / 60
-        let seconds = totalSeconds % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+        if totalSeconds >= 30 * 24 * 60 * 60 { // More than a month
+            let months = totalSeconds / (30 * 24 * 60 * 60)
+            let remainingDays = (totalSeconds % (30 * 24 * 60 * 60)) / (24 * 60 * 60)
+            return remainingDays == 0 ? "\(months)m" : "\(months)m \(remainingDays)d"
+        } else if totalSeconds >= 7 * 24 * 60 * 60 { // More than a week
+            let weeks = totalSeconds / (7 * 24 * 60 * 60)
+            let remainingDays = (totalSeconds % (7 * 24 * 60 * 60)) / (24 * 60 * 60)
+            return remainingDays == 0 ? "\(weeks)w" : "\(weeks)w \(remainingDays)d"
+        } else if totalSeconds >= 24 * 60 * 60 { // More than a day
+            let days = totalSeconds / (24 * 60 * 60)
+            return "\(days)d"
+        } else if totalSeconds >= 60 * 60 { // More than an hour
+            let hours = totalSeconds / 3600
+            let minutes = (totalSeconds % 3600) / 60
+            return String(format: "%dh %02dm", hours, minutes)
+        } else { // Less than an hour
+            let minutes = totalSeconds / 60
+            let seconds = totalSeconds % 60
+            return String(format: "%02d:%02d", minutes, seconds)
+        }
+    }
+
+    
+    
+    func stringToDate(_ string: String) -> Date {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.timeZone = TimeZone(abbreviation: "UTC")
+        return formatter.date(from: string) ?? Date()
     }
     
     func formatDate(_ dateString: String) -> String {
@@ -169,39 +210,87 @@ struct SportfestCard: View {
         }
         return dateString
     }
-}
-
-
-// Sportfest Detail View
-struct SportfestParticipantDetailView: View {
-    let sportfest: SportfestData
     
-    var body: some View {
-        VStack(spacing: 20) {
-            Text(sportfest.details_name)
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding()
-            
-            Text("Start: \(formatDate(sportfest.details_start))")
-                .font(.title3)
-            Text("End: \(formatDate(sportfest.details_end))")
-                .font(.title3)
-            
-            Spacer()
+    func fetchContests() {
+        let uC = sportfest.cts_wf.filter { $0.participates == true }
+        let dispatchGroup = DispatchGroup()
+        var fetchedContests: [ContestData] = []
+
+        for contest in uC {
+            let contestId = contest.contest_id
+            dispatchGroup.enter()
+            fetch("contests/\(contestId)", ContestResponse.self) { result in
+                switch result {
+                case .success(let resp):
+                    DispatchQueue.main.async {
+                        fetchedContests.append(resp.data)
+                    }
+                case .failure(let error):
+                    print(error)
+                }
+                dispatchGroup.leave()
+            }
         }
-        .navigationTitle("Details")
-        .padding()
+
+        dispatchGroup.notify(queue: .main) {
+            userContests = fetchedContests.sorted { $0.ct_details_start < $1.ct_details_start }
+            if let firstContest = userContests.first {
+                nextContest = firstContest
+                setTimerVariables()
+            }
+        }
     }
     
-    func formatDate(_ dateString: String) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        if let date = formatter.date(from: dateString) {
-            let outputFormatter = DateFormatter()
-            outputFormatter.dateStyle = .medium
-            return outputFormatter.string(from: date)
+    func setTimerVariables() {
+        if nextContest == nil {
+            return
         }
-        return dateString
+        
+        let nextContestDate = stringToDate(nextContest!.ct_details_start)
+
+        let timeDifference = nextContestDate.timeIntervalSince(currentTime)
+
+        if timeDifference <= 0 {
+            // If the contest has already started or the time difference is negative
+            timerValue = -1
+            timerText = "Started"
+        } else if timeDifference < 24 * 60 * 60 { // Less than 24 hours
+            timerValue = Int(timeDifference)
+            let hours = Int(timeDifference) / 3600
+            let minutes = (Int(timeDifference) % 3600) / 60
+            let seconds = Int(timeDifference) % 60
+            timerText = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+        } else if timeDifference <= 7 * 24 * 60 * 60 { // Between 1 and 7 days
+            let days = Int(timeDifference) / (24 * 60 * 60)
+            timerValue = -1
+            timerText = "\(days)d"
+        } else if timeDifference <= 30 * 24 * 60 * 60 { // Between 7 days and 1 month
+            let totalDays = Int(timeDifference) / (24 * 60 * 60)
+            let weeks = totalDays / 7
+            let days = totalDays % 7
+
+            if days == 0 {
+                timerText = "\(weeks)w"
+            } else {
+                timerText = "\(weeks)w \(days)d"
+            }
+
+            timerValue = -1
+        } else { // More than 1 month
+            let totalDays = Int(timeDifference) / (24 * 60 * 60)
+            let months = totalDays / 30
+            let remainingDays = totalDays % 30
+
+            if remainingDays == 0 {
+                timerText = "\(months)m"
+            } else {
+                timerText = "\(months)m \(remainingDays)d"
+            }
+
+            timerValue = -1
+        }
+        
     }
+
+    
 }
