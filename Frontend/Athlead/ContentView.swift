@@ -21,12 +21,6 @@ struct ContentView: View {
             } else {
                 TabView {
                     if successfullLogin {
-                        MainPageView()
-                            .tabItem {
-                                Image(systemName: "house.fill")
-                                Text("Hauptseite")
-                            }
-                        
                         if User.unsafelyUnwrapped.ROLE.uppercased() == "ADMIN" {
                             AdminOverviewView()
                                 .tabItem {
