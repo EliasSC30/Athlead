@@ -18,6 +18,10 @@ pub async fn get_contest(id: String, db: &web::Data<MySqlPool>) -> Result<Contes
         .await.map_err(|e| e.to_string())
 }
 
+pub struct AscDescWrapper{
+    pub ascending: String,
+}
+
 #[get("/contests/{id}/contestresults")]
 pub async fn contest_get_results_by_id_handler(path: web::Path<String>, db: web::Data<MySqlPool>)
                                                -> impl Responder {
@@ -57,9 +61,21 @@ pub async fn contest_get_results_by_id_handler(path: web::Path<String>, db: web:
         .fetch_all(db.as_ref())
         .await;
 
+    let ascend_descend_query =
+        sqlx::query_as!(AscDescWrapper, r#"SELECT ct_t.EVALUATION as ascending
+                                                FROM C_TEMPLATE as ct_t
+                                                JOIN CONTEST as ct ON ct.C_TEMPLATE_ID = ct_t.ID
+                                                WHERE ct.ID = ?
+                                                "#, contest_id)
+        .fetch_one(db.as_ref()).await;
+    if ascend_descend_query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Evaluation query error"
+    })); };
+
     match master_query {
         Ok(result) => HttpResponse::Ok().json(json!({
             "status": "success",
+            "ascending": ascend_descend_query.unwrap().ascending,
             "data": serde_json::to_value(&result).unwrap(),
         })),
         Err(e) => HttpResponse::InternalServerError().json(json!({
