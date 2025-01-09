@@ -1,4 +1,4 @@
-PATCH http://localhost:8000/contestresults/1c42dc1b-1d44-4a3f-a6d9-2bc6184b1a3f
+PATCH http://localhost:8000/contestresults/b5855ba6-c114-4817-93a3-7bca520f1b11
 Content-Type: application/json
 
 {

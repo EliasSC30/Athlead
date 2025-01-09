@@ -4,9 +4,17 @@
 //
 //  Created by Wichmann, Jan on 02.12.24.
 //
+
 import SwiftUI
 
 private let arrayOfDisabilitiesPerChild: [String] = ["accessibility", "hand.raised", "heart.fill", "heart.text.clipboard.fill", "bolt.heart.fill"]
+
+var changeNr = 0;
+
+func updateMsgs(){
+    changeNr += 1;
+    print("Changed")
+}
 
 struct YourProfileView: View {
     let loggedOut: () -> Void
@@ -19,7 +27,13 @@ struct YourProfileView: View {
     @State private var isParent: Bool = false
     
     @State private var reloadPage: Bool = false
+<<<<<<< Updated upstream
     
+=======
+
+    @State private var client: WebSocketClient = WebSocketClient();
+
+>>>>>>> Stashed changes
     var body: some View {
         NavigationView {
             Group {
@@ -30,6 +44,12 @@ struct YourProfileView: View {
                         .foregroundColor(.red)
                         .multilineTextAlignment(.center)
                 } else {
+                    if client.receivedMessages.isEmpty{}else{
+                        ForEach(client.receivedMessages, id: \.self){
+                            message in
+                            Text("Next message: \(message)")
+                        }
+                    }
                     List {
                         // Profile Section
                         Section(header: Text("Your Profile")) {
@@ -115,8 +135,13 @@ struct YourProfileView: View {
                     .navigationTitle("Profil")
                 }
             }
+<<<<<<< Updated upstream
         }.onAppear(perform: loadData)
         
+=======
+        }
+        .onAppear(perform: loadData)
+>>>>>>> Stashed changes
     }
     
     func loadData() {
@@ -133,6 +158,7 @@ struct YourProfileView: View {
             }
             isLoading = false
         }
+<<<<<<< Updated upstream
         
         fetch("photos/"+User.unsafelyUnwrapped.ID, Photo.self){ result in
             switch result{
@@ -141,6 +167,18 @@ struct YourProfileView: View {
             }
         }
         
+=======
+
+                            fetch("photos/"+User.unsafelyUnwrapped.ID, Photo.self){ result in
+                                switch result{
+                                case .success(let photo): profilePicture = photo.data
+                                case .failure(let _): print("Could not get profile picture")
+                                }
+                            }
+        
+        client.connect();
+
+>>>>>>> Stashed changes
     }
     
     func logout(){
