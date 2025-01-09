@@ -23,6 +23,8 @@ struct SportfestParticipantContestDetailView: View {
 
     @State private var isLive: Bool = false
     @State private var showMap: Bool = false
+    
+    @State private var rankingAscending: Bool = false
 
     var body: some View {
         ScrollView {
@@ -98,6 +100,7 @@ struct SportfestParticipantContestDetailView: View {
             switch result {
             case .success(let resp):
                 results = resp.data
+                rankingAscending = resp.ascending
                 calculateRankings()
             case .failure(let error):
                 errorMessage = error.localizedDescription
@@ -110,7 +113,13 @@ struct SportfestParticipantContestDetailView: View {
         let scoredResults = results.filter { $0.value != nil }
         let noScoreResults = results.filter { $0.value == nil }
         
-        let sortedScoredResults = scoredResults.sorted { ($0.value ?? 0) > ($1.value ?? 0) }
+        
+        var sortedScoredResults: [ContestResult] = []
+        if rankingAscending {
+          sortedScoredResults = scoredResults.sorted { ($0.value ?? 0) < ($1.value ?? 0) }
+        } else {
+            sortedScoredResults = scoredResults.sorted { ($0.value ?? 0) > ($1.value ?? 0) }
+        }
         
         var rank = 1
         var lastValue: Double? = nil
