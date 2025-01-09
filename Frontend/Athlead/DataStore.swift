@@ -353,7 +353,7 @@ struct AssignContestSportFestCreate: Encodable {
     let HELPERS: [String]
 }
 
-struct ContestResult: Codable {
+struct ContestResult: Codable, Identifiable {
     let ct_id: String
 
     let p_id: String
@@ -367,6 +367,8 @@ struct ContestResult: Codable {
 
     var value: Float64?
     var unit: String?
+    
+    var id: String { return UUID().uuidString }
 }
 
 struct ContestResultsResponse: Codable {
@@ -477,6 +479,51 @@ struct ChildUpdate: Codable {
 
 struct ChildUpdateResponse: Codable {
     let status: String
+}
+
+/*struct WebSocketMessageRecieve: Codable {
+    let msg_type: String
+    let data: DataType
+
+    enum DataType: Codable {
+        case messageData(WebSocketMessageData)
+        case string(String)
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let messageData = try? container.decode(WebSocketMessageData.self) {
+                self = .messageData(messageData)
+            } else if let stringValue = try? container.decode(String.self) {
+                self = .string(stringValue)
+            } else {
+                throw DecodingError.typeMismatch(DataType.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Data does not match any expected type"))
+            }
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .messageData(let messageData):
+                try container.encode(messageData)
+            case .string(let stringValue):
+                try container.encode(stringValue)
+            }
+        }
+    }
+}*/
+
+struct Incoming: Codable, Sendable {
+    let message: String
+}
+
+struct Outgoing: Codable, Sendable {
+    let message: String
+}
+
+struct WebSocketMessageData: Codable {
+    let contest_id: String
+    let contestant_id: String
+    let value: Float64
 }
 
 extension String {

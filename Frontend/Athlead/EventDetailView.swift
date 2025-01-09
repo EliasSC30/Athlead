@@ -49,7 +49,7 @@ struct EventDetailView: View {
                     .padding(.bottom, 10)
                 
                 // Map View
-                Map
+                
                 {
                     Marker(name, coordinate: region.center)
                 }

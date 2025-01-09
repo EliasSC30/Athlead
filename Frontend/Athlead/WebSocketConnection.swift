@@ -18,19 +18,16 @@ public enum WebSocketConnectionError: Error {
 }
 
 /// A generic WebSocket Connection over an expected `Incoming` and `Outgoing` message type.
-public final class WebSocketConnection<Incoming: Decodable & Sendable, Outgoing: Encodable & Sendable>: NSObject, Sendable {
+public final class WebSocketConnection<Incoming: Decodable & Sendable>: NSObject {
     private let webSocketTask: URLSessionWebSocketTask
 
-    private let encoder: JSONEncoder
     private let decoder: JSONDecoder
 
     internal init(
         webSocketTask: URLSessionWebSocketTask,
-        encoder: JSONEncoder = JSONEncoder(),
         decoder: JSONDecoder = JSONDecoder()
     ) {
         self.webSocketTask = webSocketTask
-        self.encoder = encoder
         self.decoder = decoder
 
         super.init()
@@ -46,6 +43,7 @@ public final class WebSocketConnection<Incoming: Decodable & Sendable, Outgoing:
     private func receiveSingleMessage() async throws -> Incoming {
         switch try await webSocketTask.receive() {
             case let .data(messageData):
+                print("Received data message: \(messageData)")
                 guard let message = try? decoder.decode(Incoming.self, from: messageData) else {
                     throw WebSocketConnectionError.decodingError
                 }
@@ -53,7 +51,7 @@ public final class WebSocketConnection<Incoming: Decodable & Sendable, Outgoing:
                 return message
 
             case let .string(text):
-                assertionFailure("Did not expect to receive message as text")
+                print("Received text message: \(text)")
 
                 // Alternative 1: Unsupported data, closing the WebSocket Connection
                 // webSocketTask.cancel(with: .unsupportedData, reason: nil)
@@ -82,30 +80,6 @@ public final class WebSocketConnection<Incoming: Decodable & Sendable, Outgoing:
 // MARK: Public Interface
 
 extension WebSocketConnection {
-    func send(_ message: Outgoing) async throws {
-        guard let messageData = try? encoder.encode(message) else {
-            throw WebSocketConnectionError.encodingError
-        }
-
-        do {
-            try await webSocketTask.send(.data(messageData))
-        } catch {
-            switch webSocketTask.closeCode {
-                case .invalid:
-                    throw WebSocketConnectionError.connectionError
-
-                case .goingAway:
-                    throw WebSocketConnectionError.disconnected
-
-                case .normalClosure:
-                    throw WebSocketConnectionError.closed
-
-                default:
-                    throw WebSocketConnectionError.transportError
-            }
-        }
-    }
-
     func receiveOnce() async throws -> Incoming {
         do {
             return try await receiveSingleMessage()

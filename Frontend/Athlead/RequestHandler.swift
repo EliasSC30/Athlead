@@ -16,6 +16,11 @@ private let cookiesFilePath: URL = {
 }()
 
 
+func getCookieStorage() -> [String: String] {
+    return manualCookieStorage
+}
+
+
 func clearCookies() {
     manualCookieStorage.removeAll()
 }
