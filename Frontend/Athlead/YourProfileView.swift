@@ -14,12 +14,12 @@ struct YourProfileView: View {
     @State private var errorMessage: String?
     @State private var children: [Person] = []
     @State private var profilePicture: String = ""
-
+    
     @State private var loggedInUser: Person = User!
     @State private var isParent: Bool = false
-
+    
     @State private var reloadPage: Bool = false
-
+    
     var body: some View {
         NavigationView {
             Group {
@@ -34,15 +34,16 @@ struct YourProfileView: View {
                         // Profile Section
                         Section(header: Text("Your Profile")) {
                             HStack {
-                            if profilePicture.isEmpty{
-                                Image(systemName: "person.circle")
-                                    .resizable()
-                                    .frame(width: 50, height: 50)
-                                    .foregroundColor(.blue)
-                                    .padding(.trailing, 10)
-                            } else {
-                                Base64ImageView(base64String: profilePicture);
-                            }
+                                if profilePicture.isEmpty{
+                                    Image(systemName: "person.circle")
+                                        .resizable()
+                                        .frame(width: 50, height: 50)
+                                        .foregroundColor(.blue)
+                                        .padding(.trailing, 10)
+                                } else {
+                                    Base64ImageView(base64String: profilePicture);
+                                }
+                                
                                 VStack(alignment: .leading) {
                                     Text("\(loggedInUser.FIRSTNAME) \(loggedInUser.LASTNAME)")
                                         .font(.headline)
@@ -60,7 +61,7 @@ struct YourProfileView: View {
                                     .fontWeight(.bold)
                             }
                         }
-
+                        
                         if isParent {
                             Section(header: Text("Meine Kinder")) {
                                 ForEach(children, id: \.self) { child in
@@ -83,16 +84,16 @@ struct YourProfileView: View {
                                 }
                             }
                         }
-
+                        
                         // Stats and site like
                         if !isParent {
-                            Section(header: Text("Sportfests")) {
-                                    NavigationLink(destination: EventScheduleView()) {
-                                        Label("Event Schedule", systemImage: "calendar")
-                                    }
+                            Section(header: Text("Settings")) {
+                                NavigationLink(destination: UploadPhotoView(onPicChanged: {(pic: String) -> Void in profilePicture = pic})){
+                                    Label("Edit Profile Picture", systemImage: "pencil")
+                                }
                             }
                         }
-
+                        
                         // More Info Section
                         Section(header: Text("More")) {
                             NavigationLink(destination: ContactSupportView()) {
@@ -108,40 +109,40 @@ struct YourProfileView: View {
                                 Label("About", systemImage: "info.circle")
                             }
                         }
-
+                        
                     }
                     .listStyle(InsetGroupedListStyle())
                     .navigationTitle("Profil")
                 }
             }
         }.onAppear(perform: loadData)
-
+        
     }
-
+    
     func loadData() {
         isLoading = true
         errorMessage = nil
-
+        
         fetch("parents/children", ParentsChildrenResponse.self){ result in
             switch result {
             case .success(let resp):
                 children = resp.data
                 isParent = !children.isEmpty
-
+                
             case .failure(let err): errorMessage = err.localizedDescription
             }
             isLoading = false
         }
-
-                            fetch("photos/"+User.unsafelyUnwrapped.ID, Photo.self){ result in
-                                switch result{
-                                case .success(let photo): profilePicture = photo.data
-                                case .failure(let _): print("Could not get profile picture")
-                                }
-                            }
-
+        
+        fetch("photos/"+User.unsafelyUnwrapped.ID, Photo.self){ result in
+            switch result{
+            case .success(let photo): profilePicture = photo.data
+            case .failure( _): print("Could not get profile picture")
+            }
+        }
+        
     }
-
+    
     func logout(){
         // Remove cookies stored in memory
         clearCookies()
@@ -169,7 +170,7 @@ struct YourProfileView: View {
 
 struct Base64ImageView: View {
     let base64String: String
-
+    
     var body: some View {
         if let image = decodeBase64ToImage(base64String) {
             Image(uiImage: image)
@@ -181,7 +182,7 @@ struct Base64ImageView: View {
                 .foregroundColor(.red)
         }
     }
-
+    
     // Function to decode Base64 string to UIImage
     private func decodeBase64ToImage(_ base64: String) -> UIImage? {
         guard let data = Data(base64Encoded: base64, options: .ignoreUnknownCharacters),
@@ -197,30 +198,30 @@ struct Base64ImageView: View {
 struct ChildProfileView: View {
     var child: Person
     @Binding var children: [Person]
-
+    
     @State private var disabilities: String = ""
     @State private var pics: Int = 0
-
-
+    
+    
     @Environment(\.presentationMode) var mode: Binding<PresentationMode>
-
-
+    
+    
     @State private var showingAddDisability = false
-
+    
     struct Disability: Identifiable, Hashable {
         let id: UUID = UUID()
         let name: String
     }
-
+    
     @State private var alertMessage: String?
-
+    
     @State private var alertIsPresented: Bool = false
-
+    
     // Computed property to split the disabilities into a list
     private var disabilityList: [Disability] {
         disabilities.split(separator: ";").map { Disability(name: String($0)) }
     }
-
+    
     var body: some View {
         List {
             // Display basic details about the child
@@ -230,28 +231,28 @@ struct ChildProfileView: View {
                 Text(child.FIRSTNAME)
                     .foregroundColor(.gray)
             }
-
+            
             HStack {
                 Text("Last Name:")
                 Spacer()
                 Text(child.LASTNAME)
                     .foregroundColor(.gray)
             }
-
+            
             HStack {
                 Text("Email:")
                 Spacer()
                 Text(child.EMAIL)
                     .foregroundColor(.gray)
             }
-
+            
             HStack {
                 Text("Phone:")
                 Spacer()
                 Text(child.PHONE)
                     .foregroundColor(.gray)
             }
-
+            
             if let birthYear = child.BIRTH_YEAR {
                 HStack {
                     Text("Birth Year:")
@@ -260,7 +261,7 @@ struct ChildProfileView: View {
                         .foregroundColor(.gray)
                 }
             }
-
+            
             if let grade = child.GRADE {
                 HStack {
                     Text("Grade:")
@@ -269,14 +270,14 @@ struct ChildProfileView: View {
                         .foregroundColor(.gray)
                 }
             }
-
+            
             HStack {
                 Text("Gender:")
                 Spacer()
                 Text(child.GENDER.capitalized)
                     .foregroundColor(.gray)
             }
-
+            
             Section(header: Text("Disabilities")) {
                 if disabilityList.isEmpty {
                     Text("No disabilities listed")
@@ -294,8 +295,8 @@ struct ChildProfileView: View {
                     })
                 }
             }
-
-
+            
+            
             VStack(alignment: .leading) {
                 Text("Allow to take picture of my child:")
                     .font(.headline)
@@ -310,7 +311,7 @@ struct ChildProfileView: View {
                 }
                 .padding(.top, 5)
             }
-
+            
             // Save Button (If you want to implement saving the data)
             Button(action: {
                 // Handle save action
@@ -355,7 +356,7 @@ struct ChildProfileView: View {
     }
     func updateChild(){
         let childUpdate = ChildUpdate(disabilities: disabilities, pics: pics)
-
+        
         fetch("parents/children/\(child.ID)", ChildUpdateResponse.self, "PATCH", nil, childUpdate) { result in
             switch result {
             case .success( _):
@@ -366,24 +367,24 @@ struct ChildProfileView: View {
                 alertIsPresented.toggle()
             }
         }
-
-
+        
+        
     }
-
+    
     func deleteDisability(_ disability: Disability) {
         if !child.DISABILITIES.contains(disability.name) {
             print ("Disability not found in main list, thus not saved yet")
             return
         }
-
-
+        
+        
         let disabilityListCopy = disabilityList.filter { $0.name != disability.name }
-
+        
         let disabilityListCopyString = disabilityListCopy.map { $0.name }.joined(separator: ";")
-
-
+        
+        
         let childUpdate = ChildUpdate(disabilities: disabilityListCopyString, pics: nil)
-
+        
         fetch("parents/children/\(child.ID)", ChildUpdateResponse.self, "PATCH", nil, childUpdate) { result in
             switch result {
             case .success( _):
@@ -398,7 +399,7 @@ struct ChildProfileView: View {
             switch result {
             case .success(let resp):
                 children = resp.data
-
+                
             case .failure(let err): print(err)
             }
         }
@@ -411,7 +412,7 @@ struct AddDisabilityView: View {
     @Binding var disabilityList: String
     @State private var newDisability: String = ""
     @Binding var showingAddDisability: Bool
-
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -420,16 +421,16 @@ struct AddDisabilityView: View {
                         .font(.title)
                         .foregroundColor(.blue)
                         .padding(.leading, 20)
-
+                    
                     TextField("Enter disability", text: $newDisability)
                         .padding()
                         .cornerRadius(10)
                         .padding(.horizontal, 10)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
-
+                
                 Spacer()
-
+                
                 Button(action: {
                     // Check if the new disability is not empty
                     if !newDisability.isEmpty {
@@ -442,7 +443,7 @@ struct AddDisabilityView: View {
                         // Clear the text field
                         newDisability = ""
                         showingAddDisability.toggle()
-
+                        
                     }
                 }) {
                     HStack {

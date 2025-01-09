@@ -373,6 +373,7 @@ struct ContestResult: Codable, Identifiable {
 
 struct ContestResultsResponse: Codable {
     let status: String
+    let ascending: Bool
     let data: [ContestResult]
 }
 
