@@ -439,12 +439,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-<<<<<<< Updated upstream
-				PRODUCT_BUNDLE_IDENTIFIER = de.eliasjan.AthleadV2;
-=======
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = de.eliasjan.AthleadV2Elias;
->>>>>>> Stashed changes
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
