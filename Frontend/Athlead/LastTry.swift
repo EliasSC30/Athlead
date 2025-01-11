@@ -10,6 +10,7 @@
 import Foundation
 
 class WebSocketClient: NSObject, URLSessionWebSocketDelegate {
+
     var receivedMessages: [String] = []
     private var webSocketTask: URLSessionWebSocketTask?
 
@@ -30,14 +31,14 @@ class WebSocketClient: NSObject, URLSessionWebSocketDelegate {
         timer = nil
     }
 
-    func connect() {
+    func connect(contestId: String, userToken: String) {
         let backgroundQueue = OperationQueue()
         backgroundQueue.qualityOfService = .background
-        var request = URLRequest(url: URL(string: "ws://localhost:8000/ws/b5855ba6-c114-4817-93a3-7bca520f1b11")!)
+        var request = URLRequest(url: URL(string: "ws://45.81.234.175:8000/ws/\(contestId)")!)
         request.addValue("Upgrade", forHTTPHeaderField: "Connection")
         request.addValue("websocket", forHTTPHeaderField: "Upgrade")
         
-        request.addValue("Token=abmciebffdecldgkmkbejhggeijakahdnnekpjfmcmhelochogekiihgcgifhnnfhdcdaplpnolpldhkfgapipemjhbnipfmkpdckdclkolpnmldhecoaehmeondjgncfmolaaaa", forHTTPHeaderField: "Cookie")
+        request.addValue("Token=\(userToken)", forHTTPHeaderField: "Cookie")
         
         let session = URLSession(configuration: .default, delegate: self, delegateQueue: backgroundQueue)
         

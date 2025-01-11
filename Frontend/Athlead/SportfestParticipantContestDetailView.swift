@@ -11,21 +11,24 @@ import Foundation
 
 struct SportfestParticipantContestDetailView: View {
     let contest: ContestData
+    
     @Environment(\.webSocketConnectionFactory) private var webSocketConnectionFactory: WebSocketConnectionFactory
 
     @State private var webSocketConnectionTask: Task<Void, Never>? = nil
-    @State private var connection: WebSocketConnection<Incoming>? = nil
-
+    @State private var connection: WebSocketConnection<WebSocketMessageRecieve>? = nil
+    
     @State private var results: [ContestResult] = []
     @State private var rankedResults: [(ContestResult, Int)] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
-
+    
     @State private var isLive: Bool = false
     @State private var showMap: Bool = false
     
     @State private var rankingAscending: Bool = false
-
+    @State private var client: WebSocketClient = WebSocketClient();
+    @State private var isConnected: Bool = false;
+    
     var body: some View {
         ScrollView {
             Group {
@@ -55,8 +58,9 @@ struct SportfestParticipantContestDetailView: View {
         }
         .navigationTitle("\(contest.ct_details_name)")
         .onAppear {
+            isLive = false
             webSocketConnectionTask?.cancel()
-            
+
             webSocketConnectionTask = Task {
                 await openAndConsumeWebSocketConnection()
                 let startDate = stringToDate(contest.ct_details_start)
@@ -64,28 +68,26 @@ struct SportfestParticipantContestDetailView: View {
                 
                 let now = Date()
                 
-                isLive = now >= startDate && now <= endDate && connection != nil
+                isLive = now >= startDate && now <= endDate  && isConnected
             }
-                
+            
             loadResults()
         }
         .refreshable {
             isLive = false
             webSocketConnectionTask?.cancel()
-            
+
             webSocketConnectionTask = Task {
                 await openAndConsumeWebSocketConnection()
                 let startDate = stringToDate(contest.ct_details_start)
                 let endDate = stringToDate(contest.ct_details_end)
                 
                 let now = Date()
-              
-                isLive = now >= startDate && now <= endDate && connection != nil
+                
+                isLive = now >= startDate && now <= endDate  && isConnected
             }
+            
             loadResults()
-        }
-        .onDisappear {
-            webSocketConnectionTask?.cancel()
         }
         .sheet(isPresented: $showMap) {
             ContestMapView(contest: contest, showMapSheet: $showMap)
@@ -100,7 +102,7 @@ struct SportfestParticipantContestDetailView: View {
             switch result {
             case .success(let resp):
                 results = resp.data
-                rankingAscending = resp.ascending
+                rankingAscending = resp.ascending == "ASCENDING"
                 calculateRankings()
             case .failure(let error):
                 errorMessage = error.localizedDescription
@@ -116,7 +118,7 @@ struct SportfestParticipantContestDetailView: View {
         
         var sortedScoredResults: [ContestResult] = []
         if rankingAscending {
-          sortedScoredResults = scoredResults.sorted { ($0.value ?? 0) < ($1.value ?? 0) }
+            sortedScoredResults = scoredResults.sorted { ($0.value ?? 0) < ($1.value ?? 0) }
         } else {
             sortedScoredResults = scoredResults.sorted { ($0.value ?? 0) > ($1.value ?? 0) }
         }
@@ -134,16 +136,16 @@ struct SportfestParticipantContestDetailView: View {
         }
         
         let noScoreRank = scoredResults.count + 1
-    
+        
         for result in noScoreResults {
             ranks.append((result, noScoreRank))
         }
         
         rankedResults = ranks
     }
-
-
-
+    
+    
+    
     
     func stringToDate(_ string: String) -> Date {
         let formatter = DateFormatter()
@@ -158,7 +160,7 @@ struct ResultCard: View {
     let result: ContestResult
     let rank: Int
     let isLoggedInUser: Bool
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -214,28 +216,31 @@ struct ResultCard: View {
 }
 
 extension SportfestParticipantContestDetailView {
-
+    
     @MainActor func openAndConsumeWebSocketConnection() async {
-        // The WebSocket URL.
         let url = URL(string: "ws://45.81.234.175:8000/ws/\(contest.ct_id)")!
-        
-        // Close any existing WebSocketConnection
-        if let connection {
-            connection.close()
-        }
 
-        let connection: WebSocketConnection<Incoming> = webSocketConnectionFactory.open(url: url)
+         // Close any existing WebSocketConnection
+         if let connection {
+             connection.close()
+         }
 
-        self.connection = connection
+         let connection: WebSocketConnection<WebSocketMessageRecieve> = webSocketConnectionFactory.open(url: url)
 
-        do {
-            for try await message in connection.receive() {
-                print("Received message: \(message)")
-            }
-        } catch {
-            print("Error receiving message: \(error)")
-        }
-    }
+         self.connection = connection
+
+         do {
+             // Start consuming IncomingMessages
+             for try await message in connection.receive() {
+                 print("Received message:", message)
+             }
+
+             print("IncomingMessage stream ended")
+         } catch {
+             print("Error receiving messages:", error)
+         }
+     }
+    
 }
 
 
@@ -245,7 +250,7 @@ extension SportfestParticipantContestDetailView {
 struct ContestDetails: View {
     let contest: ContestData
     @Binding var showMap: Bool
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Header Section
@@ -257,7 +262,7 @@ struct ContestDetails: View {
                     .font(.title2)
                     .fontWeight(.bold)
             }
-
+            
             // Location Details
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -280,9 +285,9 @@ struct ContestDetails: View {
                         .padding(.top, 8)
                 }
             }
-
+            
             Divider()
-
+            
             // Contact Person Details
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -304,9 +309,9 @@ struct ContestDetails: View {
                     Text("Email: \(contest.ct_cp_email)")
                 }
             }
-
+            
             Divider()
-
+            
             // Event Details
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -334,7 +339,7 @@ struct ContestDetails: View {
         .shadow(radius: 8)
         .padding(.horizontal)
     }
-
+    
     func formatDate(_ dateString: String) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
@@ -348,7 +353,7 @@ struct ContestDetails: View {
 }
 struct ResultsHeaderView: View {
     let isLive: Bool
-
+    
     var body: some View {
         HStack {
             // Title on the left
@@ -369,7 +374,7 @@ struct ResultsHeaderView: View {
 struct LiveIndicator: View {
     let isLive: Bool
     @State private var pulse: Bool = false
-
+    
     var body: some View {
         HStack {
             Circle()
@@ -387,7 +392,7 @@ struct LiveIndicator: View {
                         pulse.toggle()
                     }
                 }
-
+            
             Text(isLive ? "Live" : "Offline")
                 .font(.headline)
                 .foregroundColor(isLive ? .green : .red)
@@ -404,21 +409,21 @@ struct ContestMapView: View {
     @State private var sportfestCoordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(
         latitude: 0.0,
         longitude: 0.0
-        )
+    )
     
     var body: some View {
         Map {
             Marker(contest.ct_details_name, systemImage: "figure.wave", coordinate: sportfestCoordinate)
         }.onAppear(perform: loadCoordinate)
-        .mapStyle(.standard(elevation: .realistic))
-        .safeAreaInset(edge: .bottom) {
-            HStack {
-                Spacer()
-                MapButtons(coordinate: sportfestCoordinate, showMapSheet: $showMapSheet)
-                    .padding(.top)
-                Spacer()
-            }.background(.thinMaterial)
-        }
+            .mapStyle(.standard(elevation: .realistic))
+            .safeAreaInset(edge: .bottom) {
+                HStack {
+                    Spacer()
+                    MapButtons(coordinate: sportfestCoordinate, showMapSheet: $showMapSheet)
+                        .padding(.top)
+                    Spacer()
+                }.background(.thinMaterial)
+            }
     }
     
     

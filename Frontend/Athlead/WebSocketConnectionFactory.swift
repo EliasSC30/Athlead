@@ -21,14 +21,12 @@ public final class DefaultWebSocketConnectionFactory: Sendable {
     ///
     /// - Parameters:
     ///   - urlSession: URLSession used for opening WebSockets.
-    ///   - encoder: JSONEncoder used to encode outgoing message bodies.
     ///   - decoder: JSONDecoder used to decode incoming message bodies.
     public init(
         urlSession: URLSession = URLSession.shared,
-        encoder: JSONEncoder = JSONEncoder(),
         decoder: JSONDecoder = JSONDecoder()
     ) {
-        self.urlSession = sharedSession
+        self.urlSession = urlSession
         self.decoder = decoder
     }
 }
@@ -37,8 +35,6 @@ extension DefaultWebSocketConnectionFactory: WebSocketConnectionFactory {
     public func open<Incoming: Decodable & Sendable>(url: URL) -> WebSocketConnection<Incoming> {
         var request = URLRequest(url: url)
         
-        loadPersistentCookies()
-        
         if let url = request.url {
             if let cookieHeader = getCookieStorage()[url.host ?? ""] {
                 request.addValue(cookieHeader, forHTTPHeaderField: "Cookie")
@@ -46,6 +42,12 @@ extension DefaultWebSocketConnectionFactory: WebSocketConnectionFactory {
                 print("No manually stored cookies for \(url.host ?? "unknown host").")
             }
         }
+        
+        print("Opening WebSocket connection to \(url)")
+        
+        request.addValue("websocket", forHTTPHeaderField: "Upgrade")
+        request.addValue("Upgrade", forHTTPHeaderField: "Connection")
+
         
         let webSocketTask = urlSession.webSocketTask(with: request)
 

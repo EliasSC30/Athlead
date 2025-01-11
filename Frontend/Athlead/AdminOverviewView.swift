@@ -43,7 +43,7 @@ struct AdminOverviewView: View {
                     NavigationLink(destination: AdminParticipationStatsView()) {
                         Label("Participation Stats", systemImage: "percent")
                     }
-                    NavigationLink(destination: Text("Certificate Generation")) {
+                    NavigationLink(destination: AdminCertificateGenerationView()) {
                         Label("Certificate Generation", systemImage: "doc.badge.plus")
                     }
                 }

@@ -173,6 +173,9 @@ func fetch<T: Codable>(
                         if let name = cookie.name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed),
                            let value = cookie.value.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
                             manualCookieStorage[url.host ?? ""] = "\(name)=\(value)"
+                            if name.lowercased() == "token"{
+                                UserToken = value
+                            }
                         }
                     }
                     savePersistentCookies()

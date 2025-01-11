@@ -22,6 +22,7 @@ var apiURL: String {
 
 var SessionToken: String?
 var User: Person?
+var UserToken: String?
 var HasInternetConnection: Bool = true;
 
 enum MyResult<Success, Failure> {
@@ -373,7 +374,7 @@ struct ContestResult: Codable, Identifiable {
 
 struct ContestResultsResponse: Codable {
     let status: String
-    let ascending: Bool
+    let ascending: String
     let data: [ContestResult]
 }
 
@@ -482,7 +483,7 @@ struct ChildUpdateResponse: Codable {
     let status: String
 }
 
-/*struct WebSocketMessageRecieve: Codable {
+struct WebSocketMessageRecieve: Codable {
     let msg_type: String
     let data: DataType
 
@@ -511,7 +512,7 @@ struct ChildUpdateResponse: Codable {
             }
         }
     }
-}*/
+}
 
 struct Incoming: Codable, Sendable {
     let message: String
