@@ -15,7 +15,7 @@ struct SportfestParticipantContestDetailView: View {
     @Environment(\.webSocketConnectionFactory) private var webSocketConnectionFactory: WebSocketConnectionFactory
 
     @State private var webSocketConnectionTask: Task<Void, Never>? = nil
-    @State private var connection: WebSocketConnection<WebSocketMessageRecieve>? = nil
+    @State private var connection: WebSocketConnection<Message>? = nil
     
     @State private var results: [ContestResult] = []
     @State private var rankedResults: [(ContestResult, Int)] = []
@@ -26,8 +26,6 @@ struct SportfestParticipantContestDetailView: View {
     @State private var showMap: Bool = false
     
     @State private var rankingAscending: Bool = false
-    @State private var client: WebSocketClient = WebSocketClient();
-    @State private var isConnected: Bool = false;
     
     var body: some View {
         ScrollView {
@@ -60,15 +58,18 @@ struct SportfestParticipantContestDetailView: View {
         .onAppear {
             isLive = false
             webSocketConnectionTask?.cancel()
+            let startDate = stringToDate(contest.ct_details_start)
+            let endDate = stringToDate(contest.ct_details_end)
+            
+            let now = Date()
 
-            webSocketConnectionTask = Task {
-                await openAndConsumeWebSocketConnection()
-                let startDate = stringToDate(contest.ct_details_start)
-                let endDate = stringToDate(contest.ct_details_end)
+            if now >= startDate && now <= endDate {
+                webSocketConnectionTask = Task {
+                    await openAndConsumeWebSocketConnection()
                 
-                let now = Date()
-                
-                isLive = now >= startDate && now <= endDate  && isConnected
+                }
+            } else {
+                isLive = false
             }
             
             loadResults()
@@ -76,19 +77,25 @@ struct SportfestParticipantContestDetailView: View {
         .refreshable {
             isLive = false
             webSocketConnectionTask?.cancel()
+            let startDate = stringToDate(contest.ct_details_start)
+            let endDate = stringToDate(contest.ct_details_end)
+            
+            let now = Date()
 
-            webSocketConnectionTask = Task {
-                await openAndConsumeWebSocketConnection()
-                let startDate = stringToDate(contest.ct_details_start)
-                let endDate = stringToDate(contest.ct_details_end)
-                
-                let now = Date()
-                
-                isLive = now >= startDate && now <= endDate  && isConnected
+            if now >= startDate && now <= endDate {
+                webSocketConnectionTask = Task {
+                    await openAndConsumeWebSocketConnection()
+        
+                }
+            } else {
+                isLive = false
             }
             
             loadResults()
-        }
+        }.onDisappear(perform: {
+            webSocketConnectionTask?.cancel()
+            connection?.close()
+        })
         .sheet(isPresented: $showMap) {
             ContestMapView(contest: contest, showMapSheet: $showMap)
         }
@@ -219,13 +226,14 @@ extension SportfestParticipantContestDetailView {
     
     @MainActor func openAndConsumeWebSocketConnection() async {
         let url = URL(string: "ws://45.81.234.175:8000/ws/\(contest.ct_id)")!
+    
 
          // Close any existing WebSocketConnection
          if let connection {
              connection.close()
          }
 
-         let connection: WebSocketConnection<WebSocketMessageRecieve> = webSocketConnectionFactory.open(url: url)
+         let connection: WebSocketConnection<Message> = webSocketConnectionFactory.open(url: url)
 
          self.connection = connection
 
@@ -233,13 +241,38 @@ extension SportfestParticipantContestDetailView {
              // Start consuming IncomingMessages
              for try await message in connection.receive() {
                  print("Received message:", message)
+                 if message.msg_type == .connect {
+                    isLive = true
+                 } else if message.msg_type == .crUpdate {
+                     if case .crUpdate(let data) = message.data {
+                          print("Received CR_UPDATE message, contestant_id: \(data.contestant_id), value: \(data.value)")
+                          updateResult(data.contestant_id, data.value)
+                      }
+                 }
+                     
              }
-
              print("IncomingMessage stream ended")
          } catch {
              print("Error receiving messages:", error)
          }
      }
+    
+    func updateResult(_ contestantId: String?, _ value: Float64?) {
+        guard let contestantId else { return }
+        guard let value else { return }
+        
+        results = results.map { result in
+            if result.p_id == contestantId {
+                var newResult = result
+                newResult.value = value
+                return newResult
+            }
+            return result
+        };
+        
+        calculateRankings()
+        
+    }
     
 }
 

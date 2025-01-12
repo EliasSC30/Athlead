@@ -483,49 +483,60 @@ struct ChildUpdateResponse: Codable {
     let status: String
 }
 
-struct WebSocketMessageRecieve: Codable {
-    let msg_type: String
-    let data: DataType
+// Enum for message types
+enum MsgType: String, Codable {
+    case crUpdate = "CR_UPDATE"
+    case connect = "CONNECT"
+}
 
-    enum DataType: Codable {
-        case messageData(WebSocketMessageData)
-        case string(String)
+// Struct for CR_UPDATE data
+struct CRUpdateData: Codable {
+    let contestant_id: String
+    let value: Double
+}
 
-        init(from decoder: Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            if let messageData = try? container.decode(WebSocketMessageData.self) {
-                self = .messageData(messageData)
-            } else if let stringValue = try? container.decode(String.self) {
-                self = .string(stringValue)
-            } else {
-                throw DecodingError.typeMismatch(DataType.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Data does not match any expected type"))
-            }
+// Main message structure
+struct Message: Codable {
+    let msg_type: MsgType
+    let data: DataWrapper
+}
+
+// A wrapper for data which can be either CR_UPDATE or CONNECT
+enum DataWrapper: Codable {
+    case crUpdate(CRUpdateData)
+    case connect(String)
+
+    // To decode the data based on msg_type
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let crUpdateData = try? container.decode(CRUpdateData.self) {
+            self = .crUpdate(crUpdateData)
+        } else if let connectData = try? container.decode(String.self) {
+            self = .connect(connectData)
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Data is not of expected type.")
         }
+    }
 
-        func encode(to encoder: Encoder) throws {
-            var container = encoder.singleValueContainer()
-            switch self {
-            case .messageData(let messageData):
-                try container.encode(messageData)
-            case .string(let stringValue):
-                try container.encode(stringValue)
-            }
+    // Encoding the wrapper
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .crUpdate(let data):
+            try container.encode(data)
+        case .connect(let data):
+            try container.encode(data)
         }
     }
 }
 
-struct Incoming: Codable, Sendable {
-    let message: String
+struct CSVPersonBatch: Codable {
+    let csv: String
 }
 
-struct Outgoing: Codable, Sendable {
-    let message: String
-}
-
-struct WebSocketMessageData: Codable {
-    let contest_id: String
-    let contestant_id: String
-    let value: Float64
+struct CSVPersonBatchResponse: Codable {
+    let status: String
+    let updated_fields: Int
 }
 
 extension String {

@@ -50,7 +50,7 @@ func savePersistentCookies() {
     }
 }
 
-enum Result {
+enum JanResult {
     case success(HTTPURLResponse, Data)
     case failure(Error)
 }
@@ -65,7 +65,7 @@ var sharedSession: URLSession = {
     URLSession(configuration: sessionConfiguration)
 }()
 
-func executeURLRequestAsync(request: URLRequest) async throws -> Result {
+func executeURLRequestAsync(request: URLRequest) async throws -> JanResult {
     var request = request // Make the request mutable
     
     // Add manually stored cookies to the request
@@ -158,7 +158,11 @@ func fetch<T: Codable>(
         }
         
         if httpResponse.statusCode != 200 {
-            completion(.failure(NSError(domain: "Response error", code: httpResponse.statusCode, userInfo: nil)))
+            if let str = String(data: data, encoding: .utf8) {
+                completion(.failure(NSError(domain: "Response error \(str)", code: httpResponse.statusCode, userInfo: nil)))
+                return
+            }
+            completion(.failure(NSError(domain: "Response error ", code: httpResponse.statusCode, userInfo: nil)))
             return
         }
         
