@@ -397,21 +397,17 @@ struct JudgeEntryView: View {
         .onAppear(perform: fetchContestResults)
         .sheet(isPresented: $isEditing, onDismiss: resetEditingState) {
             EditEntrySheet()
-                .onAppear {
-                    if let index = editingIndex {
-                        prepareForEditing(index: index)
-                    }
-                }
         }
     }
     
-    func prepareForEditing(index: Int) {
+    func prepareForEditing() {
        let locale = Locale.current
        let formatter = NumberFormatter()
        formatter.locale = locale
        formatter.numberStyle = .decimal
-       
-       let value = contestResults[index].value ?? 0
+        
+       let value = editingIndex != nil ? contestResults[editingIndex.unsafelyUnwrapped].value.unsafelyUnwrapped : 0
+        
        startingInput = String(value)
        updatedInput = formatter.string(from: NSNumber(value: value)) ?? ""
    }
@@ -466,6 +462,7 @@ struct JudgeEntryView: View {
                             editingIndex = index
                             startingInput = contestResults[index].value.map { String($0) } ?? ""
                             updatedInput = startingInput
+                            print(editingIndex)
                             isEditing = true
                         }) {
                             Image(systemName: "pencil.circle.fill")
@@ -511,7 +508,7 @@ struct JudgeEntryView: View {
     
     @ViewBuilder
     private func EditEntrySheet() -> some View {
-        if let index = editingIndex {
+        if editingIndex != nil {
             VStack(spacing: 20) {
                 Label("Edit Entry", systemImage: "pencil")
                     .font(.title)
@@ -519,7 +516,7 @@ struct JudgeEntryView: View {
                 
                 VStack(spacing: 10) {
                     Label(
-                        "Editing: \(contestResults[index].p_firstname) \(contestResults[index].p_lastname)",
+                        "Editing: \(contestResults[editingIndex.unsafelyUnwrapped].p_firstname) \(contestResults[editingIndex.unsafelyUnwrapped].p_lastname)",
                         systemImage: "person"
                     )
                     .font(.headline)

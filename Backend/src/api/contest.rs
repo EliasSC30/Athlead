@@ -562,7 +562,7 @@ pub async fn contests_judge_mycontests_handler(db: web::Data<MySqlPool>, req: Ht
                     JOIN SPORTFEST as sf ON ct.SPORTFEST_ID = sf.ID
                     JOIN DETAILS as sf_dt ON sf_dt.ID = sf.DETAILS_ID
                     JOIN C_TEMPLATE as ct_ct ON ct_ct.ID = ct.C_TEMPLATE_ID
-                    JOIN HELPER as h ON h.HELPER_ID = ?",user.ID.clone())
+                    JOIN HELPER as h ON h.HELPER_ID = ? AND h.CONTEST_ID = ct.ID",user.ID.clone())
         .fetch_all(db.as_ref())
         .await;
     if helper_query.is_err() {
