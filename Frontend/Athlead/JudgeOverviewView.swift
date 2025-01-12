@@ -26,6 +26,9 @@ struct JudgeOverviewView: View {
                 }
             }
         }.onAppear(perform: loadContests)
+            .refreshable {
+                loadContests()
+            }
     }
     
     func loadContests() {
@@ -35,6 +38,8 @@ struct JudgeOverviewView: View {
             switch result {
             case .success(let myData):
                 contests = myData.data;
+                
+                print(contests)
             case .failure(let error):
                 errorMessage = error.localizedDescription;
             }

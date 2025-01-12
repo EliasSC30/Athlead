@@ -273,7 +273,7 @@ struct ContestResponse: Codable {
     let status: String
 }
 
-struct ContestForJudge: Codable, Identifiable {
+struct ContestForJudge: Codable, Identifiable, Hashable {
     let ct_id: String
     let ct_end: String
     let ct_location_name: String
@@ -548,7 +548,7 @@ struct HelperResponse: Codable {
 }
 struct Helper: Codable {
     let birth_year: String?
-    let description: String?
+    var description: String?
     let disabilities: String?
     let email: String
     let first_name: String
@@ -559,6 +559,14 @@ struct Helper: Codable {
     let phone: String
     let pics: Int
     let role: String
+}
+
+struct HelperPatchContribution: Codable {
+    let description: String
+}
+
+struct HelperPatchResponse: Codable {
+    let status: String
 }
 
 extension String {

@@ -40,11 +40,11 @@ struct JudgeContestsView: View {
                     .padding(.horizontal, 32)
                 } else {
                     List {
-                        ForEach(contests.indices, id: \.self) { index in
-                            NavigationLink(destination: JudgeContestView(contest: contests[index])) {
+                        ForEach(contests, id: \.id) { contest in
+                            NavigationLink(destination: JudgeContestView(contest: contest)) {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 8) {
-                                        Text(contests[index].ct_name)
+                                        Text(contest.ct_name)
                                             .font(.headline)
                                             .foregroundColor(.primary)
                                         

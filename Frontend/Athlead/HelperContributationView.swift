@@ -38,12 +38,9 @@ struct HelperContributationView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("\(helper.first_name) \(helper.last_name)")
                             .font(.headline)
-                        Text(helper.description ?? "No description available.")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
 
                         if helper.id == userID {
-                            Picker("Your Contribution Type", selection: Binding(
+                            Picker("Task: ", selection: Binding(
                                 get: {
                                     helper.roleAsContributionType
                                 },
@@ -55,11 +52,11 @@ struct HelperContributationView: View {
                                     Text(type.rawValue).tag(type)
                                 }
                             }
-                            .pickerStyle(SegmentedPickerStyle())
+                            .pickerStyle(.menu)
                         } else {
-                            Text("Role: \(helper.roleAsContributionType.rawValue)")
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
+                            Text("Contribution: \(helper.roleAsContributionType.rawValue)")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
                         }
                     }
                     .padding(.vertical, 8)
@@ -86,18 +83,34 @@ struct HelperContributationView: View {
     }
 
     func updateOwnContributation(helperID: String, newType: HelperContributationTypes) {
-        if let index = helpers.firstIndex(where: { $0.id == helperID }) {
-            print("Updated role for helper \(helperID) to \(newType.rawValue)")
+        helpers = helpers.map { helper in
+            if helper.id == helperID {
+                var newHelper = helper
+                newHelper.description = newType.rawValue
+                return newHelper
+            } else {
+                return helper
+                
+            }
         }
-
-        print("Updating helper \(helperID) to type \(newType.rawValue)")
-        // TODO: Implement backend call for updating the role
+        
+        let hC = HelperPatchContribution(description: newType.rawValue)
+        
+        
+        fetch("contests/\(contest.ct_id)/helper/\(helperID)", HelperPatchResponse.self, "PATCH", nil, hC) { result in
+            switch result {
+            case .success( _):
+                print("Successfully updated helper \(helperID) to type \(newType.rawValue)")
+            case .failure(let error):
+                print("Failed to update helper \(helperID) to type \(newType.rawValue): \(error.localizedDescription)")
+            }
+        }
     }
 }
 
 // Extension to map Helper role to contribution types
 extension Helper {
     var roleAsContributionType: HelperContributationView.HelperContributationTypes {
-        return HelperContributationView.HelperContributationTypes(rawValue: self.role) ?? .zusaetzlicheAufgabenFuerHelfer
+        return HelperContributationView.HelperContributationTypes(rawValue: self.description ?? "") ?? .zusaetzlicheAufgabenFuerHelfer
     }
 }
