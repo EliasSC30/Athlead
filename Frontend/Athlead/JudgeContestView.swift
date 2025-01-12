@@ -360,11 +360,12 @@ struct JudgeEntryView: View {
     
     // Variables for editing
     @State private var startingInput: String = ""
-    @State private var editingIndex: Int? = 0
+    @State private var editingIndex: Int = 0
     @State private var isEditing: Bool = false
     @State private var isEditingError: Bool = false;
     @State private var wasSuccessful: Bool?
     @State private var updatedInput: String = ""
+    
 
     var body: some View {
         Group {
@@ -394,7 +395,10 @@ struct JudgeEntryView: View {
                 .padding(.top, 16)
             }
         }
-        .onAppear(perform: fetchContestResults)
+        .onAppear(){
+            fetchContestResults()
+            editingIndex = 0
+        }
         .sheet(isPresented: $isEditing, onDismiss: resetEditingState) {
             EditEntrySheet()
         }
@@ -406,16 +410,15 @@ struct JudgeEntryView: View {
        formatter.locale = locale
        formatter.numberStyle = .decimal
         
-       let value = editingIndex != nil ? contestResults[editingIndex.unsafelyUnwrapped].value.unsafelyUnwrapped : 0
+        let value = isEditing ? contestResults[editingIndex].value.unsafelyUnwrapped : 0
         
        startingInput = String(value)
        updatedInput = formatter.string(from: NSNumber(value: value)) ?? ""
    }
    
    func resetEditingState() {
-       editingIndex = nil
        startingInput = ""
-       updatedInput = ""
+       updatedInput = String(contestResults[editingIndex].value.unsafelyUnwrapped)
        isEditingError = false
    }
 
@@ -462,7 +465,7 @@ struct JudgeEntryView: View {
                             editingIndex = index
                             startingInput = contestResults[index].value.map { String($0) } ?? ""
                             updatedInput = startingInput
-                            print(editingIndex)
+                            
                             isEditing = true
                         }) {
                             Image(systemName: "pencil.circle.fill")
@@ -508,7 +511,6 @@ struct JudgeEntryView: View {
     
     @ViewBuilder
     private func EditEntrySheet() -> some View {
-        if self.editingIndex != nil {
             VStack(spacing: 20) {
                 Label("Edit Entry", systemImage: "pencil")
                     .font(.title)
@@ -516,7 +518,7 @@ struct JudgeEntryView: View {
                 
                 VStack(spacing: 10) {
                     Label(
-                        "Editing: \(self.contestResults[self.editingIndex.unsafelyUnwrapped].p_firstname) \(self.contestResults[self.editingIndex.unsafelyUnwrapped].p_lastname)",
+                        "Editing: \(contestResults[editingIndex].p_firstname) \(contestResults[editingIndex].p_lastname)",
                         systemImage: "person"
                     )
                     .font(.headline)
@@ -569,11 +571,6 @@ struct JudgeEntryView: View {
                 }
             }
             .padding()
-        } else {
-            Text("No entry selected for editing.")
-                .foregroundColor(.gray)
-                .padding()
-        }
     }
 
 
@@ -607,7 +604,7 @@ struct JudgeEntryView: View {
     }
     
     private func confirmEdit() {
-        guard let index = editingIndex, isValidInput(updatedInput) else {
+        if (!isValidInput(updatedInput)) {
             isEditingError = true
             return
         }
@@ -617,12 +614,12 @@ struct JudgeEntryView: View {
         formatter.numberStyle = .decimal
         
         if let updatedValue = formatter.number(from: updatedInput)?.doubleValue {
-            print("Updating result for \(contestResults[index].p_firstname) \(contestResults[index].p_lastname) to \(updatedValue)")
+            print("Updating result for \(contestResults[self.editingIndex].p_firstname) \(contestResults[self.editingIndex].p_lastname) to \(updatedValue)")
             updateContestResult(
-                contestResults[index].p_id,
+                contestResults[editingIndex].p_id,
                 contest.ct_id,
                 updatedValue,
-                index
+                editingIndex
             )
         }
     }
