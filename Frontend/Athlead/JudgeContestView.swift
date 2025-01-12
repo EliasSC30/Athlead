@@ -58,8 +58,7 @@ struct JudgeContestsView: View {
                     }
                 }
             }
-            .padding(.top, 20)
-        }
+        }.navigationTitle("My Contests")
     }
 }
 
@@ -106,7 +105,7 @@ struct JudgeContestView: View {
                     
                     NavigationButton(
                         title: "Alle Helfer (Deine Beteiligung)",
-                        destination: Text("Alle Helfer anzeigen mit deren Tätigkeiten"),
+                        destination: HelperContributationView(contest: contest),
                         systemImage: "person.3.fill"
                     )
                     .padding(.horizontal, 16)
@@ -188,7 +187,7 @@ struct JudgeParticipants: View {
     @State private var errorMessage: String? = nil
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack() {
             if participants.isEmpty {
                 VStack {
                     Image(systemName: "person.3.fill")
@@ -211,7 +210,6 @@ struct JudgeParticipants: View {
                         .padding(.horizontal, 32)
                 }
                 .padding(24)
-                .background(Color(UIColor.systemGroupedBackground))
                 .cornerRadius(12)
                 .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -241,15 +239,14 @@ struct JudgeParticipants: View {
                                 .foregroundColor(participant.pics == 1 ? .blue : .red.opacity(0.6))
                                 .font(.title3)
                         }
-                        .padding(.vertical, 8)
                     }
                 }
+                .scrollContentBackground(.hidden)
                 .listStyle(InsetGroupedListStyle())
             }
         }
         .padding(.horizontal, 16)
         .padding(.top, 16)
-        .background(Color(UIColor.systemBackground))
         .navigationTitle("\(participants.count) Participants")
         .toolbar {
             Button(action: {
@@ -298,6 +295,8 @@ struct JudgeParticipants: View {
                             }
                         }
                         .listStyle(InsetGroupedListStyle())
+                        .scrollContentBackground(.hidden)
+
                         
                         Button("Add Selected Participants") {
                             addParticipants()
@@ -396,23 +395,33 @@ struct JudgeEntryView: View {
             }
         }
         .onAppear(perform: fetchContestResults)
-        .sheet(isPresented: $isEditing) {
+        .sheet(isPresented: $isEditing, onDismiss: resetEditingState) {
             EditEntrySheet()
                 .onAppear {
                     if let index = editingIndex {
-                        startingInput = String(contestResults[index].value ?? 0)
-                        let locale = Locale.current
-                        let formatter = NumberFormatter()
-                        formatter.locale = locale
-                        formatter.numberStyle = .decimal
-                        updatedInput = formatter.string(from: NSNumber(value: contestResults[index].value ?? 0)) ?? ""
-                    } else {
-                        startingInput = ""
-                        updatedInput = ""
+                        prepareForEditing(index: index)
                     }
                 }
         }
     }
+    
+    func prepareForEditing(index: Int) {
+       let locale = Locale.current
+       let formatter = NumberFormatter()
+       formatter.locale = locale
+       formatter.numberStyle = .decimal
+       
+       let value = contestResults[index].value ?? 0
+       startingInput = String(value)
+       updatedInput = formatter.string(from: NSNumber(value: value)) ?? ""
+   }
+   
+   func resetEditingState() {
+       editingIndex = nil
+       startingInput = ""
+       updatedInput = ""
+       isEditingError = false
+   }
 
     
     // MARK: - Components
@@ -502,13 +511,12 @@ struct JudgeEntryView: View {
     
     @ViewBuilder
     private func EditEntrySheet() -> some View {
-        var isValid = true;
-        VStack(spacing: 20) {
-            Label("Edit Entry", systemImage: "pencil")
-                .font(.title)
-                .fontWeight(.bold)
-
-            if let index = editingIndex {
+        if let index = editingIndex {
+            VStack(spacing: 20) {
+                Label("Edit Entry", systemImage: "pencil")
+                    .font(.title)
+                    .fontWeight(.bold)
+                
                 VStack(spacing: 10) {
                     Label(
                         "Editing: \(contestResults[index].p_firstname) \(contestResults[index].p_lastname)",
@@ -532,7 +540,7 @@ struct JudgeEntryView: View {
                                 .padding(10)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 8)
-                                        .stroke(isValid ? Color.blue : Color.red, lineWidth: 1)
+                                        .stroke(isValidInput(updatedInput) ? Color.blue : Color.red, lineWidth: 1)
                                 )
                             
                             Text(contest.ct_unit)
@@ -548,48 +556,27 @@ struct JudgeEntryView: View {
                     }
                     .padding(.horizontal)
                 }
-
+                
                 HStack(spacing: 20) {
-                    Button(action: {
-                        isValid = true
-                        
-                        let locale = Locale.current
-                        let formatter = NumberFormatter()
-                        formatter.locale = locale
-                        formatter.numberStyle = .decimal
-                        
-                        guard let updatedInput = formatter.number(from: updatedInput)?.doubleValue else {
-                            isValid = false
-                            return
-                        }
-                        
-                        
-                        print("Updating result for \(contestResults[index].p_firstname) \(contestResults[index].p_lastname) to \(updatedInput)")
-                        print("Index: \(index)")
-                        
-                        updateContestResult(
-                            contestResults[index].p_id,
-                            contest.ct_id,
-                            updatedInput,
-                            index)
-                        
-                    }) {
+                    Button(action: confirmEdit) {
                         Label("Confirm", systemImage: "checkmark.circle")
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.green)
 
-                    Button(action: {
-                        isEditing = false
-                    }) {
+                    Button(action: cancelEdit) {
                         Label("Cancel", systemImage: "xmark.circle")
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.red)
                 }
             }
+            .padding()
+        } else {
+            Text("No entry selected for editing.")
+                .foregroundColor(.gray)
+                .padding()
         }
-        .padding()
     }
 
 
@@ -616,6 +603,38 @@ struct JudgeEntryView: View {
     
     private func floatToString(_ val: Float64) -> String {
         return String(format: "%.2f", val)
+    }
+    
+    private func cancelEdit() {
+        isEditing = false
+    }
+    
+    private func confirmEdit() {
+        guard let index = editingIndex, isValidInput(updatedInput) else {
+            isEditingError = true
+            return
+        }
+        
+        let formatter = NumberFormatter()
+        formatter.locale = Locale.current
+        formatter.numberStyle = .decimal
+        
+        if let updatedValue = formatter.number(from: updatedInput)?.doubleValue {
+            print("Updating result for \(contestResults[index].p_firstname) \(contestResults[index].p_lastname) to \(updatedValue)")
+            updateContestResult(
+                contestResults[index].p_id,
+                contest.ct_id,
+                updatedValue,
+                index
+            )
+        }
+    }
+    
+    private func isValidInput(_ input: String) -> Bool {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale.current
+        formatter.numberStyle = .decimal
+        return formatter.number(from: input) != nil
     }
     
     // MARK: - Data Management

@@ -24,7 +24,7 @@ struct JudgeOverviewView: View {
                 } else {
                     JudgeContestsView(contests: contests)
                 }
-            }.navigationTitle("My Contests")
+            }
         }.onAppear(perform: loadContests)
     }
     

@@ -483,30 +483,25 @@ struct ChildUpdateResponse: Codable {
     let status: String
 }
 
-// Enum for message types
 enum MsgType: String, Codable {
     case crUpdate = "CR_UPDATE"
     case connect = "CONNECT"
 }
 
-// Struct for CR_UPDATE data
 struct CRUpdateData: Codable {
     let contestant_id: String
     let value: Double
 }
 
-// Main message structure
 struct Message: Codable {
     let msg_type: MsgType
     let data: DataWrapper
 }
 
-// A wrapper for data which can be either CR_UPDATE or CONNECT
 enum DataWrapper: Codable {
     case crUpdate(CRUpdateData)
     case connect(String)
 
-    // To decode the data based on msg_type
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         if let crUpdateData = try? container.decode(CRUpdateData.self) {
@@ -518,7 +513,6 @@ enum DataWrapper: Codable {
         }
     }
 
-    // Encoding the wrapper
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
@@ -530,6 +524,12 @@ enum DataWrapper: Codable {
     }
 }
 
+struct SportFestResults : Codable {
+    let status: String
+    let contestants_totals: [PersonWithPoint]
+    let contests: [ContestWithResults]
+}
+
 struct CSVPersonBatch: Codable {
     let csv: String
 }
@@ -537,6 +537,10 @@ struct CSVPersonBatch: Codable {
 struct CSVPersonBatchResponse: Codable {
     let status: String
     let updated_fields: Int
+}
+
+struct HelperResponse: Codable {
+    let status: String
 }
 
 extension String {

@@ -25,6 +25,8 @@ struct SportfestParticipantContestDetailView: View {
     @State private var isLive: Bool = false
     @State private var showMap: Bool = false
     
+    @State private var showQRCode: Bool = false
+    
     @State private var rankingAscending: Bool = false
     
     var body: some View {
@@ -98,7 +100,19 @@ struct SportfestParticipantContestDetailView: View {
         })
         .sheet(isPresented: $showMap) {
             ContestMapView(contest: contest, showMapSheet: $showMap)
+        }.toolbar {
+            //add qr code icon open sheet for qrcode
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showQRCode.toggle()
+                }) {
+                    Image(systemName: "qrcode")
+                }
+            }
+        }.sheet(isPresented: $showQRCode) {
+            QRCodeGeneratorView(qrString: "\(contest.ct_id);\(User!.ID)")
         }
+            
     }
     
     func loadResults() {

@@ -10,177 +10,316 @@ import SwiftUI
 import PDFKit
 
 struct AdminCertificateGenerationView: View {
-    @State private var classSelection = "1a"
-    @State private var ehrenPercentage: Double = 20
-    @State private var siegerPercentage: Double = 50
-    @State private var teilnahmePercentage: Double = 30
-
-    @State private var showPDF = false
-    @State private var generatedPDF: PDFDocument?
-
-    // Dummy data for ParticipantDummys
-    let ParticipantDummys = [
-        ParticipantDummy(name: "Alice", points: 95),
-        ParticipantDummy(name: "Bob", points: 85),
-        ParticipantDummy(name: "Charlie", points: 70),
-        ParticipantDummy(name: "David", points: 60),
-        ParticipantDummy(name: "Eve", points: 50)
-    ]
-
+    
+    @State private var isLoading: Bool = false
+    @State private var errorMessage: String?
+    
+    @State var oldSportFests: [SportfestData] = []
+    @State var currentSportFests: [SportfestData] = []
+    @State var newSportfests: [SportfestData] = []
+    
     var body: some View {
-        NavigationView {
-            VStack {
-                Form {
-                    Section(header: Text("Class Selection")) {
-                        Picker("Select Class", selection: $classSelection) {
-                            Text("1a").tag("1a")
-                            Text("1b").tag("1b")
-                            Text("1c").tag("1c")
+        Group {
+            if isLoading {
+                ProgressView("Loading sportfest stats...")
+            } else if let error = errorMessage {
+                Text("Error: \(error)")
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+            } else {
+                List {
+                    Section(header: Text("Current Sportfests")) {
+                        if currentSportFests.isEmpty {
+                            Text("No current sportfests available")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        } else {
+                            ForEach(currentSportFests, id: \.self) { sportfest in
+                                NavigationLink(
+                                    destination: SportfestCerifacteGeneratorView(sportfest: sportfest)
+                                ) {
+                                    Label(
+                                        sportfest.details_name,
+                                        systemImage: "figure.disc.sports")
+                                }
+                            }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
                     }
-
-                    Section(header: Text("Certificate Percentages")) {
-                        HStack {
-                            Text("Ehrenurkunde (%):")
-                            Slider(value: $ehrenPercentage, in: 0...100, step: 1)
-                            Text("\(Int(ehrenPercentage))%")
+                    
+                    Section(header: Text("Upcoming Sportfests")) {
+                        if newSportfests.isEmpty {
+                            Text("No upcoming sportfests available")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        } else {
+                            ForEach(newSportfests, id: \.self) { sportfest in
+                                NavigationLink(
+                                    destination: SportfestCerifacteGeneratorView(sportfest: sportfest)
+                                ) {
+                                    Label(
+                                        sportfest.details_name,
+                                        systemImage: "figure.run")
+                                }
+                            }
                         }
-
-                        HStack {
-                            Text("Siegerurkunde (%):")
-                            Slider(value: $siegerPercentage, in: 0...100 - ehrenPercentage, step: 1)
-                            Text("\(Int(siegerPercentage))%")
+                    }
+                    
+                    Section(header: Text("Past Sportfests")) {
+                        if oldSportFests.isEmpty {
+                            Text("No past sportfests available")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        } else {
+                            ForEach(oldSportFests, id: \.self) { sportfest in
+                                NavigationLink(
+                                    destination: SportfestCerifacteGeneratorView(sportfest: sportfest)
+                                ) {
+                                    Label(
+                                        sportfest.details_name,
+                                        systemImage: "flag.pattern.checkered")
+                                }
+                            }
                         }
-
-                        Text("Teilnahmeurkunde (%): \(Int(100 - ehrenPercentage - siegerPercentage))%")
-                            .foregroundColor(.gray)
                     }
                 }
+                .listStyle(InsetGroupedListStyle())
+                .navigationTitle("Sportfests")
+            }
+        }.onAppear {
+            loadData()
+        }
+    }
+    
+    func loadData() {
+        isLoading = true
+        errorMessage = nil
+        
+        fetch("sportfests", SportFestsResponse.self) { result in
+            switch result {
+            case .success(let myData):
+                isLoading = false
+                errorMessage = nil
+                let sportFests = myData.data
+                
+                for sportfest in sportFests {
+                    let startDate = stringToDate(sportfest.details_start)
+                    let endDate = stringToDate(sportfest.details_end)
+                    
+                    
+                    if endDate < Date() {
+                        if currentSportFests.contains(sportfest) {
+                            currentSportFests.removeAll(where: { $0 == sportfest })
+                        }
+                        if newSportfests.contains(sportfest) {
+                            newSportfests.removeAll(where: { $0 == sportfest })
+                        }
+                        if !oldSportFests.contains(sportfest) {
+                            oldSportFests.append(sportfest)
+                        }
+                    } else if endDate > Date() && startDate < Date() {
+                        if oldSportFests.contains(sportfest) {
+                            oldSportFests.removeAll(where: { $0 == sportfest })
+                        }
+                        if newSportfests.contains(sportfest) {
+                            newSportfests.removeAll(where: { $0 == sportfest })
+                        }
+                        if !currentSportFests.contains(sportfest) {
+                            currentSportFests.append(sportfest)
+                        }
+                    } else {
+                        if currentSportFests.contains(sportfest) {
+                            currentSportFests.removeAll(where: { $0 == sportfest })
+                        }
+                        if oldSportFests.contains(sportfest) {
+                            oldSportFests.removeAll(where: { $0 == sportfest })
+                        }
+                        if !newSportfests.contains(sportfest) {
+                            newSportfests.append(sportfest)
+                        }
+                    }
+                }
+                
+                
+            case .failure(let error):
+                isLoading = false
+                errorMessage = error.localizedDescription
+                print("Error fetching data: \(error)")
+            }
+        }
+    }
+    func stringToDate(_ string: String) -> Date {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.timeZone = TimeZone(abbreviation: "UTC")
+        return formatter.date(from: string) ?? Date()
+    }
+}
 
-                Button(action: generateCertificates) {
-                    Text("Generate Certificates PDF")
-                        .font(.headline)
-                        .foregroundColor(.white)
+struct SportfestCerifacteGeneratorView: View {
+    
+    let sportfest: SportfestData
+    
+    @State private var isLoading: Bool = false
+    @State private var errorMessage: String?
+    
+    @State private var contestantPoints: [PersonWithPoint] = []
+    
+    @State private var ehrenurkundePercentage: Double = 0.0
+    @State private var siegerurkundePercentage: Double = 0.0
+    @State private var teilnehmerurkundePercentage: Double = 0.0
+    
+    // Track contestants for each certificate
+    @State private var ehrenurkundeContestants: [PersonWithPoint] = []
+    @State private var siegerurkundeContestants: [PersonWithPoint] = []
+    @State private var teilnehmerurkundeContestants: [PersonWithPoint] = []
+    
+    // Show the sheet after generation
+    @State private var isGeneratedSheet: Bool = false
+    
+    var body: some View {
+        Group {
+            if isLoading {
+                ProgressView("Loading sportfest results...")
+                    .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+            } else if let error = errorMessage {
+                Text("Error: \(error)")
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+            } else {
+                VStack(spacing: 20) {
+                    Text("Generate Certificates for \(sportfest.details_name)")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
                         .padding()
-                        .background(Color.blue)
-                        .cornerRadius(8)
+
+                    // Sliders for selecting certificate percentages
+                    VStack(spacing: 10) {
+                        Text("Ehrenurkunde: \(Int(ehrenurkundePercentage))%")
+                            .font(.headline)
+                        Slider(value: $ehrenurkundePercentage, in: 0...max(1, 100 - siegerurkundePercentage - teilnehmerurkundePercentage), step: 1)
+                            .accentColor(.blue)
+
+                        Text("Siegerurkunde: \(Int(siegerurkundePercentage))%")
+                            .font(.headline)
+                        Slider(value: $siegerurkundePercentage, in: 0...max(1, 100 - ehrenurkundePercentage - teilnehmerurkundePercentage), step: 1)
+                            .accentColor(.green)
+
+                        Text("Teilnehmerurkunde: \(Int(teilnehmerurkundePercentage))%")
+                            .font(.headline)
+                        Slider(value: $teilnehmerurkundePercentage, in: 0...max(1, 100 - ehrenurkundePercentage - siegerurkundePercentage), step: 1)
+                            .accentColor(.orange)
+                    }
+                    .padding()
+
+                    // Generate Button
+                    Button(action: {
+                        // Action when pressed
+                        generateCertificates()
+                    }) {
+                        Text("Generate Certificates")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                            .shadow(radius: 5)
+                    }
+                    .padding()
+
                 }
                 .padding()
-
-                Spacer()
-            }
-            .navigationTitle("Certificate Generator")
-            .sheet(isPresented: $showPDF) {
-                PDFViewer(pdfDocument: generatedPDF)
             }
         }
-    }
-
-    func generateCertificates() {
-        let sortedParticipantDummys = ParticipantDummys.sorted { $0.points > $1.points }
-        let totalParticipantDummys = ParticipantDummys.count
-
-        let ehrenCount = Int(Double(totalParticipantDummys) * (ehrenPercentage / 100))
-        let siegerCount = Int(Double(totalParticipantDummys) * (siegerPercentage / 100))
-        let teilnahmeCount = totalParticipantDummys - ehrenCount - siegerCount
-
-        let ehrenParticipantDummys = sortedParticipantDummys.prefix(ehrenCount)
-        let siegerParticipantDummys = sortedParticipantDummys.dropFirst(ehrenCount).prefix(siegerCount)
-        let teilnahmeParticipantDummys = sortedParticipantDummys.dropFirst(ehrenCount + siegerCount)
-
-        let pdfData = PDFCreator.createPDF(
-            className: classSelection,
-            ehren: Array(ehrenParticipantDummys),
-            sieger: Array(siegerParticipantDummys),
-            teilnahme: Array(teilnahmeParticipantDummys)
-        )
-
-        if let pdfDocument = PDFDocument(data: pdfData) {
-            self.generatedPDF = pdfDocument
-            self.showPDF = true
+        .onAppear(perform: loadResults)
+        .refreshable {
+            loadResults()
         }
-    }
-}
-
-struct ParticipantDummy {
-    let name: String
-    let points: Int
-}
-
-struct PDFViewer: View {
-    let pdfDocument: PDFDocument?
-
-    var body: some View {
-        PDFKitRepresentedView(pdfDocument: pdfDocument)
-    }
-}
-
-struct PDFKitRepresentedView: UIViewRepresentable {
-    let pdfDocument: PDFDocument?
-
-    func makeUIView(context: Context) -> PDFView {
-        let pdfView = PDFView()
-        pdfView.document = pdfDocument
-        pdfView.autoScales = true
-        return pdfView
-    }
-
-    func updateUIView(_ uiView: PDFView, context: Context) {}
-}
-
-struct PDFCreator {
-    static func createPDF(className: String, ehren: [ParticipantDummy], sieger: [ParticipantDummy], teilnahme: [ParticipantDummy]) -> Data {
-        let pdfMetaData = [
-            kCGPDFContextCreator: "Certificate Generator",
-            kCGPDFContextAuthor: "Admin"
-        ]
-
-        let format = UIGraphicsPDFRendererFormat()
-        format.documentInfo = pdfMetaData as [String: Any]
-
-        let pageWidth = 8.5 * 72.0
-        let pageHeight = 11 * 72.0
-        let pageSize = CGSize(width: pageWidth, height: pageHeight)
-
-        let renderer = UIGraphicsPDFRenderer(bounds: CGRect(origin: .zero, size: pageSize), format: format)
-
-        let data = renderer.pdfData { (context) in
-            context.beginPage()
-            let font = UIFont.systemFont(ofSize: 16)
-            let attributes: [NSAttributedString.Key: Any] = [
-                .font: font
-            ]
-
-            var yPosition: CGFloat = 20
-            let title = "Certificates for Class \(className)"
-            title.draw(at: CGPoint(x: 20, y: yPosition), withAttributes: attributes)
-            yPosition += 40
-
-            func drawParticipantDummys(title: String, ParticipantDummys: [ParticipantDummy]) {
-                title.draw(at: CGPoint(x: 20, y: yPosition), withAttributes: attributes)
-                yPosition += 20
-
-                for ParticipantDummy in ParticipantDummys {
-                    let line = "\(ParticipantDummy.name) - Points: \(ParticipantDummy.points)"
-                    line.draw(at: CGPoint(x: 40, y: yPosition), withAttributes: attributes)
-                    yPosition += 20
+        .sheet(isPresented: $isGeneratedSheet) {
+            VStack(spacing: 20) {
+                Text("Certificates Generated")
+                    .font(.title)
+                    .padding()
+                
+                // Display how many contestants received each certificate
+                Text("Ehrenurkunde: \(ehrenurkundeContestants.count) contestants")
+                    .font(.headline)
+                Text("Siegerurkunde: \(siegerurkundeContestants.count) contestants")
+                    .font(.headline)
+                Text("Teilnehmerurkunde: \(teilnehmerurkundeContestants.count) contestants")
+                    .font(.headline)
+                
+                // Send via Mail Button (simulated)
+                Button(action: {
+                    sendCertificatesByEmail()
+                }) {
+                    Text("Send Certificates via Mail")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.green)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        .shadow(radius: 5)
                 }
-
-                yPosition += 20
+                .padding()
             }
-
-            drawParticipantDummys(title: "Ehrenurkunde", ParticipantDummys: ehren)
-            drawParticipantDummys(title: "Siegerurkunde", ParticipantDummys: sieger)
-            drawParticipantDummys(title: "Teilnahmeurkunde", ParticipantDummys: teilnahme)
+            .padding()
         }
-
-        return data
+    }
+    
+    // Function to generate certificates
+    func generateCertificates() {
+        // Clear previous contestants
+        ehrenurkundeContestants.removeAll()
+        siegerurkundeContestants.removeAll()
+        teilnehmerurkundeContestants.removeAll()
+        
+        isGeneratedSheet = true
+        
+        let totalContestants = contestantPoints.count
+        
+        print("Generating certificates for \(totalContestants) contestants...")
+        print("With %: Ehrenurkunde: \(ehrenurkundePercentage), Siegerurkunde: \(siegerurkundePercentage), Teilnehmerurkunde: \(teilnehmerurkundePercentage)")
+        
+        // Calculate how many contestants should get each certificate based on the percentages
+        let ehrenurkundeCount = Int(Double(totalContestants) * (ehrenurkundePercentage / 100))
+        let siegerurkundeCount = Int(Double(totalContestants) * (siegerurkundePercentage / 100))
+        let teilnehmerurkundeCount = totalContestants - ehrenurkundeCount - siegerurkundeCount
+        
+        print("Ehrenurkunde: \(ehrenurkundeCount) contestants")
+        print("Siegerurkunde: \(siegerurkundeCount) contestants")
+        print("Teilnehmerurkunde: \(teilnehmerurkundeCount) contestants")
+        
+        ehrenurkundeContestants = Array(contestantPoints.prefix(ehrenurkundeCount))
+        siegerurkundeContestants = Array(contestantPoints.dropFirst(ehrenurkundeCount).prefix(siegerurkundeCount))
+        teilnehmerurkundeContestants = Array(contestantPoints.dropFirst(ehrenurkundeCount + siegerurkundeCount))
+        
+        
+    }
+    
+    // Function to simulate sending certificates by email
+    func sendCertificatesByEmail() {
+        print("Sending certificates via email...")
+        // Add logic to send certificates via email here
+    }
+    
+    func loadResults() {
+        isLoading = true
+        errorMessage = nil
+        
+        fetch("sportfests/\(sportfest.id)/results", SportFestResults.self) { result in
+            switch result {
+            case .success(let myData):
+                errorMessage = nil
+                contestantPoints = myData.contestants_totals
+            case .failure(let error):
+                errorMessage = error.localizedDescription
+            }
+            isLoading = false
+        }
     }
 }
 
-struct AdminCertificateGenerationView_Previews: PreviewProvider {
-    static var previews: some View {
-        AdminCertificateGenerationView()
-    }
-}
