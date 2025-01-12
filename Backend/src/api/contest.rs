@@ -1,7 +1,7 @@
 use actix::Addr;
 use crate::model::contest::*;
 use actix_web::{get, patch, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
-use actix_web::web::Data;
+use actix_web::web::{Data, Path};
 use actix_web_actors::ws::Message;
 use serde_json::json;
 use sqlx::{MySqlPool, Row};
@@ -742,7 +742,7 @@ pub async fn contests_create_participants_handler(body: web::Json<CreateParticip
 }
 
 #[get("/contests/{contest_id}/participants/{participant_id}")]
-pub async fn contests_check_participant_handler(path: web::Path<(String,String)>, db: web::Data<MySqlPool>) -> impl Responder {
+pub async fn contests_check_participant_handler(path: Path<(String,String)>, db: Data<MySqlPool>) -> impl Responder {
     let (ct_id, p_id) = path.into_inner();
 
     let query =
@@ -763,3 +763,39 @@ pub async fn contests_check_participant_handler(path: web::Path<(String,String)>
     }))
 }
 
+
+#[get("/contests/{contest_id}/helper}")]
+pub async fn contests_get_helper_handler(db: Data<MySqlPool>, path: Path<String>) -> impl Responder {
+    let ct_id = path.into_inner();
+    let query = sqlx::query_as!(ContestHelper, r#"SELECT
+                                                        p.ID as id,
+                                                        p.FIRSTNAME as first_name,
+                                                        p.LASTNAME as last_name,
+                                                        p.PHONE as phone,
+                                                        p.GRADE as grade,
+                                                        p.EMAIL as email,
+                                                        p.PICS as pics,
+                                                        p.GENDER as gender,
+                                                        p.BIRTH_YEAR as birth_year,
+                                                        p.DISABILITIES as disabilities,
+                                                        p.ROLE as role,
+
+                                                        h.DESCRIPTION as description
+                                            FROM HELPER as h
+                                            JOIN PERSON as p ON p.ID = h.HELPER_ID
+                                            WHERE h.CONTEST_ID = ?
+                                "#, ct_id.clone())
+        .fetch_all(db.as_ref()).await;
+
+    if query.is_err() { return HttpResponse::InternalServerError().json(json!({
+        "status": "Contest result query error",
+        "message": query.unwrap_err().to_string()
+    })); };
+    let helpers = query.unwrap();
+
+
+    HttpResponse::Ok().json(json!({
+        "status": "success",
+        "helper": serde_json::to_value(helpers).unwrap()
+    }))
+}

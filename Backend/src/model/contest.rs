@@ -150,3 +150,23 @@ pub struct UpdateContest {
     pub DETAILS_ID: Option<String>,
     pub C_TEMPLATE_ID: Option<String>,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ContestHelper {
+    pub id: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub phone: String,
+    pub grade: Option<String>,
+    pub birth_year: Option<String>,
+    pub role: String,
+    pub gender: String,
+    pub pics: u8,
+    pub disabilities: String,
+
+    pub description: String,
+}
+
+
+
