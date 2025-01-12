@@ -182,7 +182,14 @@
       }
     },
     "%@ (Tap here to select all)" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (Wähle alle aus)"
+          }
+        }
+      }
     },
     "%@ %@" : {
       "localizations" : {
@@ -198,7 +205,7 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
             "value" : "%1$@ at %2$@"
           }
         }
@@ -211,7 +218,14 @@
 
     },
     "%lld Participants" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Teilnehmer"
+          }
+        }
+      }
     },
     "%lld. %@ %@" : {
       "localizations" : {
@@ -224,28 +238,70 @@
       }
     },
     "• Built with SwiftUI and RUST for optimal performance" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit SwiftUI und Rust gebaut für optimale Performance"
+          }
+        }
+      }
     },
     "• Elias N. Özcan - Backend Developer" : {
 
     },
     "• Intuitive and user-friendly interface" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intuitives und freundliches User-Interface"
+          }
+        }
+      }
     },
     "• Jan H. Wichmann - Frontend Developer" : {
 
     },
     "• Manage sports events easily" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administriere Sport Events"
+          }
+        }
+      }
     },
     "• Organize contests and participants" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organisiere Wettkämpfe und Teilnehmer"
+          }
+        }
+      }
     },
     "• RUST for efficient backend processing" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rust für effiziente Backend-Verarbeitung"
+          }
+        }
+      }
     },
     "• SwiftUI for the frontend UI" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SwiftUI für das Frontend UI"
+          }
+        }
+      }
     },
     "🏅 sportfest.name" : {
 
@@ -267,70 +323,210 @@
 
     },
     "About The App" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über die App"
+          }
+        }
+      }
     },
     "Add Contest" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettkampf hinzufügen"
+          }
+        }
+      }
     },
     "Add Contest Template" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettbewerbsvorlage hinzufügen"
+          }
+        }
+      }
     },
     "Add contest templates" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettbewerbsvorlage hinzufügen"
+          }
+        }
+      }
     },
     "Add Disability" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einschränkung hinzufügen"
+          }
+        }
+      }
     },
     "Add Location" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort hinzufügen"
+          }
+        }
+      }
     },
     "Add Person" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Person hinzufügen"
+          }
+        }
+      }
     },
     "Add Selected Participants" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählte Teilnehmer hinzufügen"
+          }
+        }
+      }
     },
     "Add to Calendar" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Kalender hinzufügen"
+          }
+        }
+      }
     },
     "Add to calender" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Kalender hinzufügen"
+          }
+        }
+      }
     },
     "Additional Details" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weitere Details"
+          }
+        }
+      }
     },
     "Address" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adresse"
+          }
+        }
+      }
     },
     "Admin Overview" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admin Übersicht"
+          }
+        }
+      }
     },
     "Admin Settings" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admin Einstellungen"
+          }
+        }
+      }
     },
     "Administration" : {
 
     },
     "Administrators" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administratoren"
+          }
+        }
+      }
     },
     "All" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle"
+          }
+        }
+      }
     },
     "Allow to take picture of my child:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erlaube Bilder von meinem Kind"
+          }
+        }
+      }
     },
     "Allow to take pictures" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erlaube Bilder"
+          }
+        }
+      }
     },
     "Allowed to take photos" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erlaube Bilder"
+          }
+        }
+      }
     },
     "Athlead" : {
 
     },
     "Athlead is a sports event management app for schools and clubs. It is designed to help you manage your sports events, contests, and participants. The app is designed to be easy to use and intuitive." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Athlead ist eine Sportfest Management App für Schulen und Vereine. Es ist darauf ausgelegt Sportevents, Wettkämpfe und Teilnehmer zu organisieren. Die App bietet eine benutzerfreundliche Oberfläche."
+          }
+        }
+      }
     },
     "Athlead wird geladen..." : {
 
@@ -342,7 +538,14 @@
 
     },
     "Back" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "zurück"
+          }
+        }
+      }
     },
     "Beste Sportart" : {
 
@@ -351,10 +554,24 @@
 
     },
     "Birth Year" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geburtstjahr"
+          }
+        }
+      }
     },
     "Birth Year:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geburtsjahr"
+          }
+        }
+      }
     },
     "Bitte erlauben Sie den Zugriff auf die Kamera in den Einstellungen." : {
       "localizations" : {
@@ -377,19 +594,54 @@
       }
     },
     "Born %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geboren %@"
+          }
+        }
+      }
     },
     "Built with:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebaut mit:"
+          }
+        }
+      }
     },
     "Cancel" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abbrechen"
+          }
+        }
+      }
     },
     "Certificate Generation" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zertifiziere Generation"
+          }
+        }
+      }
     },
     "Certificates Generated" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generierte Zertifikate"
+          }
+        }
+      }
     },
     "Check-In QR Code" : {
 
@@ -398,89 +650,264 @@
 
     },
     "Checking your account type..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prüfe Account-Typ"
+          }
+        }
+      }
     },
     "Child profile" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kind Profil"
+          }
+        }
+      }
     },
     "City" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stadt"
+          }
+        }
+      }
     },
     "Class" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klasse"
+          }
+        }
+      }
     },
     "Close" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schließen"
+          }
+        }
+      }
     },
     "Competing" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilnahme"
+          }
+        }
+      }
     },
     "Confirm" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestätigen"
+          }
+        }
+      }
     },
     "Confirm Helpers" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestätige Helfer"
+          }
+        }
+      }
     },
     "Contact Information" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontaktinformation"
+          }
+        }
+      }
     },
     "Contact Person" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontaktperson"
+          }
+        }
+      }
     },
     "Contact Person:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontaktperson:"
+          }
+        }
+      }
     },
     "Contact Support" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakt Support"
+          }
+        }
+      }
     },
     "Contest created successfully" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettkampf erfolgreich angelegt"
+          }
+        }
+      }
     },
     "Contest Details" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettkampf Details"
+          }
+        }
+      }
     },
     "Contest Information" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettkampf Information"
+          }
+        }
+      }
     },
     "Contest: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettkampf: %@"
+          }
+        }
+      }
     },
     "Contestants" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilnehmer"
+          }
+        }
+      }
     },
     "Contests" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettkämpfe"
+          }
+        }
+      }
     },
     "Contests:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettkämpfe"
+          }
+        }
+      }
     },
     "Contribution: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beteiligung: %@"
+          }
+        }
+      }
     },
     "Create Location" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lege Standort"
+          }
+        }
+      }
     },
     "Create New Sportfest" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neues Sportfest anlegen"
+          }
+        }
+      }
     },
     "Create Sportfest" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sportfest anlegen"
+          }
+        }
+      }
     },
     "Creating Contest..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettkampf anlegen"
+          }
+        }
+      }
     },
     "CSV Management" : {
 
     },
     "Current Sportfests" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuelle Sportfeste"
+          }
+        }
+      }
     },
     "Date: %@ - %@" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Date: %1$@ - %2$@"
+            "state" : "translated",
+            "value" : "Datum: %1$@ - %2$@"
           }
         }
       }
@@ -498,19 +925,47 @@
 
     },
     "Description" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beschreibung"
+          }
+        }
+      }
     },
     "Description (Optional)" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beschreibung (Optional)"
+          }
+        }
+      }
     },
     "Description: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beschreibung: %@"
+          }
+        }
+      }
     },
     "Details" : {
 
     },
     "Developed By:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entwickelt von:"
+          }
+        }
+      }
     },
     "Die App benötigt für das Scannen des QR-Codes Zugriff auf die Kamera" : {
       "localizations" : {
@@ -523,34 +978,97 @@
       }
     },
     "Disabilities" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einschränkungen"
+          }
+        }
+      }
     },
     "Display Metric" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeige Metrik an"
+          }
+        }
+      }
     },
     "Done" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fertig"
+          }
+        }
+      }
     },
     "e.g., 123.45" : {
 
     },
     "Edit" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bearbeiten"
+          }
+        }
+      }
     },
     "Edit Contest Information" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettkampf bearbeiten"
+          }
+        }
+      }
     },
     "Edit Entry" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eintrag bearbeiten"
+          }
+        }
+      }
     },
     "Edit Evaluation" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewertung bearbeiten"
+          }
+        }
+      }
     },
     "Edit Location" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort bearbeiten"
+          }
+        }
+      }
     },
     "Edit Profile Picture" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profilbild bearbeiten"
+          }
+        }
+      }
     },
     "Editing: %@ %@" : {
       "localizations" : {
@@ -612,133 +1130,434 @@
 
     },
     "End Date" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enddatum"
+          }
+        }
+      }
     },
     "End: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ende: %@"
+          }
+        }
+      }
     },
     "Enter and manage results for participants in %@." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilnehmerergebnisse eintragen und bearbeiten in %@"
+          }
+        }
+      }
     },
     "Enter Data" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebe Daten ein"
+          }
+        }
+      }
     },
     "Enter disability" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einschränkung eingeben"
+          }
+        }
+      }
     },
     "Enter New Value" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuen Wert eingeben"
+          }
+        }
+      }
     },
     "Enter value" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wert eingeben"
+          }
+        }
+      }
     },
     "Enter your email" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email eingeben"
+          }
+        }
+      }
     },
     "Enter your email to reset your password" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebe e-mail ein, um Passwort zurücksetzen"
+          }
+        }
+      }
     },
     "Enter your name" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebe Name ein"
+          }
+        }
+      }
     },
     "Enter your password" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebe Passwort ein"
+          }
+        }
+      }
     },
     "Error" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehler"
+          }
+        }
+      }
     },
     "Error updating result. Please try again." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Fehler. Bitte versuchen Sie es erneut."
+          }
+        }
+      }
     },
     "Error: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehler: %@"
+          }
+        }
+      }
     },
     "Evaluation" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewertung"
+          }
+        }
+      }
     },
     "Evaluation Method: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewertungsmethode"
+          }
+        }
+      }
     },
     "Event added to calendar" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event zum Kalender hinzugefügt"
+          }
+        }
+      }
     },
     "Event Dates" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event Daten"
+          }
+        }
+      }
     },
     "Event Details:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event Details"
+          }
+        }
+      }
     },
     "Event Overview" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event Übersicht"
+          }
+        }
+      }
     },
     "Events on %@:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Events auf %@:"
+          }
+        }
+      }
     },
     "Failed to generate QR Code" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehler bei QR-Code Generation"
+          }
+        }
+      }
     },
     "Female" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weiblich"
+          }
+        }
+      }
     },
     "File uploaded successfully" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datei erfolgreich hochgeladen"
+          }
+        }
+      }
     },
     "Filter Options" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter Optionen"
+          }
+        }
+      }
     },
     "Filter Settings" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter Einstellungen"
+          }
+        }
+      }
     },
     "Filters" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter"
+          }
+        }
+      }
     },
     "First Name" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorname"
+          }
+        }
+      }
     },
     "First Name:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachname:"
+          }
+        }
+      }
     },
     "Forgot Password" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwort vergessen"
+          }
+        }
+      }
     },
     "Forgot Password?" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwort vergessen?"
+          }
+        }
+      }
     },
     "Gender" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geschlecht"
+          }
+        }
+      }
     },
     "Gender:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geschlecht:"
+          }
+        }
+      }
     },
     "Generate Certificates" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zertifikat generieren"
+          }
+        }
+      }
     },
     "Generate Certificates for %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zertifikate generieren für %@"
+          }
+        }
+      }
     },
     "Grade" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klasse"
+          }
+        }
+      }
     },
     "Grade %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klasse %@"
+          }
+        }
+      }
     },
     "Grade Range" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klassen"
+          }
+        }
+      }
     },
     "Grade Range: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klassen: %@"
+          }
+        }
+      }
     },
     "Grade:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klasse:"
+          }
+        }
+      }
     },
     "Grades: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klassen: %@"
+          }
+        }
+      }
     },
     "Group" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gruppe"
+          }
+        }
+      }
     },
     "Group By" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gruppieren"
+          }
+        }
+      }
     },
     "Hello, World!" : {
 
@@ -747,25 +1566,67 @@
 
     },
     "If you have any questions or issues, please fill out the form below and we will get back to you as soon as possible." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falls Sie Fragen haben oder Probleme auftreten, können Sie die untenfolgende Form ausfüllen. Wir werden uns schnellstmöglich bei Ihnen melden."
+          }
+        }
+      }
     },
     "Impressum" : {
 
     },
     "In order to analyse the ranking of the contestants, you can drag and drop the contestants in the order of their results. The first contestant in the list will be the winner. The order will be saved as the evaluation order, for the contest and all results within." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um das Teilnehmer-Ranking festzulegen, können Sie per drag- und drop die Teilnehmer basierend auf ihrem Ranking anordnen. Der erste Teilnehmer ist der Gewinner. Dieses Ranking dient als Grundlage für die Sortierung der weiteren Ergebnisse."
+          }
+        }
+      }
     },
     "Invalid image data" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ungültige Bilddaten"
+          }
+        }
+      }
     },
     "It looks like no participants have registered yet." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bisher wurden noch keine Teilnehmer registriert."
+          }
+        }
+      }
     },
     "It seems like you don’t have any competitions to judge at the moment." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bisher gibt es noch keine Wettkämpfe."
+          }
+        }
+      }
     },
     "Judges" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kampfrichter"
+          }
+        }
+      }
     },
     "Kein Wettkampf" : {
 
@@ -777,106 +1638,330 @@
 
     },
     "Last Name" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachnahme"
+          }
+        }
+      }
     },
     "Last Name:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachnahme:"
+          }
+        }
+      }
     },
     "Live" : {
 
     },
     "Loading contest results..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Wettkampfdaten..."
+          }
+        }
+      }
     },
     "Loading contests..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Wettkämpfe…"
+          }
+        }
+      }
     },
     "Loading Contests..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Wettkämpfe…"
+          }
+        }
+      }
     },
     "Loading helper data..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Helferdaten…"
+          }
+        }
+      }
     },
     "Loading Location data..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laden Standortdaten…"
+          }
+        }
+      }
     },
     "Loading more information..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade weitere Daten..."
+          }
+        }
+      }
     },
     "Loading participants for contest..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Wettkampfteilnehmer…"
+          }
+        }
+      }
     },
     "Loading participants..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Teilnehmer..."
+          }
+        }
+      }
     },
     "Loading participation stats..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laden Teilnehmerstatistiken..."
+          }
+        }
+      }
     },
     "Loading Person data..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Personendaten..."
+          }
+        }
+      }
     },
     "Loading results..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Ergebnisse..."
+          }
+        }
+      }
     },
     "Loading Sportfest" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Sportfestdaten"
+          }
+        }
+      }
     },
     "Loading sportfest data..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Sportfestdaten..."
+          }
+        }
+      }
     },
     "Loading Sportfest data..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Sportfestdaten…"
+          }
+        }
+      }
     },
     "Loading sportfest results..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Sportfestergebnisse..."
+          }
+        }
+      }
     },
     "Loading sportfest stats..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lade Sportfeststatistiken..."
+          }
+        }
+      }
     },
     "Location" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort"
+          }
+        }
+      }
     },
     "Location Details" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort Details"
+          }
+        }
+      }
     },
     "Location updated successfully" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort erfolgreich geändert"
+          }
+        }
+      }
     },
     "Location:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort:"
+          }
+        }
+      }
     },
     "Location: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort: %@"
+          }
+        }
+      }
     },
     "Locations" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standorte"
+          }
+        }
+      }
     },
     "Log Out" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausloggen"
+          }
+        }
+      }
     },
     "Logging in.." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausloggen.."
+          }
+        }
+      }
     },
     "Login" : {
 
     },
     "Male" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Männlich"
+          }
+        }
+      }
     },
     "Manage contest templates" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettkampfvorlagen verwalten"
+          }
+        }
+      }
     },
     "Manage Contests" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettkämpfe verwalten"
+          }
+        }
+      }
     },
     "Manage Locations" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standorte verwalten"
+          }
+        }
+      }
     },
     "Manage participants, entries, and check-ins for the contest." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilnehmer, Einträge und check-ins verwalten"
+          }
+        }
+      }
     },
     "Manage Sportfests" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sportfeste verwalten"
+          }
+        }
+      }
     },
     "Meine Kinder" : {
 
@@ -885,22 +1970,64 @@
 
     },
     "Message" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nachricht"
+          }
+        }
+      }
     },
     "Method" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Methode"
+          }
+        }
+      }
     },
     "Metric" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metrik"
+          }
+        }
+      }
     },
     "Missing Required Fields" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notwendiges Feld nicht ausgefüllt"
+          }
+        }
+      }
     },
     "More" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weiteres"
+          }
+        }
+      }
     },
     "My Contests" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meine Wettkämpfe"
+          }
+        }
+      }
     },
     "Name" : {
 
@@ -909,70 +2036,224 @@
 
     },
     "Next Step: Select Helper" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nächster Schritt: Helfer auswählen"
+          }
+        }
+      }
     },
     "No" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nein"
+          }
+        }
+      }
     },
     "No administrators available." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Administratoren verfügbar."
+          }
+        }
+      }
     },
     "No Competitions Found" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Wettkämpfe gefunden"
+          }
+        }
+      }
     },
     "No contestants available." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Teilnehmer verfügbar."
+          }
+        }
+      }
     },
     "No contests available" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Wettkämpfe verfügbar"
+          }
+        }
+      }
     },
     "No contests available." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Wettkämpfe verfügbar."
+          }
+        }
+      }
     },
     "No current sportfests available" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine aktuellen Sportfeste verfügbar"
+          }
+        }
+      }
     },
     "No data available for this grouping." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Daten für diese Gruppierungen."
+          }
+        }
+      }
     },
     "No disabilities listed" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Einschränkungen"
+          }
+        }
+      }
     },
     "No events for the selected day." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Events für den ausgewählten Tag."
+          }
+        }
+      }
     },
     "No image selected" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Bild ausgewählt"
+          }
+        }
+      }
     },
     "No judges available." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Kampfrichter verfügbar."
+          }
+        }
+      }
     },
     "No locations available" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Standorte verfügbar"
+          }
+        }
+      }
     },
     "No Participants" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Teilnehmer"
+          }
+        }
+      }
     },
     "No past sportfests available" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine vergangenen Sportfeste"
+          }
+        }
+      }
     },
     "No Score" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Wertungen"
+          }
+        }
+      }
     },
     "No upcoming sportfests available" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine zukünftigen Sportfeste verfügbar"
+          }
+        }
+      }
     },
     "Not a participant" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Teilnehmer"
+          }
+        }
+      }
     },
     "Not allowed to take photos" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Bilder erlaubt"
+          }
+        }
+      }
     },
     "Not Competing" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Teilnahme"
+          }
+        }
+      }
     },
     "Not started" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht gestartet"
+          }
+        }
+      }
     },
     "Offline" : {
 
@@ -981,61 +2262,180 @@
 
     },
     "Open in Maps" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffne in Maps"
+          }
+        }
+      }
     },
     "Open Map" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffne Karte"
+          }
+        }
+      }
     },
     "Participant" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilnehmer"
+          }
+        }
+      }
     },
     "Participants" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilnehmer"
+          }
+        }
+      }
     },
     "Participation Stats" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilnehmerstatistiken"
+          }
+        }
+      }
     },
     "Password" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwort"
+          }
+        }
+      }
     },
     "Past Sportfests" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vergangene Sportfeste"
+          }
+        }
+      }
     },
     "PATCH" : {
 
     },
     "Person Management" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personenverwaltung"
+          }
+        }
+      }
     },
     "Personal Information" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personeninformationen"
+          }
+        }
+      }
     },
     "Phone" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telefon"
+          }
+        }
+      }
     },
     "Phone:" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telefon"
+          }
+        }
+      }
     },
     "Phone: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telefon: %@"
+          }
+        }
+      }
     },
     "Plaese select a file" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle eine Datei aus"
+          }
+        }
+      }
     },
     "Please fill in the Name and Unit fields." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte Namen und Einheit ausfüllen"
+          }
+        }
+      }
     },
     "Please log in to your account" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loggen Sie sich ein"
+          }
+        }
+      }
     },
     "Points" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Punkte"
+          }
+        }
+      }
     },
     "POST" : {
 
     },
     "Preparing your page..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bereite Seite vor..."
+          }
+        }
+      }
     },
     "Profil" : {
 
@@ -1047,70 +2447,203 @@
 
     },
     "Result successfully updated" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ergebnis erfolgreich geändert"
+          }
+        }
+      }
     },
     "Results" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ergebnisse"
+          }
+        }
+      }
     },
     "Role" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rolle"
+          }
+        }
+      }
     },
     "Role: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rolle: %@"
+          }
+        }
+      }
     },
     "Save" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speichern"
+          }
+        }
+      }
     },
     "Save Changes" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Änderungen speichern"
+          }
+        }
+      }
     },
     "Scannen" : {
 
     },
     "Select a File" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datei auswählen"
+          }
+        }
+      }
     },
     "Select Admin" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admin Auswählen"
+          }
+        }
+      }
     },
     "Select Contact" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakt auswählen"
+          }
+        }
+      }
     },
     "Select Helpers" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Helfer auswählen"
+          }
+        }
+      }
     },
     "Select Location" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort auswählen"
+          }
+        }
+      }
     },
     "Select Participants to Add" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilnehmer hinzufügen"
+          }
+        }
+      }
     },
     "Select Photo" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bild auswählen"
+          }
+        }
+      }
     },
     "Select template" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorlage auswählen"
+          }
+        }
+      }
     },
     "Selected" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählt"
+          }
+        }
+      }
     },
     "Send Certificates via Mail" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sende Urkunden per Mail"
+          }
+        }
+      }
     },
     "Send Reset Link" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link zum Zurücksetzen schicken"
+          }
+        }
+      }
     },
     "Settings" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen"
+          }
+        }
+      }
     },
     "Show Warnings Only" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur Warnungen anzeigen"
+          }
+        }
+      }
     },
     "Siegerurkunde: %lld contestants" : {
       "localizations" : {
         "en-GB" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Winner’s Certificate: %lld contestants"
           }
         }
@@ -1127,7 +2660,14 @@
       }
     },
     "Sportfest created successfully. Click here to view." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sportfest erfolgreich angelegt. Hier klicken für weitere Details."
+          }
+        }
+      }
     },
     "Sportfest Details" : {
 
@@ -1136,43 +2676,120 @@
 
     },
     "Sportfest Overview" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sportfest Übersicht"
+          }
+        }
+      }
     },
     "sportfest.description" : {
 
     },
     "Sportfests" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sportfeste"
+          }
+        }
+      }
     },
     "Start adding results by selecting a participant." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wählen Sie einen Teilnehmer aus."
+          }
+        }
+      }
     },
     "Start Date" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anfangsdatum"
+          }
+        }
+      }
     },
     "Start: %@" : {
 
     },
     "Stats for %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statistiken für %@"
+          }
+        }
+      }
     },
     "Street" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strasse"
+          }
+        }
+      }
     },
     "Street Number" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strassennr"
+          }
+        }
+      }
     },
     "Submit" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eingabe"
+          }
+        }
+      }
     },
     "Submitting..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird eingegeben..."
+          }
+        }
+      }
     },
     "Tap to review details" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übersicht eingegebener Daten"
+          }
+        }
+      }
     },
     "Task: " : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgabe:"
+          }
+        }
+      }
     },
     "Teilnehmerurkunde: %lld contestants" : {
 
@@ -1181,40 +2798,124 @@
 
     },
     "Thank you for using Athlead! We hope it helps streamline your sports event management." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Danke, dass Sie Athlead benutzen! Wir hoffen Sie bei Ihren Aufgaben unterstützen zu können."
+          }
+        }
+      }
     },
     "Thank You!" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Danke!"
+          }
+        }
+      }
     },
     "to" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "zu"
+          }
+        }
+      }
     },
     "Unit" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einheit"
+          }
+        }
+      }
     },
     "Unit: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einheit: %@"
+          }
+        }
+      }
     },
     "Upcoming Sportfests" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zukünftige Sportfeste"
+          }
+        }
+      }
     },
     "Upload a CSV File" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV Datei hochladen"
+          }
+        }
+      }
     },
     "Upload Photo" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bild hochladen"
+          }
+        }
+      }
     },
     "Uploading..." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird hochgeladen…"
+          }
+        }
+      }
     },
     "User Management" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User Verwaltung"
+          }
+        }
+      }
     },
     "Value" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wert"
+          }
+        }
+      }
     },
     "View Sportfest reports" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sportfest Reports"
+          }
+        }
+      }
     },
     "Weitwurf (Frauen, 4b)" : {
 
@@ -1226,16 +2927,44 @@
 
     },
     "Yes" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja"
+          }
+        }
+      }
     },
     "Your Profile" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein Profil"
+          }
+        }
+      }
     },
     "Zipcode" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Postleitzahl"
+          }
+        }
+      }
     },
     "Zuständige Aufsichtsbehörde: Berlin Office" : {
-
+      "localizations" : {
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Responsible Office: Berlin Office"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
