@@ -220,8 +220,6 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
     for update in updates_to_do {
         msg_to_send += format!("{{msg_type: \"CR_UPDATE\", data:{{contestant_id:\"{}\",value:{}}} }}", update.p_id, update.value).as_str();
     }
-    msg_to_send.truncate(msg_to_send.len().saturating_sub(1));
-    msg_to_send += "";
 
     socket.send(ClientActorMessage{
         id: Uuid::new_v4(),
