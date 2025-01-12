@@ -104,6 +104,7 @@ impl Handler<Connect> for Lobby {
             data: String::from("")
         }).unwrap();
         self.send_message(ws_msg.as_str(), &msg.self_id);
+        println!("There are: {} sessions active", self.sessions.len())
     }
 }
 
