@@ -5,9 +5,8 @@
 //  Created by Wichmann, Jan on 10.01.25.
 //
 
-
 import SwiftUI
-import PDFKit
+
 
 struct AdminCertificateGenerationView: View {
     
@@ -180,7 +179,6 @@ struct SportfestCerifacteGeneratorView: View {
         Group {
             if isLoading {
                 ProgressView("Loading sportfest results...")
-                    .progressViewStyle(CircularProgressViewStyle(tint: .blue))
             } else if let error = errorMessage {
                 Text("Error: \(error)")
                     .foregroundColor(.red)
@@ -267,6 +265,7 @@ struct SportfestCerifacteGeneratorView: View {
                 .padding()
             }
             .padding()
+            .onAppear(perform: generateCertificates)
         }
     }
     
@@ -277,7 +276,6 @@ struct SportfestCerifacteGeneratorView: View {
         siegerurkundeContestants.removeAll()
         teilnehmerurkundeContestants.removeAll()
         
-        isGeneratedSheet = true
         
         let totalContestants = contestantPoints.count
         
@@ -297,7 +295,7 @@ struct SportfestCerifacteGeneratorView: View {
         siegerurkundeContestants = Array(contestantPoints.dropFirst(ehrenurkundeCount).prefix(siegerurkundeCount))
         teilnehmerurkundeContestants = Array(contestantPoints.dropFirst(ehrenurkundeCount + siegerurkundeCount))
         
-        
+        isGeneratedSheet = true
     }
     
     // Function to simulate sending certificates by email

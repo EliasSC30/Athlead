@@ -50,11 +50,11 @@ struct AdminOverviewView: View {
                 
                 // Administrative Settings
                 Section(header: Text("Admin Settings")) {
-                    NavigationLink(destination: CSVManagementView()){
-                        Label("CSV Management", systemImage: "doc.text")
-                    }
                     NavigationLink(destination: PersonManagementView()) {
                         Label("User Management", systemImage: "person.3")
+                    }
+                    NavigationLink(destination: CSVManagementView()){
+                        Label("CSV Management", systemImage: "doc.text")
                     }
                     NavigationLink(destination: AdminAuditLogView()) {
                         Label("Audit Logs", systemImage: "doc.plaintext")

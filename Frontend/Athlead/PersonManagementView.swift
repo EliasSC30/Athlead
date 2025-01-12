@@ -141,9 +141,6 @@ struct PersonManagementView: View {
                         }
                     }
                 }
-                .sheet(item: $personToEdit, onDismiss: clearEditPerson) { Person in
-                    //PersonEditView(Person: Person, onSave: updatePerson)
-                }
                 .sheet(isPresented: $showAddPersonSheet) {
                     PersonAddView(onAddVoid: addPerson)
                 }
@@ -212,17 +209,6 @@ struct PersonManagementView: View {
             }
         }
     }
-    
-    private func updatePerson(person: Person, role: String) {
-        /*if let index = persons.firstIndex(where: { $0.ID == person.ID }) {
-         persons[index] = person
-         }*/
-        clearEditPerson()
-    }
-    
-    private func clearEditPerson() {
-        personToEdit = nil
-    }
 }
 
 // Add Person View
@@ -290,7 +276,7 @@ struct PersonAddView: View {
                     TextField("Birth Year", text: $birthyear)
                         .keyboardType(.numberPad)
                     TextField("Grade", text: $grade)
-                
+                    
                     Picker("Gender", selection: $selectedGender) {
                         ForEach(["Male","Female","Diverse"], id: \.self) { gender in
                             Text(gender).tag(gender)
@@ -305,7 +291,7 @@ struct PersonAddView: View {
                     .pickerStyle(SegmentedPickerStyle())
                     
                     Toggle("Allow to take pictures", isOn: $selectedPic)
-                        
+                    
                 }
             }
             .navigationTitle("Add Person")
@@ -337,46 +323,5 @@ struct PersonAddView: View {
                 }
             }
         }
-    }
-}
-
-
-// Edit Person View
-struct PersonEditView: View {
-    @Environment(\.dismiss) var dismiss
-    @State var Person: Person
-    var onSave: (Person) -> Void
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                // TextField("First Name", text: "")
-                //TextField("Last Name", text: "")
-                //TextField("Email", text: "")
-                //   .keyboardType(.emailAddress)
-                // TextField("Role", text: "")
-            }
-            .navigationTitle("Edit Person")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        onSave(Person)
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-}
-
-// Preview
-struct PersonManagementView_Previews: PreviewProvider {
-    static var previews: some View {
-        PersonManagementView()
     }
 }
