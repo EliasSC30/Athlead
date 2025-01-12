@@ -1,0 +1,1053 @@
+{
+  "sourceLanguage" : "de",
+  "strings" : {
+    "    Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten verantwortlich.\n    Nach §§ 8 bis 10 TMG sind wir jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen." : {
+
+    },
+    "    Beim Aufrufen unserer Website werden automatisch Informationen an den Server unserer Website gesendet.\n    Diese Informationen werden temporär gespeichert und beinhalten:\n    - Keine Informationen werden gespeichert." : {
+
+    },
+    "    Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung bereit: [Link zur OS-Plattform]\n    Unsere E-Mail-Adresse finden Sie oben im Impressum.\n    Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren teilzunehmen." : {
+
+    },
+    "    Diese Datenschutzerklärung ist aktuell gültig und hat den Stand [Datum]. Änderungen können aufgrund gesetzlicher Änderungen notwendig werden." : {
+
+    },
+    "    Eine Übermittlung Ihrer persönlichen Daten an Dritte erfolgt nur unter bestimmten Umständen, wie:\n    - Ihre ausdrückliche Einwilligung.\n    - Zur Geltendmachung von Rechtsansprüchen.\n    - Gesetzliche Verpflichtung." : {
+
+    },
+    "    Eintragung im Handelsregister.\n    Registergericht: Amtsgericht Berlin\n    Registernummer: 12345678" : {
+
+    },
+    "    Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer personenbezogenen Daten." : {
+
+    },
+    "    Sie haben das Recht, gemäß Art. 21 DSGVO Widerspruch gegen die Verarbeitung Ihrer personenbezogenen Daten einzulegen." : {
+
+    },
+    "    Telefon: +49 123 456789\n    Telefax: +49 123 456789\n    E-Mail: contact@athlead.com" : {
+
+    },
+    "    Umsatzsteuer-Identifikationsnummer gemäß §27 a Umsatzsteuergesetz: DE123456789" : {
+
+    },
+    "    Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben.\n    Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter verantwortlich." : {
+
+    },
+    "    Unternehmensname: Athlead Inc.\n    Adresse: 123 Sports Street\n    PLZ Ort: Berlin, 12345\n    Vertreten durch: Nathanäl Hendrik Forlsund" : {
+
+    },
+    "    Verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:\n    Athlead Inc.\n    Adresse: 123 Sports Street, Berlin, Germany\n    Telefon: +49 123 456789\n    E-Mail: datenschutz@athlead.com" : {
+
+    },
+    "    Verantwortlicher: Nathanäl Hendrik Forlsund\n    Adresse: 123 Sports Street, Berlin, Germany" : {
+
+    },
+    "    Wir freuen uns über Ihr Interesse an unserer Website. Der Schutz Ihrer Privatsphäre ist für uns sehr wichtig. Nachstehend informieren wir Sie ausführlich über den Umgang mit Ihren Daten." : {
+
+    },
+    "    Wir verwenden SSL-Verschlüsselung, um Ihre Daten zu schützen." : {
+
+    },
+    "%@" : {
+
+    },
+    "%@ - %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ - %2$@"
+          }
+        }
+      }
+    },
+    "%@ (Tap here to select all)" : {
+
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@ at %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ at %2$@"
+          }
+        }
+      }
+    },
+    "%@ in" : {
+
+    },
+    "%lld" : {
+
+    },
+    "%lld Participants" : {
+
+    },
+    "%lld. %@ %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld. %2$@ %3$@"
+          }
+        }
+      }
+    },
+    "• Built with SwiftUI and RUST for optimal performance" : {
+
+    },
+    "• Elias N. Özcan - Backend Developer" : {
+
+    },
+    "• Intuitive and user-friendly interface" : {
+
+    },
+    "• Jan H. Wichmann - Frontend Developer" : {
+
+    },
+    "• Manage sports events easily" : {
+
+    },
+    "• Organize contests and participants" : {
+
+    },
+    "• RUST for efficient backend processing" : {
+
+    },
+    "• SwiftUI for the frontend UI" : {
+
+    },
+    "🏅 sportfest.name" : {
+
+    },
+    "Abbrechen" : {
+
+    },
+    "About" : {
+
+    },
+    "About Athlead" : {
+
+    },
+    "About The App" : {
+
+    },
+    "Add Contest" : {
+
+    },
+    "Add Contest Template" : {
+
+    },
+    "Add contest templates" : {
+
+    },
+    "Add Disability" : {
+
+    },
+    "Add Location" : {
+
+    },
+    "Add Person" : {
+
+    },
+    "Add Selected Participants" : {
+
+    },
+    "Add to Calendar" : {
+
+    },
+    "Add to calender" : {
+
+    },
+    "Additional Details" : {
+
+    },
+    "Address" : {
+
+    },
+    "Admin Overview" : {
+
+    },
+    "Admin Settings" : {
+
+    },
+    "Administration" : {
+
+    },
+    "Administrators" : {
+
+    },
+    "All" : {
+
+    },
+    "Allow to take picture of my child:" : {
+
+    },
+    "Allow to take pictures" : {
+
+    },
+    "Allowed to take photos" : {
+
+    },
+    "Athlead" : {
+
+    },
+    "Athlead is a sports event management app for schools and clubs. It is designed to help you manage your sports events, contests, and participants. The app is designed to be easy to use and intuitive." : {
+
+    },
+    "Athlead wird geladen..." : {
+
+    },
+    "Audit Log" : {
+
+    },
+    "Audit Logs" : {
+
+    },
+    "Back" : {
+
+    },
+    "Beste Sportart" : {
+
+    },
+    "Bestleistung: %@" : {
+
+    },
+    "Birth Year" : {
+
+    },
+    "Birth Year:" : {
+
+    },
+    "Bitte erlauben Sie den Zugriff auf die Kamera in den Einstellungen." : {
+
+    },
+    "Bitte logge dich ein, um Wettkämpfe zu sehen." : {
+
+    },
+    "Born %@" : {
+
+    },
+    "Built with:" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Certificate Generation" : {
+
+    },
+    "Certificates Generated" : {
+
+    },
+    "Check-In QR Code" : {
+
+    },
+    "Checke für %@ ein" : {
+
+    },
+    "Checking your account type..." : {
+
+    },
+    "Child profile" : {
+
+    },
+    "City" : {
+
+    },
+    "Class" : {
+
+    },
+    "Close" : {
+
+    },
+    "Competing" : {
+
+    },
+    "Confirm" : {
+
+    },
+    "Confirm Helpers" : {
+
+    },
+    "Contact Information" : {
+
+    },
+    "Contact Person" : {
+
+    },
+    "Contact Person:" : {
+
+    },
+    "Contact Support" : {
+
+    },
+    "Contest created successfully" : {
+
+    },
+    "Contest Details" : {
+
+    },
+    "Contest Information" : {
+
+    },
+    "Contest: %@" : {
+
+    },
+    "Contestants" : {
+
+    },
+    "Contests" : {
+
+    },
+    "Contests:" : {
+
+    },
+    "Contribution: %@" : {
+
+    },
+    "Create Location" : {
+
+    },
+    "Create New Sportfest" : {
+
+    },
+    "Create Sportfest" : {
+
+    },
+    "Creating Contest..." : {
+
+    },
+    "CSV Management" : {
+
+    },
+    "Current Sportfests" : {
+
+    },
+    "Date: %@ - %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Date: %1$@ - %2$@"
+          }
+        }
+      }
+    },
+    "Datenschutz" : {
+
+    },
+    "Datenschutzrichtlinie" : {
+
+    },
+    "Deine beste Sportart" : {
+
+    },
+    "DELETE" : {
+
+    },
+    "Description" : {
+
+    },
+    "Description (Optional)" : {
+
+    },
+    "Description: %@" : {
+
+    },
+    "Details" : {
+
+    },
+    "Developed By:" : {
+
+    },
+    "Die App benötigt für das Scannen des QR-Codes Zugriff auf die Kamera" : {
+
+    },
+    "Disabilities" : {
+
+    },
+    "Display Metric" : {
+
+    },
+    "Done" : {
+
+    },
+    "e.g., 123.45" : {
+
+    },
+    "Edit" : {
+
+    },
+    "Edit Contest Information" : {
+
+    },
+    "Edit Entry" : {
+
+    },
+    "Edit Evaluation" : {
+
+    },
+    "Edit Location" : {
+
+    },
+    "Edit Profile Picture" : {
+
+    },
+    "Editing: %@ %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Editing: %1$@ %2$@"
+          }
+        }
+      }
+    },
+    "Ehrenurkunde: %lld contestants" : {
+
+    },
+    "Ehrenurkunde: %lld%%" : {
+
+    },
+    "Eingetragene Ergebnisse" : {
+
+    },
+    "Einstellungen öffnen" : {
+
+    },
+    "Email" : {
+
+    },
+    "Email:" : {
+
+    },
+    "Email: %@" : {
+
+    },
+    "End Date" : {
+
+    },
+    "End: %@" : {
+
+    },
+    "Enter and manage results for participants in %@." : {
+
+    },
+    "Enter Data" : {
+
+    },
+    "Enter disability" : {
+
+    },
+    "Enter New Value" : {
+
+    },
+    "Enter value" : {
+
+    },
+    "Enter your email" : {
+
+    },
+    "Enter your email to reset your password" : {
+
+    },
+    "Enter your name" : {
+
+    },
+    "Enter your password" : {
+
+    },
+    "Error" : {
+
+    },
+    "Error updating result. Please try again." : {
+
+    },
+    "Error: %@" : {
+
+    },
+    "Evaluation" : {
+
+    },
+    "Evaluation Method: %@" : {
+
+    },
+    "Event added to calendar" : {
+
+    },
+    "Event Dates" : {
+
+    },
+    "Event Details:" : {
+
+    },
+    "Event Overview" : {
+
+    },
+    "Events on %@:" : {
+
+    },
+    "Failed to generate QR Code" : {
+
+    },
+    "Female" : {
+
+    },
+    "File uploaded successfully" : {
+
+    },
+    "Filter Options" : {
+
+    },
+    "Filter Settings" : {
+
+    },
+    "Filters" : {
+
+    },
+    "First Name" : {
+
+    },
+    "First Name:" : {
+
+    },
+    "Forgot Password" : {
+
+    },
+    "Forgot Password?" : {
+
+    },
+    "Gender" : {
+
+    },
+    "Gender:" : {
+
+    },
+    "Generate Certificates" : {
+
+    },
+    "Generate Certificates for %@" : {
+
+    },
+    "Grade" : {
+
+    },
+    "Grade %@" : {
+
+    },
+    "Grade Range" : {
+
+    },
+    "Grade Range: %@" : {
+
+    },
+    "Grade:" : {
+
+    },
+    "Grades: %@" : {
+
+    },
+    "Group" : {
+
+    },
+    "Group By" : {
+
+    },
+    "Hello, World!" : {
+
+    },
+    "Helper Contributions" : {
+
+    },
+    "If you have any questions or issues, please fill out the form below and we will get back to you as soon as possible." : {
+
+    },
+    "Impressum" : {
+
+    },
+    "In order to analyse the ranking of the contestants, you can drag and drop the contestants in the order of their results. The first contestant in the list will be the winner. The order will be saved as the evaluation order, for the contest and all results within." : {
+
+    },
+    "Invalid image data" : {
+
+    },
+    "It looks like no participants have registered yet." : {
+
+    },
+    "It seems like you don’t have any competitions to judge at the moment." : {
+
+    },
+    "Judges" : {
+
+    },
+    "Kein Wettkampf" : {
+
+    },
+    "Keine Einträge bisher" : {
+
+    },
+    "Key Features:" : {
+
+    },
+    "Last Name" : {
+
+    },
+    "Last Name:" : {
+
+    },
+    "Live" : {
+
+    },
+    "Loading contest results..." : {
+
+    },
+    "Loading contests..." : {
+
+    },
+    "Loading Contests..." : {
+
+    },
+    "Loading helper data..." : {
+
+    },
+    "Loading Location data..." : {
+
+    },
+    "Loading more information..." : {
+
+    },
+    "Loading participants for contest..." : {
+
+    },
+    "Loading participants..." : {
+
+    },
+    "Loading participation stats..." : {
+
+    },
+    "Loading Person data..." : {
+
+    },
+    "Loading results..." : {
+
+    },
+    "Loading Sportfest" : {
+
+    },
+    "Loading sportfest data..." : {
+
+    },
+    "Loading Sportfest data..." : {
+
+    },
+    "Loading sportfest results..." : {
+
+    },
+    "Loading sportfest stats..." : {
+
+    },
+    "Location" : {
+
+    },
+    "Location Details" : {
+
+    },
+    "Location updated successfully" : {
+
+    },
+    "Location:" : {
+
+    },
+    "Location: %@" : {
+
+    },
+    "Locations" : {
+
+    },
+    "Log Out" : {
+
+    },
+    "Logging in.." : {
+
+    },
+    "Login" : {
+
+    },
+    "Male" : {
+
+    },
+    "Manage contest templates" : {
+
+    },
+    "Manage Contests" : {
+
+    },
+    "Manage Locations" : {
+
+    },
+    "Manage participants, entries, and check-ins for the contest." : {
+
+    },
+    "Manage Sportfests" : {
+
+    },
+    "Meine Kinder" : {
+
+    },
+    "Meine Wettkämpfe" : {
+
+    },
+    "Message" : {
+
+    },
+    "Method" : {
+
+    },
+    "Metric" : {
+
+    },
+    "Missing Required Fields" : {
+
+    },
+    "More" : {
+
+    },
+    "My Contests" : {
+
+    },
+    "Name" : {
+
+    },
+    "Name: %@" : {
+
+    },
+    "Next Step: Select Helper" : {
+
+    },
+    "No" : {
+
+    },
+    "No administrators available." : {
+
+    },
+    "No Competitions Found" : {
+
+    },
+    "No contestants available." : {
+
+    },
+    "No contests available" : {
+
+    },
+    "No contests available." : {
+
+    },
+    "No current sportfests available" : {
+
+    },
+    "No data available for this grouping." : {
+
+    },
+    "No disabilities listed" : {
+
+    },
+    "No events for the selected day." : {
+
+    },
+    "No image selected" : {
+
+    },
+    "No judges available." : {
+
+    },
+    "No locations available" : {
+
+    },
+    "No Participants" : {
+
+    },
+    "No past sportfests available" : {
+
+    },
+    "No Score" : {
+
+    },
+    "No upcoming sportfests available" : {
+
+    },
+    "Not a participant" : {
+
+    },
+    "Not allowed to take photos" : {
+
+    },
+    "Not Competing" : {
+
+    },
+    "Not started" : {
+
+    },
+    "Offline" : {
+
+    },
+    "OK" : {
+
+    },
+    "Open in Maps" : {
+
+    },
+    "Open Map" : {
+
+    },
+    "Participant" : {
+
+    },
+    "Participants" : {
+
+    },
+    "Participation Stats" : {
+
+    },
+    "Password" : {
+
+    },
+    "Past Sportfests" : {
+
+    },
+    "PATCH" : {
+
+    },
+    "Person Management" : {
+
+    },
+    "Personal Information" : {
+
+    },
+    "Phone" : {
+
+    },
+    "Phone:" : {
+
+    },
+    "Phone: %@" : {
+
+    },
+    "Plaese select a file" : {
+
+    },
+    "Please fill in the Name and Unit fields." : {
+
+    },
+    "Please log in to your account" : {
+
+    },
+    "Points" : {
+
+    },
+    "POST" : {
+
+    },
+    "Preparing your page..." : {
+
+    },
+    "Profil" : {
+
+    },
+    "PUT" : {
+
+    },
+    "Reports & Analytics" : {
+
+    },
+    "Result successfully updated" : {
+
+    },
+    "Results" : {
+
+    },
+    "Role" : {
+
+    },
+    "Role: %@" : {
+
+    },
+    "Save" : {
+
+    },
+    "Save Changes" : {
+
+    },
+    "Scannen" : {
+
+    },
+    "Select a File" : {
+
+    },
+    "Select Admin" : {
+
+    },
+    "Select Contact" : {
+
+    },
+    "Select Helpers" : {
+
+    },
+    "Select Location" : {
+
+    },
+    "Select Participants to Add" : {
+
+    },
+    "Select Photo" : {
+
+    },
+    "Select template" : {
+
+    },
+    "Selected" : {
+
+    },
+    "Send Certificates via Mail" : {
+
+    },
+    "Send Reset Link" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Show Warnings Only" : {
+
+    },
+    "Siegerurkunde: %lld contestants" : {
+
+    },
+    "Siegerurkunde: %lld%%" : {
+
+    },
+    "Sportfest created successfully. Click here to view." : {
+
+    },
+    "Sportfest Details" : {
+
+    },
+    "Sportfest Name" : {
+
+    },
+    "Sportfest Overview" : {
+
+    },
+    "sportfest.description" : {
+
+    },
+    "Sportfests" : {
+
+    },
+    "Start adding results by selecting a participant." : {
+
+    },
+    "Start Date" : {
+
+    },
+    "Start: %@" : {
+
+    },
+    "Stats for %@" : {
+
+    },
+    "Street" : {
+
+    },
+    "Street Number" : {
+
+    },
+    "Submit" : {
+
+    },
+    "Submitting..." : {
+
+    },
+    "Tap to review details" : {
+
+    },
+    "Task: " : {
+
+    },
+    "Teilnehmerurkunde: %lld contestants" : {
+
+    },
+    "Teilnehmerurkunde: %lld%%" : {
+
+    },
+    "Thank you for using Athlead! We hope it helps streamline your sports event management." : {
+
+    },
+    "Thank You!" : {
+
+    },
+    "to" : {
+
+    },
+    "Unit" : {
+
+    },
+    "Unit: %@" : {
+
+    },
+    "Upcoming Sportfests" : {
+
+    },
+    "Upload a CSV File" : {
+
+    },
+    "Upload Photo" : {
+
+    },
+    "Uploading..." : {
+
+    },
+    "User Management" : {
+
+    },
+    "Value" : {
+
+    },
+    "View Sportfest reports" : {
+
+    },
+    "Weitwurf (Frauen, 4b)" : {
+
+    },
+    "Wettkämpfe" : {
+
+    },
+    "WIP" : {
+
+    },
+    "Yes" : {
+
+    },
+    "Your Profile" : {
+
+    },
+    "Zipcode" : {
+
+    },
+    "Zuständige Aufsichtsbehörde: Berlin Office" : {
+
+    }
+  },
+  "version" : "1.0"
+}
