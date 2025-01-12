@@ -21,8 +21,6 @@ struct JudgeScanView : View {
             if unwrappedSplit.count != 2 { print("Scanned value was invalid - unexpected format") }
             let contest_id = unwrappedSplit.first.unsafelyUnwrapped;
             let user_id = unwrappedSplit.last.unsafelyUnwrapped;
-            print("Contest id: ", contest_id)
-            print("User id: ", user_id)
             
             fetch("contests/\(contest_id)/participants/\(user_id)", IsParticipantCheckResponse.self){
                 response in

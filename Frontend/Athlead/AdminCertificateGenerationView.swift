@@ -163,9 +163,9 @@ struct SportfestCerifacteGeneratorView: View {
     
     @State private var contestantPoints: [PersonWithPoint] = []
     
-    @State private var ehrenurkundePercentage: Double = 0.0
-    @State private var siegerurkundePercentage: Double = 0.0
-    @State private var teilnehmerurkundePercentage: Double = 0.0
+    @State private var ehrenurkundePercentage: Double = 15.0
+    @State private var siegerurkundePercentage: Double = 30.0
+    @State private var teilnehmerurkundePercentage: Double = 55.0
     
     // Track contestants for each certificate
     @State private var ehrenurkundeContestants: [PersonWithPoint] = []
@@ -279,17 +279,10 @@ struct SportfestCerifacteGeneratorView: View {
         
         let totalContestants = contestantPoints.count
         
-        print("Generating certificates for \(totalContestants) contestants...")
-        print("With %: Ehrenurkunde: \(ehrenurkundePercentage), Siegerurkunde: \(siegerurkundePercentage), Teilnehmerurkunde: \(teilnehmerurkundePercentage)")
         
         // Calculate how many contestants should get each certificate based on the percentages
-        let ehrenurkundeCount = Int(Double(totalContestants) * (ehrenurkundePercentage / 100))
+        let ehrenurkundeCount = Int(Double(totalContestants) * (ehrenurkundePercentage / 100)) + 1
         let siegerurkundeCount = Int(Double(totalContestants) * (siegerurkundePercentage / 100))
-        let teilnehmerurkundeCount = totalContestants - ehrenurkundeCount - siegerurkundeCount
-        
-        print("Ehrenurkunde: \(ehrenurkundeCount) contestants")
-        print("Siegerurkunde: \(siegerurkundeCount) contestants")
-        print("Teilnehmerurkunde: \(teilnehmerurkundeCount) contestants")
         
         ehrenurkundeContestants = Array(contestantPoints.prefix(ehrenurkundeCount))
         siegerurkundeContestants = Array(contestantPoints.dropFirst(ehrenurkundeCount).prefix(siegerurkundeCount))

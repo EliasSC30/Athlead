@@ -7,6 +7,7 @@
 import SwiftUI
 import MapKit
 import CoreLocation
+import EventKit
 
 struct SportfestParticipantDetailView: View {
     let sportfest: SportfestData
@@ -19,29 +20,29 @@ struct SportfestParticipantDetailView: View {
     
     var body: some View {
         ScrollView {
-                
-                // Event Overview Section
-                EventOverviewView(sportfest: sportfest, showEventMap: $showEventMap)
-                
-
-                Group {
-                    // Loading State
-                    if isLoading {
-                        ProgressView("Loading more information...")
-                            .padding()
-                    }
-                    // Error Message State
-                    else if let errorMessage {
-                        Text("Error: \(errorMessage)")
-                            .foregroundColor(.red)
-                            .multilineTextAlignment(.center)
-                    } else {
-                        ForEach(contests) { contest in
-                            ContestCardView(contest: contest, cts_wf: sportfest.cts_wf)
-                                .padding(.horizontal)
-                        }
+            
+            // Event Overview Section
+            EventOverviewView(sportfest: sportfest, showEventMap: $showEventMap)
+            
+            
+            Group {
+                // Loading State
+                if isLoading {
+                    ProgressView("Loading more information...")
+                        .padding()
+                }
+                // Error Message State
+                else if let errorMessage {
+                    Text("Error: \(errorMessage)")
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
+                } else {
+                    ForEach(contests) { contest in
+                        ContestCardView(contest: contest, cts_wf: sportfest.cts_wf)
+                            .padding(.horizontal)
                     }
                 }
+            }
         }
         .onAppear(perform: fetchAllSpofestContests)
         .sheet(isPresented: $showEventMap) {
@@ -89,6 +90,9 @@ struct EventOverviewView: View {
     let sportfest: SportfestData
     
     @Binding var showEventMap: Bool
+    
+    @State private var showAddEventPopover: Bool = false
+    @State private var eventStore = EKEventStore()
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -155,17 +159,44 @@ struct EventOverviewView: View {
                     Text("Event Details:")
                         .font(.headline)
                         .foregroundColor(.secondary)
+                }    .padding(.top, 8)
+            }
+            HStack {
+                Image(systemName: "play.fill")
+                    .foregroundColor(.blue)
+                Text("Start: \(formatDate(sportfest.details_start))")
+            }
+            HStack {
+                Image(systemName: "stop.fill")
+                    .foregroundColor(.red)
+                Text("End: \(formatDate(sportfest.details_end))")
+            }
+            Button(action: {
+                eventStore.requestWriteOnlyAccessToEvents() { (granted, error) in
+                    if granted && error == nil {
+                        let event = EKEvent(eventStore: eventStore)
+                        event.title = sportfest.details_name
+                        event.startDate = stringToDate(sportfest.details_start)
+                        event.endDate = stringToDate(sportfest.details_end)
+                        event.calendar = eventStore.defaultCalendarForNewEvents
+                        do {
+                            try eventStore.save(event, span: .thisEvent)
+                            showAddEventPopover = true
+                            
+                        } catch {
+                            print("Error saving event: \(error.localizedDescription)")
+                            showAddEventPopover = false
+                        }
+                    } else {
+                        showAddEventPopover = false
+                        print("Access denied to write events")
+                    }
                 }
-                HStack {
-                    Image(systemName: "play.fill")
-                        .foregroundColor(.blue)
-                    Text("Start: \(formatDate(sportfest.details_start))")
-                }
-                HStack {
-                    Image(systemName: "stop.fill")
-                        .foregroundColor(.red)
-                    Text("End: \(formatDate(sportfest.details_end))")
-                }
+            }) {
+                Text("Add to calender")
+                    .foregroundColor(.blue)
+                    .font(.headline)
+                
             }
         }
         .padding()
@@ -173,6 +204,19 @@ struct EventOverviewView: View {
         .cornerRadius(12)
         .shadow(radius: 8)
         .padding(.horizontal)
+        .popover(isPresented: $showAddEventPopover) {
+            VStack {
+                Text("Event added to calendar")
+                    .font(.headline)
+            }
+        }
+    }
+    
+    func stringToDate(_ string: String) -> Date {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.timeZone = TimeZone(abbreviation: "UTC")
+        return formatter.date(from: string) ?? Date()
     }
     
     func formatDate(_ dateString: String) -> String {
@@ -185,6 +229,8 @@ struct EventOverviewView: View {
         }
         return dateString
     }
+    
+    
 }
 
 
@@ -196,21 +242,21 @@ struct EventMapView: View {
     @State private var sportfestCoordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(
         latitude: 0.0,
         longitude: 0.0
-        )
+    )
     
     var body: some View {
         Map {
             Marker(sportfest.details_name, systemImage: "figure.wave", coordinate: sportfestCoordinate)
         }.onAppear(perform: loadCoordinate)
-        .mapStyle(.standard(elevation: .realistic))
-        .safeAreaInset(edge: .bottom) {
-            HStack {
-                Spacer()
-                MapButtons(coordinate: sportfestCoordinate, showMapSheet: $showMapSheet)
-                    .padding(.top)
-                Spacer()
-            }.background(.thinMaterial)
-        }
+            .mapStyle(.standard(elevation: .realistic))
+            .safeAreaInset(edge: .bottom) {
+                HStack {
+                    Spacer()
+                    MapButtons(coordinate: sportfestCoordinate, showMapSheet: $showMapSheet)
+                        .padding(.top)
+                    Spacer()
+                }.background(.thinMaterial)
+            }
     }
     
     
@@ -263,7 +309,7 @@ struct ContestCardView: View {
     let cts_wf: [ContestWithFlag]
     
     @State private var isCompeting: Bool = false;
-
+    
     var body: some View {
         NavigationLink(destination: SportfestParticipantContestDetailView(contest: contest)){
             VStack(alignment: .leading, spacing: 12) {

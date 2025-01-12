@@ -256,65 +256,96 @@ struct JudgeParticipants: View {
             }
         }
         .sheet(isPresented: $showAddParticipantsSheet) {
-            Group {
-                if isLoading {
-                    ProgressView("Loading participants...")
-                } else if let errorMessage = errorMessage {
-                    Text("Error: \(errorMessage)")
-                        .foregroundColor(.red)
-                        .multilineTextAlignment(.center)
-                } else {
-                    VStack {
-                        Text("Select Participants to Add")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .padding(.bottom, 16)
-                        
-                        List(availableParticipants, id: \.ID) { participant in
-                            HStack {
-                                Text("\(participant.FIRSTNAME) \(participant.LASTNAME)")
-                                    .font(.headline)
-                                
-                                Spacer()
-                                
-                                if selectedParticipants.contains(participant.ID) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
-                                } else {
-                                    Image(systemName: "circle")
-                                        .foregroundColor(.gray)
-                                }
-                            }
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                if selectedParticipants.contains(participant.ID) {
-                                    selectedParticipants.remove(participant.ID)
-                                } else {
-                                    selectedParticipants.insert(participant.ID)
-                                }
-                            }
-                        }
-                        .listStyle(InsetGroupedListStyle())
-                        .scrollContentBackground(.hidden)
-
-                        
-                        Button("Add Selected Participants") {
-                            addParticipants()
-                            showAddParticipantsSheet.toggle()
-                        }
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(8)
-                        .padding(.top, 16)
-                    }
-                    .padding()
-                }
-            }.onAppear(perform: loadParticipants)
-                
+            AddParticipantsSheet(participants: participants, contestID: contestID)
         }
     }
+}
+
+struct AddParticipantsSheet: View {
+    
+    let participants: [Participant]
+    let contestID: String
+    
+    @State private var availableParticipants: [Person] = []
+    @State private var showAddParticipantsSheet = false
+    @State private var selectedParticipants: Set<String> = []
+    
+    @State private var isLoading: Bool = false
+    @State private var errorMessage: String? = nil
+    
+    var body: some View {
+        Group {
+            if isLoading {
+                ProgressView("Loading participants...")
+            } else if let errorMessage = errorMessage {
+                Text("Error: \(errorMessage)")
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+            } else {
+                VStack {
+                    Text("Select Participants to Add")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .padding(.bottom, 16)
+                    
+                    // Group participants by their grade
+                    let groupedParticipants = Dictionary(grouping: availableParticipants, by: { $0.GRADE ?? "Unknown" })
+                    
+                    List(groupedParticipants.keys.sorted(), id: \.self) { grade in
+                        Section(header: Text("\(grade) (Tap here to select all)")
+                            .onTapGesture {
+                                toggleGradeSelection(for: grade, in: groupedParticipants)
+                            }
+                            .underline()
+                            .baselineOffset(3.0)
+                        ) {
+                            ForEach(groupedParticipants[grade] ?? [], id: \.ID) { participant in
+                                HStack {
+                                    Text("\(participant.FIRSTNAME) \(participant.LASTNAME)")
+                                        .font(.headline)
+                                    
+                                    Spacer()
+                                    
+                                    if selectedParticipants.contains(participant.ID) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                    } else {
+                                        Image(systemName: "circle")
+                                            .foregroundColor(.gray)
+                                    }
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    if selectedParticipants.contains(participant.ID) {
+                                        selectedParticipants.remove(participant.ID)
+                                    } else {
+                                        selectedParticipants.insert(participant.ID)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .listStyle(InsetGroupedListStyle())
+                    .scrollContentBackground(.hidden)
+                    
+                    // Button to add selected participants
+                    Button("Add Selected Participants") {
+                        addParticipants()
+                        showAddParticipantsSheet.toggle()
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(8)
+                    .padding(.top, 16)
+                }
+                .padding()
+            }
+        }
+        .onAppear(perform: loadParticipants)
+    }
+    
     
     func loadParticipants() {
         isLoading = true
@@ -347,6 +378,31 @@ struct JudgeParticipants: View {
             case .failure(let error):
                 print("Error adding participants: \(error)")
             }
+        }
+    }
+    
+    func toggleGradeSelection(for grade: String, in groupedParticipants: [String: [Person]]) {
+        if let participantsInGrade = groupedParticipants[grade] {
+            let allSelected = participantsInGrade.allSatisfy { selectedParticipants.contains($0.ID) }
+            if allSelected {
+                // Deselect all if currently all are selected
+                for participant in participantsInGrade {
+                    selectedParticipants.remove(participant.ID)
+                }
+            } else {
+                // Select all if not all are currently selected
+                for participant in participantsInGrade {
+                    selectedParticipants.insert(participant.ID)
+                }
+            }
+        }
+    }
+    
+    func toggleParticipantSelection(_ participantID: String) {
+        if selectedParticipants.contains(participantID) {
+            selectedParticipants.remove(participantID)
+        } else {
+            selectedParticipants.insert(participantID)
         }
     }
 }
@@ -418,7 +474,7 @@ struct JudgeEntryView: View {
    
    func resetEditingState() {
        startingInput = ""
-       updatedInput = String(contestResults[editingIndex].value.unsafelyUnwrapped)
+       updatedInput = String(contestResults[editingIndex].value ?? 0)
        isEditingError = false
    }
 
@@ -614,7 +670,6 @@ struct JudgeEntryView: View {
         formatter.numberStyle = .decimal
         
         if let updatedValue = formatter.number(from: updatedInput)?.doubleValue {
-            print("Updating result for \(contestResults[self.editingIndex].p_firstname) \(contestResults[self.editingIndex].p_lastname) to \(updatedValue)")
             updateContestResult(
                 contestResults[editingIndex].p_id,
                 contest.ct_id,

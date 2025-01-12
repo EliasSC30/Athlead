@@ -355,7 +355,7 @@ struct HelperSelectionView: View {
                 // Use a List with ForEach to display helpers and allow multi-selection
                 List(helpers, id: \.self) { helper in
                     MultipleSelectionRow(
-                        title: helper.FIRSTNAME,
+                        title: "\(helper.FIRSTNAME) \(helper.LASTNAME)",
                         isSelected: selectedHelpers.contains(helper),
                         action: {
                             if selectedHelpers.contains(helper) {
@@ -420,12 +420,7 @@ struct HelperSelectionView: View {
             let result = try await executeURLRequestAsync(request: request)
             switch result {
             case .success(let response, let data):
-                print(response)
-                print(data)
                 
-                if let str = String(data: data, encoding: .utf8) {
-                    print(str)
-                }
                 isFinished = true
                 isLoading = false
                 message = "Contest created successfully"
@@ -454,6 +449,7 @@ struct HelperSelectionView: View {
             case .success(_, let data):
                 let helperData = try JSONDecoder().decode(PersonsResponse.self, from: data)
                 helpers = helperData.data
+                helpers = helpers.filter { $0.ROLE.lowercased() == "judge" }
             default:
                 break
             }

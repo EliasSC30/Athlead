@@ -539,7 +539,7 @@ struct CSVPersonBatch: Codable {
 
 struct CSVPersonBatchResponse: Codable {
     let status: String
-    let updated_fields: Int
+    let Created_persons: Int
 }
 
 struct HelperResponse: Codable {

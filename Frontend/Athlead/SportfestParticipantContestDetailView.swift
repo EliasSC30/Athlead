@@ -45,7 +45,7 @@ struct SportfestParticipantContestDetailView: View {
                         .padding()
                     
                     VStack(spacing: 15) {
-                        ResultsHeaderView(isLive: isLive)
+                        ResultsHeaderView(isLive: isLive, contest: contest)
                             .padding(.top, 10)
                         
                         ForEach(rankedResults, id: \.0.id) { (result, rank) in
@@ -400,6 +400,7 @@ struct ContestDetails: View {
 }
 struct ResultsHeaderView: View {
     let isLive: Bool
+    let contest: ContestData
     
     var body: some View {
         HStack {
@@ -412,7 +413,7 @@ struct ResultsHeaderView: View {
             Spacer()
             
             // Live ticker on the right
-            LiveIndicator(isLive: isLive)
+            LiveIndicator(isLive: isLive, contest: contest)
         }
         .padding()
     }
@@ -420,7 +421,9 @@ struct ResultsHeaderView: View {
 
 struct LiveIndicator: View {
     let isLive: Bool
+    let contest: ContestData
     @State private var pulse: Bool = false
+    @State private var now = Date()
     
     var body: some View {
         HStack {
@@ -440,10 +443,28 @@ struct LiveIndicator: View {
                     }
                 }
             
-            Text(isLive ? "Live" : "Offline")
-                .font(.headline)
-                .foregroundColor(isLive ? .green : .red)
+            let startDate = stringToDate(contest.ct_details_start)
+            let endDate = stringToDate(contest.ct_details_end)
+            
+            
+            if startDate < now && endDate > now {
+                Text(isLive ? "Live" : "Offline")
+                    .font(.headline)
+                    .foregroundColor(isLive ? .green : .red)
+            } else {
+                Text("Not started")
+                    .font(.headline)
+                    .foregroundColor(.red)
+            }
+                
         }
+    }
+    
+    func stringToDate(_ string: String) -> Date {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.timeZone = TimeZone(abbreviation: "UTC")
+        return formatter.date(from: string) ?? Date()
     }
 }
 

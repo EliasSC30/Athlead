@@ -39,7 +39,6 @@ struct JudgeOverviewView: View {
             case .success(let myData):
                 contests = myData.data;
                 
-                print(contests)
             case .failure(let error):
                 errorMessage = error.localizedDescription;
             }

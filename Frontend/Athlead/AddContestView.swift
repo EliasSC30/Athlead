@@ -121,7 +121,6 @@ struct AddContestView: View {
                 }.popover(isPresented: $created) {
                     Text("Contest created successfully")
                         .padding()
-                        .background(Color.white)
                         .cornerRadius(10)
                         .shadow(radius: 5)
                         .font(.headline)

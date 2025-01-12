@@ -45,12 +45,7 @@ struct LocationManagerView: View {
                                             location.NAME,
                                             systemImage: "mappin.and.ellipse")
                                     }
-                                }.onDelete(perform: {
-                                    indexSet in
-                                    let index = indexSet.first!
-                                    let location = allLocations[index]
-                                    deleteLocation(location: location)
-                                })
+                                }
                             }
                             
                         }
@@ -147,29 +142,6 @@ struct LocationManagerView: View {
                     Image(systemName: "arrow.clockwise")
                 })
         }
-    }
-
-    
-    private func deleteLocation(location: Location){
-        print("Deleting location \(location)")
-        let url = URL(string: "\(apiURL)/locations/\(location.ID)")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "DELETE"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error deleting location: \(error)")
-                return
-            }
-            
-            if let str = String(data: data!, encoding: .utf8) {
-                print("Response: \(str)")
-            }
-            
-            
-        }.resume()
-        
     }
     
     private func createLocation() async {

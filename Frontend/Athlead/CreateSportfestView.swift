@@ -43,9 +43,8 @@ struct CreateSportfestView: View {
                         TextField("Sportfest Name", text: $sportfestName)
                             .autocapitalization(.words)
                             .autocorrectionDisabled(true)
-                            .background(Color.white.opacity(0.1))
                             
-                            
+                    
                     }
                     
                     // Location Picker
@@ -199,10 +198,6 @@ struct CreateSportfestView: View {
         }
         request.httpBody = body
         
-        print(request)
-        if let body = String(data: request.httpBody!, encoding: .utf8){
-            print(body)
-        }
         
         do {
             let result = try await executeURLRequestAsync(request: request)
