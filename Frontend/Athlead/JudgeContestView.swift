@@ -360,7 +360,7 @@ struct JudgeEntryView: View {
     
     // Variables for editing
     @State private var startingInput: String = ""
-    @State private var editingIndex: Int?
+    @State private var editingIndex: Int? = 0
     @State private var isEditing: Bool = false
     @State private var isEditingError: Bool = false;
     @State private var wasSuccessful: Bool?
@@ -508,7 +508,7 @@ struct JudgeEntryView: View {
     
     @ViewBuilder
     private func EditEntrySheet() -> some View {
-        if editingIndex != nil {
+        if self.editingIndex != nil {
             VStack(spacing: 20) {
                 Label("Edit Entry", systemImage: "pencil")
                     .font(.title)
@@ -516,7 +516,7 @@ struct JudgeEntryView: View {
                 
                 VStack(spacing: 10) {
                     Label(
-                        "Editing: \(contestResults[editingIndex.unsafelyUnwrapped].p_firstname) \(contestResults[editingIndex.unsafelyUnwrapped].p_lastname)",
+                        "Editing: \(self.contestResults[self.editingIndex.unsafelyUnwrapped].p_firstname) \(self.contestResults[self.editingIndex.unsafelyUnwrapped].p_lastname)",
                         systemImage: "person"
                     )
                     .font(.headline)
