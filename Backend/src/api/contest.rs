@@ -539,20 +539,46 @@ pub async fn contests_judge_mycontests_handler(db: web::Data<MySqlPool>, req: Ht
                     WHERE dt.CONTACTPERSON_ID = ?",user.ID.clone())
         .fetch_all(db.as_ref())
         .await;
+    if result.is_err() {
+        return HttpResponse::InternalServerError().json(json!({
+            "status": "ContactPerson error",
+            "message": format!("Failed to fetch Contests: {}", result.unwrap_err()),
+        }))
+    };
+    let cp_contests = result.unwrap();
 
-    match result {
-        Ok(details) => HttpResponse::Ok().json(json!({
+    let helper_query = sqlx::query_as!(ContestForJudge,
+            "SELECT ct.ID as ct_id,
+                    dt.NAME as ct_name,
+                    dt.START as ct_start,
+                    dt.END as ct_end,
+                    lc.NAME as ct_location_name,
+                    ct_ct.UNIT as ct_unit,
+                    sf_dt.NAME as sf_name
+
+                    FROM CONTEST as ct
+                    JOIN DETAILS as dt ON dt.ID = ct.DETAILS_ID
+                    JOIN LOCATION as lc ON dt.LOCATION_ID = lc.ID
+                    JOIN SPORTFEST as sf ON ct.SPORTFEST_ID = sf.ID
+                    JOIN DETAILS as sf_dt ON sf_dt.ID = sf.DETAILS_ID
+                    JOIN C_TEMPLATE as ct_ct ON ct_ct.ID = ct.C_TEMPLATE_ID
+                    JOIN HELPER as h ON h.HELPER_ID = ?",user.ID.clone())
+        .fetch_all(db.as_ref())
+        .await;
+    if helper_query.is_err() {
+        return HttpResponse::InternalServerError().json(json!({
+            "status": "helper query error",
+            "message": helper_query.unwrap_err().to_string()
+        }));
+    };
+    let mut helper_contests = helper_query.unwrap();
+
+    helper_contests.extend(cp_contests);
+
+    HttpResponse::Ok().json(json!({
                 "status": "success",
-                "data": serde_json::to_value(details).unwrap(),
+                "data": serde_json::to_value(helper_contests).unwrap(),
                 }))
-        ,
-        Err(e) => {
-            HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": format!("Failed to fetch Contests: {}", e),
-            }))
-        }
-    }
 }
 
 pub async fn create_contest(contest: CreateContest, db: &web::Data<MySqlPool>) -> Result<Contest, String> {

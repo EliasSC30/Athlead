@@ -10,7 +10,7 @@ pub struct Contest {
     pub C_TEMPLATE_ID: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ContestForJudge {
     pub ct_id: String,
     pub ct_name: String,
