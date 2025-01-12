@@ -764,8 +764,8 @@ pub async fn contests_check_participant_handler(path: Path<(String,String)>, db:
 }
 
 
-#[get("/contests/{contest_id}/helper}")]
-pub async fn contests_get_helper_handler(db: Data<MySqlPool>, path: Path<String>) -> impl Responder {
+#[get("/contests/{contest_id}/helpers")]
+pub async fn contests_get_helpers_handler(db: Data<MySqlPool>, path: Path<String>) -> impl Responder {
     let ct_id = path.into_inner();
     let query = sqlx::query_as!(ContestHelper, r#"SELECT
                                                         p.ID as id,
