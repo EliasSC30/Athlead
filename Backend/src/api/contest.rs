@@ -215,15 +215,25 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
 
     tx.commit().await.expect("Failed to commit transaction");
 
+    let length = updates_to_do.len();
+    let mut msg_to_send = String::from("[");
+    for update in updates_to_do {
+        msg_to_send += "{";
+        msg_to_send += format!("contestant_id:\"{}\",value:{}", update.p_id, update.value).as_str();
+        msg_to_send += "},";
+    }
+    msg_to_send.truncate(msg_to_send.len().saturating_sub(1));
+    msg_to_send += "]";
+
     socket.send(ClientActorMessage{
         id: Uuid::new_v4(),
-        msg: format!("contest_id:{} had updates", contest_id.clone()),
+        msg: msg_to_send,
         room_id: Uuid::parse_str(contest_id.as_str()).unwrap()
     }).await.expect("Socket error!");
 
     HttpResponse::Ok().json(json!({
         "status": "success",
-        "updated_fields": updates_to_do.len()
+        "updated_fields": length
     }))
 }
 

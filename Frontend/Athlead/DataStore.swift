@@ -203,10 +203,10 @@ struct SportfestResponse: Decodable {
     let status: String
 }
 struct SportfestData: Identifiable, Hashable, Codable {
-    let cp_birth_year: String
+    let cp_birth_year: String?
     let cp_email: String
     let cp_firstname: String
-    let cp_grade: String
+    let cp_grade: String?
     let cp_id: String
     let cp_lastname: String
     let cp_phone: String
@@ -229,10 +229,10 @@ struct SportfestData: Identifiable, Hashable, Codable {
 struct ContestData: Codable, Identifiable, Hashable {
     let C_TEMPLATE_ID: String
     let ct_city: String
-    let ct_cp_birth_year: String
+    let ct_cp_birth_year: String?
     let ct_cp_email: String
     let ct_cp_firstname: String
-    let ct_cp_grade: String
+    let ct_cp_grade: String?
     let ct_cp_id: String
     let ct_cp_lastname: String
     let ct_cp_phone: String
@@ -246,10 +246,10 @@ struct ContestData: Codable, Identifiable, Hashable {
     let ct_streetnumber: String
     let ct_zipcode: String
     let sf_city: String
-    let sf_cp_birth_year: String
+    let sf_cp_birth_year: String?
     let sf_cp_email: String
     let sf_cp_firstname: String
-    let sf_cp_grade: String
+    let sf_cp_grade: String?
     let sf_cp_id: String
     let sf_cp_lastname: String
     let sf_cp_phone: String
