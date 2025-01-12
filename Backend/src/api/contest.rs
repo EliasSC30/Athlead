@@ -218,7 +218,7 @@ pub async fn contests_patch_results(body: web::Json<PatchContestResults>,
     let length = updates_to_do.len();
     let mut msg_to_send = String::from("");
     for update in updates_to_do {
-        msg_to_send += format!("{{\"msg_type\": \"CR_UPDATE\", \"data\":{{contestant_id:\"{}\",value:{}}} }}", update.p_id, update.value).as_str();
+        msg_to_send += format!("{{\"msg_type\": \"CR_UPDATE\", \"data\":{{\"contestant_id\":\"{}\",\"value\":{}}} }}", update.p_id, update.value).as_str();
     }
 
     socket.send(ClientActorMessage{
