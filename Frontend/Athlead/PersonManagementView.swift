@@ -235,6 +235,10 @@ struct PersonAddView: View {
     @State private var grade: String = ""
     @State private var birthyear: String = ""
     @State private var selectedRole: String = "Contestant" // Default role
+    @State private var selectedGender: String = "Male"
+    @State private var selectedPic: Bool = true
+    @State private var password: String = ""
+    
     
     private let possibleRoles: [String] = ["Admin", "Judge", "Contestant"]
     
@@ -244,12 +248,16 @@ struct PersonAddView: View {
         
         
         let person = PersonCreate(first_name: person.FIRSTNAME,
-                                          last_name: person.LASTNAME,
-                                          email: person.EMAIL,
-                                          phone: person.PHONE,
-                                          birth_year: person.BIRTH_YEAR,
-                                          grade: person.GRADE,
-                                          role: person.ROLE.uppercased());
+                                  last_name: person.LASTNAME,
+                                  gender: selectedGender,
+                                  email: person.EMAIL,
+                                  phone: person.PHONE,
+                                  birth_year: person.BIRTH_YEAR,
+                                  grade: person.GRADE,
+                                  role: person.ROLE.uppercased(),
+                                  pics: selectedPic ? 1 : 0,
+                                  disabilities: "",
+                                  password: password)
         
         fetch("persons", PersonCreateResponse.self, "POST", nil, person) { result in
             switch result {
@@ -267,6 +275,8 @@ struct PersonAddView: View {
                 Section(header: Text("Personal Information")) {
                     TextField("First Name", text: $firstName)
                     TextField("Last Name", text: $lastName)
+                    TextField("Password", text: $password)
+                        .textContentType(.password)
                 }
                 
                 Section(header: Text("Contact Information")) {
@@ -280,7 +290,12 @@ struct PersonAddView: View {
                     TextField("Birth Year", text: $birthyear)
                         .keyboardType(.numberPad)
                     TextField("Grade", text: $grade)
-                        .keyboardType(.numberPad)
+                
+                    Picker("Gender", selection: $selectedGender) {
+                        ForEach(["Male","Female","Diverse"], id: \.self) { gender in
+                            Text(gender).tag(gender)
+                        }
+                    }.pickerStyle(SegmentedPickerStyle())
                     
                     Picker("Role", selection: $selectedRole) {
                         ForEach(possibleRoles, id: \.self) { role in
@@ -288,6 +303,9 @@ struct PersonAddView: View {
                         }
                     }
                     .pickerStyle(SegmentedPickerStyle())
+                    
+                    Toggle("Allow to take pictures", isOn: $selectedPic)
+                        
                 }
             }
             .navigationTitle("Add Person")

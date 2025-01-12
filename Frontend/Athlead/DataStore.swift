@@ -106,15 +106,18 @@ struct PersonResponse: Decodable {
     let data: Person
     let status: String
 }
-
 struct PersonCreate: Encodable {
     let first_name: String
     let last_name: String
+    let gender: String
     let email: String
     let phone: String
     let birth_year: String?
     let grade: String?
     let role: String
+    let pics: Int
+    let disabilities: String
+    let password: String
 }
 
 struct PersonCreateResponse: Codable {
@@ -541,6 +544,21 @@ struct CSVPersonBatchResponse: Codable {
 
 struct HelperResponse: Codable {
     let status: String
+    let helper: [Helper]
+}
+struct Helper: Codable {
+    let birth_year: String?
+    let description: String?
+    let disabilities: String?
+    let email: String
+    let first_name: String
+    let gender: String
+    let grade: String?
+    let id: String
+    let last_name: String
+    let phone: String
+    let pics: Int
+    let role: String
 }
 
 extension String {
